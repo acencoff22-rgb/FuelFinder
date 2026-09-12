@@ -8,359 +8,2165 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>FuelFinder</title>
+  <meta
+    name="theme-color"
+    content="#111827"
+  >
+
+  <title>FuelFinder - 실질 주유비 비교</title>
 
   <style>
-    body {
-      font-family:
-        Arial,
-        "Malgun Gothic",
-        sans-serif;
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --surface-muted: #eef2f6;
 
-      max-width: 800px;
+      --text: #111827;
+      --text-soft: #667085;
+      --text-muted: #98a2b3;
 
-      margin: 0 auto;
+      --line: #e4e7ec;
+      --line-strong: #d0d5dd;
 
-      padding: 24px;
+      --primary: #111827;
+      --primary-soft: #1f2937;
 
-      line-height: 1.6;
+      --accent: #0f766e;
+      --accent-soft: #ecfdf5;
+
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+
+      --warning: #b45309;
+      --warning-soft: #fffbeb;
+
+      --danger: #b42318;
+      --danger-soft: #fef3f2;
+
+      --shadow-sm:
+        0 1px 2px rgba(16, 24, 40, 0.05);
+
+      --shadow-md:
+        0 8px 24px rgba(16, 24, 40, 0.08);
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
     }
 
-    h1 {
-      margin-bottom: 8px;
-    }
-
-    section {
-      margin-bottom: 24px;
-    }
-
-    label {
-      display: block;
-
-      margin-bottom: 12px;
-    }
-
-    input,
-    select {
-      padding: 8px;
-
-      margin-left: 8px;
-
+    * {
       box-sizing: border-box;
     }
 
-    input {
-      width: 120px;
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Malgun Gothic",
+        "Apple SD Gothic Neo",
+        sans-serif;
+
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
     button,
-    a.map-button {
-      display: inline-block;
+    input,
+    select {
+      font: inherit;
+    }
 
-      padding: 9px 13px;
+    button,
+    select,
+    input {
+      -webkit-tap-highlight-color: transparent;
+    }
 
-      border: 1px solid #ccc;
-
-      border-radius: 6px;
-
-      background: #fff;
-
-      color: #222;
-
-      text-decoration: none;
-
+    button {
       cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding:
+        0
+        16px
+        40px;
+    }
+
+    /* ======================================================
+       Header
+       ====================================================== */
+
+    .topbar {
+      position: sticky;
+      top: 0;
+
+      z-index: 20;
+
+      margin:
+        0 -16px
+        16px;
+
+      padding:
+        14px 16px;
+
+      background:
+        rgba(244, 246, 248, 0.92);
+
+      border-bottom:
+        1px solid rgba(228, 231, 236, 0.85);
+
+      backdrop-filter:
+        blur(12px);
+
+      -webkit-backdrop-filter:
+        blur(12px);
+    }
+
+    .topbar-inner {
+      max-width: 760px;
+      margin: 0 auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 12px;
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+
+      font-size: 18px;
+      font-weight: 800;
+
+      letter-spacing: -0.03em;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+
+      color: var(--text-soft);
+
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      flex:
+        0 0 auto;
+
+      display: inline-flex;
+      align-items: center;
+
+      min-height: 30px;
+
+      padding:
+        0 10px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 999px;
+
+      background: var(--surface);
+
+      color: var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* ======================================================
+       Hero
+       ====================================================== */
+
+    .hero {
+      margin-bottom: 16px;
+
+      padding:
+        24px 20px;
+
+      border-radius:
+        var(--radius-lg);
+
+      background:
+        linear-gradient(
+          145deg,
+          #111827 0%,
+          #1f2937 100%
+        );
+
+      color: #ffffff;
+
+      box-shadow:
+        var(--shadow-md);
+
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+
+      position: absolute;
+
+      width: 180px;
+      height: 180px;
+
+      right: -70px;
+      top: -70px;
+
+      border-radius: 50%;
+
+      background:
+        rgba(255, 255, 255, 0.05);
+    }
+
+    .hero-kicker {
+      margin: 0 0 8px;
+
+      color: #cbd5e1;
+
+      font-size: 12px;
+      font-weight: 800;
+
+      letter-spacing: 0.02em;
+    }
+
+    .hero-title {
+      margin: 0;
+
+      font-size:
+        clamp(
+          26px,
+          6vw,
+          36px
+        );
+
+      line-height: 1.18;
+
+      letter-spacing: -0.045em;
+    }
+
+    .hero-description {
+      margin:
+        10px 0 0;
+
+      max-width: 520px;
+
+      color: #d1d5db;
 
       font-size: 14px;
     }
 
-    button:disabled {
-      cursor: default;
+    .hero-note {
+      display: inline-flex;
+      align-items: center;
 
-      opacity: 0.6;
+      margin-top: 16px;
+
+      min-height: 34px;
+
+      padding:
+        0 11px;
+
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+
+      border-radius: 999px;
+
+      background:
+        rgba(255, 255, 255, 0.06);
+
+      color: #e5e7eb;
+
+      font-size: 11px;
+      font-weight: 700;
     }
 
-    .station {
-      border: 1px solid #ddd;
+    /* ======================================================
+       Cards
+       ====================================================== */
 
-      border-radius: 8px;
+    .card {
+      margin-bottom: 14px;
 
-      padding: 16px;
+      padding: 18px;
 
-      margin-bottom: 12px;
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        var(--radius-md);
+
+      background:
+        var(--surface);
+
+      box-shadow:
+        var(--shadow-sm);
     }
 
-    .station-best {
-      border-width: 2px;
-    }
-
-    .station-name {
-      font-size: 18px;
-
-      font-weight: bold;
-
-      margin-bottom: 8px;
-    }
-
-    .effective-price {
-      font-size: 20px;
-
-      font-weight: bold;
-    }
-
-    .map-buttons {
+    .card-header {
       display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
 
-      gap: 8px;
+      gap: 12px;
+
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      margin: 0;
+
+      font-size: 16px;
+      font-weight: 800;
+
+      letter-spacing: -0.025em;
+    }
+
+    .card-description {
+      margin:
+        3px 0 0;
+
+      color: var(--text-soft);
+
+      font-size: 12px;
+    }
+
+    /* ======================================================
+       Vehicle form
+       ====================================================== */
+
+    .field-grid {
+      display: grid;
+
+      grid-template-columns:
+        minmax(0, 1.3fr)
+        minmax(0, 0.85fr);
+
+      gap: 12px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field-wide {
+      grid-column: 1 / -1;
+    }
+
+    .field-label {
+      display: block;
+
+      margin-bottom: 6px;
+
+      color: var(--text-soft);
+
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .field-control {
+      width: 100%;
+
+      min-height: 48px;
+
+      padding:
+        0 13px;
+
+      border:
+        1px solid
+        var(--line-strong);
+
+      border-radius:
+        var(--radius-sm);
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text);
+
+      outline: none;
+
+      transition:
+        border-color 0.16s ease,
+        box-shadow 0.16s ease;
+    }
+
+    .field-control:focus {
+      border-color:
+        #667085;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(16, 24, 40, 0.08);
+    }
+
+    .input-with-unit {
+      position: relative;
+    }
+
+    .input-with-unit .field-control {
+      padding-right: 52px;
+    }
+
+    .input-unit {
+      position: absolute;
+
+      right: 13px;
+      top: 50%;
+
+      transform:
+        translateY(-50%);
+
+      color: var(--text-muted);
+
+      font-size: 12px;
+      font-weight: 800;
+
+      pointer-events: none;
+    }
+
+    .vehicle-summary {
+      display: flex;
 
       flex-wrap: wrap;
 
-      margin-top: 12px;
+      gap: 8px;
+
+      margin-top: 14px;
     }
 
-    .discount-settings {
-      margin-top: 16px;
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
 
-      padding: 12px;
+      min-height: 30px;
 
-      border: 1px solid #ddd;
+      padding:
+        0 10px;
 
-      border-radius: 8px;
+      border-radius:
+        999px;
+
+      background:
+        var(--surface-muted);
+
+      color:
+        var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 800;
     }
 
-    .discount-field {
+    /* ======================================================
+       Discount accordion
+       ====================================================== */
+
+    .settings-toggle {
+      width: 100%;
+
+      min-height: 46px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding:
+        0 13px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        12px;
+
+      background:
+        var(--surface-soft);
+
+      color:
+        var(--text);
+
+      text-align: left;
+
+      font-weight: 800;
+    }
+
+    .settings-toggle-left {
+      display: flex;
+      align-items: center;
+
+      gap: 9px;
+    }
+
+    .settings-toggle-icon {
+      width: 28px;
+      height: 28px;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius:
+        8px;
+
+      background:
+        var(--surface-muted);
+
+      font-size: 13px;
+    }
+
+    .settings-arrow {
+      transition:
+        transform 0.16s ease;
+    }
+
+    .discount-panel {
       display: none;
 
       margin-top: 12px;
+
+      padding:
+        14px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        14px;
+
+      background:
+        var(--surface-soft);
     }
 
-    .discount-field.visible {
+    .discount-panel.open {
       display: block;
     }
 
     .discount-summary {
       margin-top: 12px;
 
-      font-size: 14px;
+      padding:
+        10px 12px;
 
-      color: #555;
+      border-radius:
+        10px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text-soft);
+
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .gangneung-pay {
+    .discount-fields {
+      margin-top: 12px;
+    }
+
+    .discount-row {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 10px;
+    }
+
+    .discount-row.single {
+      grid-template-columns:
+        minmax(0, 1fr);
+    }
+
+    .discount-help {
+      margin:
+        10px 0 0;
+
+      color:
+        var(--text-muted);
+
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* ======================================================
+       Location CTA
+       ====================================================== */
+
+    .location-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .location-main {
+      display: grid;
+
+      grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+      gap: 12px;
+
+      align-items: center;
+    }
+
+    .location-copy-title {
+      margin: 0;
+
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .location-copy-description {
+      margin:
+        4px 0 0;
+
+      color:
+        var(--text-soft);
+
+      font-size: 12px;
+    }
+
+    .primary-button {
+      min-height: 50px;
+
+      padding:
+        0 18px;
+
+      border:
+        0;
+
+      border-radius:
+        13px;
+
+      background:
+        var(--primary);
+
+      color:
+        #ffffff;
+
+      font-size: 13px;
+      font-weight: 800;
+
+      box-shadow:
+        0 3px 10px
+        rgba(17, 24, 39, 0.16);
+
+      transition:
+        transform 0.12s ease,
+        background 0.12s ease;
+    }
+
+    .primary-button:hover {
+      background:
+        var(--primary-soft);
+    }
+
+    .primary-button:active {
+      transform:
+        translateY(1px);
+    }
+
+    .primary-button.loading {
+      pointer-events: none;
+    }
+
+    .location-status {
+      margin:
+        12px 0 0;
+
+      display: flex;
+      align-items: flex-start;
+
+      gap: 8px;
+
+      padding:
+        10px 12px;
+
+      border-radius:
+        10px;
+
+      background:
+        var(--surface-soft);
+
+      color:
+        var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .location-dot {
+      flex:
+        0 0 auto;
+
+      width: 8px;
+      height: 8px;
+
+      margin-top: 4px;
+
+      border-radius:
+        50%;
+
+      background:
+        var(--text-muted);
+    }
+
+    .location-status.success {
+      color:
+        var(--accent);
+
+      background:
+        var(--accent-soft);
+    }
+
+    .location-status.success
+    .location-dot {
+      background:
+        var(--accent);
+    }
+
+    .location-status.error {
+      color:
+        var(--danger);
+
+      background:
+        var(--danger-soft);
+    }
+
+    .location-status.error
+    .location-dot {
+      background:
+        var(--danger);
+    }
+
+    /* ======================================================
+       Search options
+       ====================================================== */
+
+    .search-options {
+      margin-top: 14px;
+    }
+
+    .search-options-label {
+      display: block;
+
+      margin-bottom: 7px;
+
+      color:
+        var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .radius-chips {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 8px;
+    }
+
+    .radius-chip {
+      min-height: 42px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        10px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text-soft);
+
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .radius-chip.active {
+      border-color:
+        var(--primary);
+
+      background:
+        var(--primary);
+
+      color:
+        #ffffff;
+    }
+
+    /* ======================================================
+       Result header
+       ====================================================== */
+
+    .results-section {
+      margin-top: 18px;
+    }
+
+    .results-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+
+      gap: 12px;
+
+      margin-bottom: 10px;
+    }
+
+    .results-title {
+      margin: 0;
+
+      font-size: 18px;
+      font-weight: 900;
+
+      letter-spacing:
+        -0.035em;
+    }
+
+    .results-description {
+      margin:
+        3px 0 0;
+
+      color:
+        var(--text-soft);
+
+      font-size: 11px;
+    }
+
+    .results-count {
+      flex:
+        0 0 auto;
+
+      color:
+        var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .result-status {
+      min-height: 42px;
+
+      display: flex;
+      align-items: center;
+
+      margin-bottom: 10px;
+
+      padding:
+        10px 12px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        12px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .result-status.loading {
+      color:
+        var(--blue);
+
+      background:
+        var(--blue-soft);
+
+      border-color:
+        #bfdbfe;
+    }
+
+    .result-status.error {
+      color:
+        var(--danger);
+
+      background:
+        var(--danger-soft);
+
+      border-color:
+        #fecdca;
+    }
+
+    .result-status.success {
+      color:
+        var(--accent);
+
+      background:
+        var(--accent-soft);
+
+      border-color:
+        #a7f3d0;
+    }
+
+    .result-summary {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 8px;
+
+      margin-bottom: 12px;
+    }
+
+    .result-summary-item {
+      padding:
+        12px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        12px;
+
+      background:
+        var(--surface);
+
+      box-shadow:
+        var(--shadow-sm);
+    }
+
+    .result-summary-label {
+      display: block;
+
+      color:
+        var(--text-muted);
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .result-summary-value {
+      display: block;
+
+      margin-top: 3px;
+
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    /* ======================================================
+       Empty state
+       ====================================================== */
+
+    .empty-state {
+      padding:
+        24px 18px;
+
+      border:
+        1px dashed
+        var(--line-strong);
+
+      border-radius:
+        var(--radius-md);
+
+      background:
+        var(--surface);
+
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 42px;
+      height: 42px;
+
+      margin:
+        0 auto 10px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius:
+        14px;
+
+      background:
+        var(--surface-muted);
+
+      font-size: 18px;
+    }
+
+    .empty-title {
+      margin: 0;
+
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .empty-description {
+      margin:
+        6px auto 0;
+
+      max-width: 480px;
+
+      color:
+        var(--text-soft);
+
+      font-size: 12px;
+    }
+
+    /* ======================================================
+       Station card
+       ====================================================== */
+
+    .station-card {
+      position: relative;
+
+      margin-bottom: 12px;
+
+      padding:
+        18px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        18px;
+
+      background:
+        var(--surface);
+
+      box-shadow:
+        var(--shadow-sm);
+    }
+
+    .station-card.best {
+      border:
+        2px solid
+        var(--primary);
+
+      padding:
+        17px;
+    }
+
+    .station-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+
+      gap: 10px;
+    }
+
+    .station-rank {
+      display: inline-flex;
+      align-items: center;
+
+      min-height: 28px;
+
+      padding:
+        0 9px;
+
+      border-radius:
+        999px;
+
+      background:
+        var(--surface-muted);
+
+      color:
+        var(--text-soft);
+
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .station-card.best
+    .station-rank {
+      background:
+        var(--primary);
+
+      color:
+        #ffffff;
+    }
+
+    .station-name {
+      margin-top: 8px;
+
+      font-size: 18px;
+      font-weight: 900;
+
+      line-height: 1.3;
+
+      letter-spacing:
+        -0.03em;
+
+      word-break:
+        keep-all;
+    }
+
+    .station-meta {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 6px;
+
+      margin-top: 8px;
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+
+      min-height: 26px;
+
+      padding:
+        0 8px;
+
+      border-radius:
+        999px;
+
+      background:
+        var(--surface-soft);
+
+      color:
+        var(--text-soft);
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .meta-chip.pay {
+      background:
+        var(--accent-soft);
+
+      color:
+        var(--accent);
+    }
+
+    .meta-chip.check {
+      background:
+        var(--warning-soft);
+
+      color:
+        var(--warning);
+    }
+
+    .effective-box {
+      margin-top: 16px;
+
+      padding:
+        15px 16px;
+
+      border-radius:
+        14px;
+
+      background:
+        var(--surface-soft);
+
+      border:
+        1px solid
+        var(--line);
+    }
+
+    .effective-label {
+      display: block;
+
+      color:
+        var(--text-soft);
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .effective-price {
+      display: flex;
+      align-items: baseline;
+
+      gap: 3px;
+
+      margin-top: 3px;
+    }
+
+    .effective-price-value {
+      font-size:
+        clamp(
+          28px,
+          7vw,
+          36px
+        );
+
+      font-weight: 950;
+
+      line-height: 1.1;
+
+      letter-spacing:
+        -0.05em;
+    }
+
+    .effective-price-unit {
+      color:
+        var(--text-soft);
+
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .cost-caption {
+      margin:
+        6px 0 0;
+
+      color:
+        var(--text-muted);
+
+      font-size: 10px;
+    }
+
+    .cost-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap:
+        10px;
+
+      margin-top: 12px;
+    }
+
+    .cost-item {
+      min-width: 0;
+
+      padding:
+        11px 12px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        11px;
+
+      background:
+        var(--surface);
+    }
+
+    .cost-label {
+      display: block;
+
+      color:
+        var(--text-muted);
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .cost-value {
+      display: block;
+
+      margin-top: 2px;
+
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .station-address {
       margin-top: 12px;
 
-      padding: 10px 12px;
+      color:
+        var(--text-soft);
 
-      border-radius: 6px;
+      font-size: 11px;
 
-      background: #f5f5f5;
-
-      font-size: 14px;
+      line-height: 1.5;
     }
 
-    .gangneung-pay.available {
-      border: 1px solid #999;
+    .pay-box {
+      margin-top: 12px;
+
+      padding:
+        12px 13px;
+
+      border-radius:
+        12px;
+
+      border:
+        1px solid
+        var(--line);
     }
 
-    .gangneung-pay.unavailable {
-      color: #666;
+    .pay-box.available {
+      background:
+        var(--accent-soft);
+
+      border-color:
+        #a7f3d0;
     }
 
-    .gangneung-pay.confirm {
-      color: #7a4b00;
+    .pay-box.confirm {
+      background:
+        var(--warning-soft);
+
+      border-color:
+        #fde68a;
     }
 
-    .gangneung-pay-title {
-      font-weight: bold;
+    .pay-box.unavailable {
+      background:
+        var(--surface-soft);
 
-      margin-bottom: 4px;
+      color:
+        var(--text-soft);
     }
 
-    .muted {
-      color: #666;
+    .pay-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-      font-size: 14px;
+      gap: 8px;
     }
 
-    .error {
-      color: #b00020;
+    .pay-title {
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .pay-badge {
+      display: inline-flex;
+      align-items: center;
+
+      min-height: 24px;
+
+      padding:
+        0 8px;
+
+      border-radius:
+        999px;
+
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .pay-badge.available {
+      background:
+        var(--accent);
+
+      color:
+        #ffffff;
+    }
+
+    .pay-badge.confirm {
+      background:
+        var(--warning);
+
+      color:
+        #ffffff;
+    }
+
+    .pay-description {
+      margin:
+        5px 0 0;
+
+      color:
+        var(--text-soft);
+
+      font-size: 10px;
+
+      line-height: 1.45;
+    }
+
+    .map-buttons {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 8px;
+
+      margin-top: 13px;
+    }
+
+    .map-button {
+      min-height: 44px;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      padding:
+        0 12px;
+
+      border:
+        1px solid
+        var(--line-strong);
+
+      border-radius:
+        11px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text);
+
+      text-decoration:
+        none;
+
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .map-button.primary {
+      border-color:
+        var(--primary);
+
+      background:
+        var(--primary);
+
+      color:
+        #ffffff;
+    }
+
+    .map-button:disabled {
+      background:
+        var(--surface-muted);
+
+      color:
+        var(--text-muted);
+    }
+
+    /* ======================================================
+       Loading
+       ====================================================== */
+
+    .loading-row {
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+
+      flex:
+        0 0 auto;
+
+      border:
+        2px solid
+        #bfdbfe;
+
+      border-top-color:
+        var(--blue);
+
+      border-radius:
+        50%;
+
+      animation:
+        spin 0.75s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform:
+          rotate(360deg);
+      }
+    }
+
+    /* ======================================================
+       Footer
+       ====================================================== */
+
+    .footer {
+      margin-top: 20px;
+
+      color:
+        var(--text-muted);
+
+      text-align: center;
+
+      font-size: 10px;
+
+      line-height: 1.6;
+    }
+
+    /* ======================================================
+       Responsive
+       ====================================================== */
+
+    @media (
+      max-width: 560px
+    ) {
+      .page {
+        padding:
+          0 12px 32px;
+      }
+
+      .topbar {
+        margin:
+          0 -12px
+          12px;
+      }
+
+      .hero {
+        padding:
+          22px 18px;
+      }
+
+      .card {
+        padding:
+          16px;
+      }
+
+      .field-grid {
+        grid-template-columns:
+          minmax(0, 1fr);
+      }
+
+      .field-wide {
+        grid-column:
+          auto;
+      }
+
+      .location-main {
+        grid-template-columns:
+          minmax(0, 1fr);
+      }
+
+      .primary-button {
+        width: 100%;
+      }
+
+      .result-summary {
+        grid-template-columns:
+          repeat(3, minmax(0, 1fr));
+      }
+
+      .cost-grid {
+        grid-template-columns:
+          minmax(0, 1fr);
+      }
+
+      .station-name {
+        font-size: 17px;
+      }
+    }
+
+    @media (
+      min-width: 760px
+    ) {
+      .page {
+        padding-top: 8px;
+      }
     }
   </style>
 </head>
 
 <body>
+  <div class="page">
 
-  <h1>FuelFinder</h1>
+    <header class="topbar">
+      <div class="topbar-inner">
 
-  <section>
-    <h2>차량 설정</h2>
+        <div class="brand">
+          <p class="brand-title">
+            FuelFinder
+          </p>
 
-    <label>
-      유종
+          <p class="brand-subtitle">
+            실질 주유비 비교
+          </p>
+        </div>
 
-      <select id="productInput">
-        <option value="B027">
-          보통휘발유
-        </option>
+        <div class="status-pill">
+          오피넷 기반
+        </div>
 
-        <option value="B034">
-          고급휘발유
-        </option>
+      </div>
+    </header>
 
-        <option value="D047">
-          자동차용경유
-        </option>
-      </select>
-    </label>
+    <main>
 
-    <label>
-      주유량
+      <!-- ==================================================
+           Hero
+           ================================================== -->
 
-      <input
-        id="litersInput"
-        type="number"
-        min="1"
-        step="1"
-        value="40"
-      >
+      <section class="hero">
 
-      L
-    </label>
+        <p class="hero-kicker">
+          가까운 곳보다 실제로 덜 드는 곳
+        </p>
 
-    <label>
-      차량 연비
+        <h1 class="hero-title">
+          내 차 기준<br>
+          실질 주유비 최저가
+        </h1>
 
-      <input
-        id="fuelEfficiencyInput"
-        type="number"
-        min="1"
-        step="0.1"
-        value="12"
-      >
+        <p class="hero-description">
+          주유 가격뿐 아니라 이동비와 할인까지 반영해
+          실제 부담 비용을 비교합니다.
+        </p>
 
-      km/L
-    </label>
-  </section>
+        <div class="hero-note">
+          현재 위치 → 주변 주유소 → 실질비용 계산
+        </div>
 
-  <section>
-    <h2>결제 할인</h2>
+      </section>
 
-    <div class="discount-settings">
+      <!-- ==================================================
+           Vehicle
+           ================================================== -->
 
-      <label>
-        할인 방식
+      <section class="card">
 
-        <select
-          id="discountTypeInput"
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">
+              차량 설정
+            </h2>
+
+            <p class="card-description">
+              실제 주유비 계산에 사용할 조건입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="field-grid">
+
+          <div class="field field-wide">
+
+            <label
+              class="field-label"
+              for="productInput"
+            >
+              유종
+            </label>
+
+            <select
+              id="productInput"
+              class="field-control"
+            >
+              <option value="B027">
+                보통휘발유
+              </option>
+
+              <option value="B034">
+                고급휘발유
+              </option>
+
+              <option value="D047">
+                자동차용경유
+              </option>
+            </select>
+
+          </div>
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="litersInput"
+            >
+              주유량
+            </label>
+
+            <div class="input-with-unit">
+
+              <input
+                id="litersInput"
+                class="field-control"
+                type="number"
+                min="1"
+                step="1"
+                value="40"
+                inputmode="decimal"
+              >
+
+              <span class="input-unit">
+                L
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="fuelEfficiencyInput"
+            >
+              차량 연비
+            </label>
+
+            <div class="input-with-unit">
+
+              <input
+                id="fuelEfficiencyInput"
+                class="field-control"
+                type="number"
+                min="1"
+                step="0.1"
+                value="12"
+                inputmode="decimal"
+              >
+
+              <span class="input-unit">
+                km/L
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          id="vehicleSummary"
+          class="vehicle-summary"
+        ></div>
+
+      </section>
+
+      <!-- ==================================================
+           Discount
+           ================================================== -->
+
+      <section class="card">
+
+        <button
+          id="discountToggle"
+          class="settings-toggle"
+          type="button"
+          aria-expanded="false"
         >
-          <option value="none">
-            할인 없음
-          </option>
+          <span class="settings-toggle-left">
 
-          <option value="percent">
-            비율 할인
-          </option>
+            <span class="settings-toggle-icon">
+              ₩
+            </span>
 
-          <option value="fixed">
-            정액 할인
-          </option>
-        </select>
-      </label>
+            <span>
+              할인 / 카드 조건
+            </span>
 
-      <div
-        id="percentField"
-        class="discount-field"
-      >
-        <label>
-          할인율
+          </span>
 
-          <input
-            id="discountRateInput"
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            value="10"
+          <span
+            id="settingsArrow"
+            class="settings-arrow"
+          >
+            ▾
+          </span>
+        </button>
+
+        <div
+          id="discountPanel"
+          class="discount-panel"
+        >
+
+          <div class="field">
+
+            <label
+              class="field-label"
+              for="discountTypeInput"
+            >
+              할인 방식
+            </label>
+
+            <select
+              id="discountTypeInput"
+              class="field-control"
+            >
+              <option value="none">
+                할인 없음
+              </option>
+
+              <option value="percent">
+                비율 할인
+              </option>
+
+              <option value="fixed">
+                정액 할인
+              </option>
+            </select>
+
+          </div>
+
+          <div
+            id="percentField"
+            class="discount-fields"
+            hidden
           >
 
-          %
-        </label>
+            <div class="discount-row">
 
-        <label>
-          최대 할인액
+              <div class="field">
 
-          <input
-            id="maxDiscountInput"
-            type="number"
-            min="0"
-            step="100"
-            placeholder="제한 없음"
+                <label
+                  class="field-label"
+                  for="discountRateInput"
+                >
+                  할인율
+                </label>
+
+                <div class="input-with-unit">
+
+                  <input
+                    id="discountRateInput"
+                    class="field-control"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value="10"
+                    inputmode="decimal"
+                  >
+
+                  <span class="input-unit">
+                    %
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div class="field">
+
+                <label
+                  class="field-label"
+                  for="maxDiscountInput"
+                >
+                  최대 할인액
+                </label>
+
+                <div class="input-with-unit">
+
+                  <input
+                    id="maxDiscountInput"
+                    class="field-control"
+                    type="number"
+                    min="0"
+                    step="100"
+                    placeholder="제한 없음"
+                    inputmode="numeric"
+                  >
+
+                  <span class="input-unit">
+                    원
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            id="fixedField"
+            class="discount-fields"
+            hidden
           >
 
-          원
-        </label>
-      </div>
+            <div class="discount-row single">
 
-      <div
-        id="fixedField"
-        class="discount-field"
-      >
-        <label>
-          정액 할인
+              <div class="field">
 
-          <input
-            id="fixedDiscountInput"
-            type="number"
-            min="0"
-            step="100"
-            value="3000"
+                <label
+                  class="field-label"
+                  for="fixedDiscountInput"
+                >
+                  정액 할인
+                </label>
+
+                <div class="input-with-unit">
+
+                  <input
+                    id="fixedDiscountInput"
+                    class="field-control"
+                    type="number"
+                    min="0"
+                    step="100"
+                    value="3000"
+                    inputmode="numeric"
+                  >
+
+                  <span class="input-unit">
+                    원
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            id="discountSummary"
+            class="discount-summary"
+          >
+            현재 할인 없음
+          </div>
+
+          <p class="discount-help">
+            강릉페이 가맹 여부는 주유소별로 별도 표시합니다.
+            실제 강릉페이 캐시백은 정책 확인 후 별도로 반영해야 합니다.
+          </p>
+
+        </div>
+
+      </section>
+
+      <!-- ==================================================
+           Location
+           ================================================== -->
+
+      <section class="card location-card">
+
+        <div class="card-header">
+
+          <div>
+            <h2 class="card-title">
+              출발 위치
+            </h2>
+
+            <p class="card-description">
+              현재 위치를 기준으로 주변 주유소를 계산합니다.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="location-main">
+
+          <div>
+
+            <p class="location-copy-title">
+              현재 위치로 검색
+            </p>
+
+            <p class="location-copy-description">
+              위치 정보는 검색 요청에만 사용됩니다.
+            </p>
+
+          </div>
+
+          <button
+            id="locationButton"
+            class="primary-button"
+            type="button"
+          >
+            현재 위치 사용
+          </button>
+
+        </div>
+
+        <div
+          id="locationStatus"
+          class="location-status"
+        >
+          <span class="location-dot"></span>
+
+          <span>
+            아직 위치를 가져오지 않았습니다.
+          </span>
+        </div>
+
+        <div class="search-options">
+
+          <span class="search-options-label">
+            검색 반경
+          </span>
+
+          <div
+            id="radiusChips"
+            class="radius-chips"
           >
 
-          원
-        </label>
-      </div>
+            <button
+              class="radius-chip"
+              type="button"
+              data-radius="2000"
+            >
+              2 km
+            </button>
 
-      <div
-        id="discountSummary"
-        class="discount-summary"
-      >
-        현재 할인 없음
-      </div>
+            <button
+              class="radius-chip active"
+              type="button"
+              data-radius="3000"
+            >
+              3 km
+            </button>
 
-      <p class="muted">
-        강릉페이 가맹 여부는 별도로 표시됩니다.
-        실제 강릉페이 할인율은 아직 적용하지 않습니다.
-      </p>
+            <button
+              class="radius-chip"
+              type="button"
+              data-radius="5000"
+            >
+              5 km
+            </button>
 
-    </div>
-  </section>
+          </div>
 
-  <section>
-    <h2>출발 위치</h2>
+        </div>
 
-    <button
-      id="locationButton"
-      type="button"
-    >
-      현재 위치 사용
-    </button>
+      </section>
 
-    <p id="locationStatus">
-      아직 위치를 가져오지 않았습니다.
-    </p>
-  </section>
+      <!-- ==================================================
+           Results
+           ================================================== -->
 
-  <section>
-    <h2>주변 주유소</h2>
+      <section class="results-section">
 
-    <p id="stationStatus">
-      차량 설정 후 현재 위치를 사용하세요.
-    </p>
+        <div class="results-head">
 
-    <div id="stationList"></div>
-  </section>
+          <div>
+
+            <h2 class="results-title">
+              주변 주유소
+            </h2>
+
+            <p class="results-description">
+              실질가격이 낮은 순서로 표시됩니다.
+            </p>
+
+          </div>
+
+          <span
+            id="resultsCount"
+            class="results-count"
+          >
+            아직 검색 전
+          </span>
+
+        </div>
+
+        <div
+          id="stationStatus"
+          class="result-status"
+        >
+          현재 위치를 사용하면 주변 주유소를 검색합니다.
+        </div>
+
+        <div
+          id="resultSummary"
+          class="result-summary"
+          hidden
+        >
+
+          <div class="result-summary-item">
+
+            <span class="result-summary-label">
+              검색 주유소
+            </span>
+
+            <span
+              id="summaryStationCount"
+              class="result-summary-value"
+            >
+              0
+            </span>
+
+          </div>
+
+          <div class="result-summary-item">
+
+            <span class="result-summary-label">
+              강릉페이
+            </span>
+
+            <span
+              id="summaryPayCount"
+              class="result-summary-value"
+            >
+              0
+            </span>
+
+          </div>
+
+          <div class="result-summary-item">
+
+            <span class="result-summary-label">
+              검색 반경
+            </span>
+
+            <span
+              id="summaryRadius"
+              class="result-summary-value"
+            >
+              3km
+            </span>
+
+          </div>
+
+        </div>
+
+        <div
+          id="stationList"
+        ></div>
+
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      가격 정보는 오피넷 제공 데이터를 기준으로 합니다.
+      <br>
+      이동비 계산은 차량 연비와 입력 조건을 기준으로 합니다.
+    </footer>
+
+  </div>
 
   <script>
+    /* ======================================================
+       DOM
+       ====================================================== */
+
     const locationButton =
       document.getElementById(
         "locationButton"
@@ -394,6 +2200,26 @@
     const fuelEfficiencyInput =
       document.getElementById(
         "fuelEfficiencyInput"
+      );
+
+    const vehicleSummary =
+      document.getElementById(
+        "vehicleSummary"
+      );
+
+    const discountToggle =
+      document.getElementById(
+        "discountToggle"
+      );
+
+    const discountPanel =
+      document.getElementById(
+        "discountPanel"
+      );
+
+    const settingsArrow =
+      document.getElementById(
+        "settingsArrow"
       );
 
     const discountTypeInput =
@@ -431,9 +2257,50 @@
         "discountSummary"
       );
 
+    const radiusChips =
+      document.querySelectorAll(
+        ".radius-chip"
+      );
+
+    const resultsCount =
+      document.getElementById(
+        "resultsCount"
+      );
+
+    const resultSummary =
+      document.getElementById(
+        "resultSummary"
+      );
+
+    const summaryStationCount =
+      document.getElementById(
+        "summaryStationCount"
+      );
+
+    const summaryPayCount =
+      document.getElementById(
+        "summaryPayCount"
+      );
+
+    const summaryRadius =
+      document.getElementById(
+        "summaryRadius"
+      );
+
+    let selectedRadius = 3000;
+
+    /* ======================================================
+       Event listeners
+       ====================================================== */
+
     locationButton.addEventListener(
       "click",
       getCurrentLocation
+    );
+
+    discountToggle.addEventListener(
+      "click",
+      toggleDiscountPanel
     );
 
     discountTypeInput.addEventListener(
@@ -456,21 +2323,82 @@
       updateDiscountSummary
     );
 
+    productInput.addEventListener(
+      "change",
+      updateVehicleSummary
+    );
+
+    litersInput.addEventListener(
+      "input",
+      updateVehicleSummary
+    );
+
+    fuelEfficiencyInput.addEventListener(
+      "input",
+      updateVehicleSummary
+    );
+
+    radiusChips.forEach(
+      (chip) => {
+        chip.addEventListener(
+          "click",
+          () => {
+            selectedRadius =
+              Number(
+                chip.dataset.radius
+              );
+
+            radiusChips.forEach(
+              (item) => {
+                item.classList.toggle(
+                  "active",
+                  item === chip
+                );
+              }
+            );
+
+            summaryRadius.textContent =
+              formatRadius(
+                selectedRadius
+              );
+          }
+        );
+      }
+    );
+
     updateDiscountFields();
+    updateVehicleSummary();
+
+    /* ======================================================
+       Discount panel
+       ====================================================== */
+
+    function toggleDiscountPanel() {
+      const open =
+        discountPanel.classList.toggle(
+          "open"
+        );
+
+      discountToggle.setAttribute(
+        "aria-expanded",
+        String(open)
+      );
+
+      settingsArrow.style.transform =
+        open
+          ? "rotate(180deg)"
+          : "rotate(0deg)";
+    }
 
     function updateDiscountFields() {
       const type =
         discountTypeInput.value;
 
-      percentField.classList.toggle(
-        "visible",
-        type === "percent"
-      );
+      percentField.hidden =
+        type !== "percent";
 
-      fixedField.classList.toggle(
-        "visible",
-        type === "fixed"
-      );
+      fixedField.hidden =
+        type !== "fixed";
 
       updateDiscountSummary();
     }
@@ -504,14 +2432,12 @@
             : null;
 
         if (
-          !Number.isFinite(
-            rate
-          ) ||
+          !Number.isFinite(rate) ||
           rate < 0 ||
           rate > 100
         ) {
           discountSummary.textContent =
-            "할인율을 입력하세요.";
+            "할인율을 0~100% 사이로 입력하세요.";
 
           return;
         }
@@ -563,7 +2489,7 @@
           amount < 0
         ) {
           discountSummary.textContent =
-            "정액 할인액을 입력하세요.";
+            "정액 할인액을 확인하세요.";
 
           return;
         }
@@ -575,12 +2501,104 @@
       }
     }
 
+    /* ======================================================
+       Vehicle summary
+       ====================================================== */
+
+    function updateVehicleSummary() {
+      const productName =
+        getProductName(
+          productInput.value
+        );
+
+      const liters =
+        Number(
+          litersInput.value
+        );
+
+      const fuelEfficiency =
+        Number(
+          fuelEfficiencyInput.value
+        );
+
+      const chips = [];
+
+      chips.push(
+        productName
+      );
+
+      if (
+        isValidPositiveNumber(
+          liters
+        )
+      ) {
+        chips.push(
+          `${formatNumber(
+            liters
+          )}L`
+        );
+      }
+
+      if (
+        isValidPositiveNumber(
+          fuelEfficiency
+        )
+      ) {
+        chips.push(
+          `${formatNumber(
+            fuelEfficiency
+          )}km/L`
+        );
+      }
+
+      vehicleSummary.innerHTML =
+        chips
+          .map(
+            (chip) =>
+              `<span class="summary-chip">${escapeHtml(
+                chip
+              )}</span>`
+          )
+          .join("");
+    }
+
+    function getProductName(
+      productCode
+    ) {
+      switch (
+        productCode
+      ) {
+        case "B027":
+          return "보통휘발유";
+
+        case "B034":
+          return "고급휘발유";
+
+        case "D047":
+          return "자동차용경유";
+
+        default:
+          return "유종 미선택";
+      }
+    }
+
+    /* ======================================================
+       Geolocation
+       ====================================================== */
+
     function getCurrentLocation() {
       if (
         !navigator.geolocation
       ) {
-        locationStatus.textContent =
-          "이 브라우저에서는 위치 기능을 사용할 수 없습니다.";
+        setLocationStatus(
+          "error",
+          "이 브라우저에서는 위치 기능을 사용할 수 없습니다."
+        );
+
+        setResultStatus(
+          "error",
+          "현재 위치를 사용할 수 없어 검색하지 못했습니다."
+        );
 
         return;
       }
@@ -606,8 +2624,10 @@
           productCode
         )
       ) {
-        stationStatus.textContent =
-          "지원하지 않는 유종입니다.";
+        setResultStatus(
+          "error",
+          "지원하지 않는 유종입니다."
+        );
 
         return;
       }
@@ -617,8 +2637,10 @@
           liters
         )
       ) {
-        stationStatus.textContent =
-          "주유량을 올바르게 입력하세요.";
+        setResultStatus(
+          "error",
+          "주유량을 올바르게 입력하세요."
+        );
 
         litersInput.focus();
 
@@ -630,8 +2652,10 @@
           fuelEfficiency
         )
       ) {
-        stationStatus.textContent =
-          "차량 연비를 올바르게 입력하세요.";
+        setResultStatus(
+          "error",
+          "차량 연비를 올바르게 입력하세요."
+        );
 
         fuelEfficiencyInput.focus();
 
@@ -647,17 +2671,38 @@
       locationButton.disabled =
         true;
 
-      locationStatus.textContent =
-        "현재 위치를 확인하는 중입니다...";
+      locationButton.classList.add(
+        "loading"
+      );
 
-      stationStatus.textContent =
-        "주변 주유소를 검색하는 중입니다...";
+      locationButton.textContent =
+        "위치 확인 중...";
 
-      stationStatus.className =
-        "";
+      setLocationStatus(
+        "",
+        "현재 위치를 확인하고 있습니다."
+      );
+
+      setResultStatus(
+        "loading",
+        `
+          <div class="loading-row">
+            <span class="spinner"></span>
+            <span>
+              주변 주유소를 검색하고 실질비용을 계산하는 중입니다.
+            </span>
+          </div>
+        `
+      );
+
+      resultsCount.textContent =
+        "검색 중";
 
       stationList.innerHTML =
         "";
+
+      resultSummary.hidden =
+        true;
 
       navigator.geolocation.getCurrentPosition(
         async (
@@ -671,12 +2716,16 @@
             position.coords
               .longitude;
 
-          locationStatus.textContent =
-            `현재 위치: ${latitude.toFixed(
-              4
-            )}, ${longitude.toFixed(
-              4
-            )}`;
+          const accuracy =
+            position.coords
+              .accuracy;
+
+          setLocationStatus(
+            "success",
+            `현재 위치 확인 완료 · 정확도 약 ${Math.round(
+              accuracy
+            )}m`
+          );
 
           try {
             await loadNearbyStations({
@@ -691,6 +2740,9 @@
               fuelEfficiency,
 
               paymentOption,
+
+              radius:
+                selectedRadius,
             });
           } catch (
             error
@@ -699,14 +2751,23 @@
               error
             );
 
-            stationStatus.textContent =
-              `검색 실패: ${error.message}`;
+            setResultStatus(
+              "error",
+              `검색 실패: ${error.message}`
+            );
 
-            stationStatus.className =
-              "error";
+            resultsCount.textContent =
+              "검색 실패";
           } finally {
             locationButton.disabled =
               false;
+
+            locationButton.classList.remove(
+              "loading"
+            );
+
+            locationButton.textContent =
+              "다시 검색";
           }
         },
 
@@ -715,185 +2776,114 @@
             error
           );
 
-          locationStatus.textContent =
+          const message =
             getGeolocationErrorMessage(
               error
             );
 
-          stationStatus.textContent =
-            "위치를 가져오지 못해 주유소를 검색하지 않았습니다.";
+          setLocationStatus(
+            "error",
+            message
+          );
 
-          stationStatus.className =
-            "error";
+          setResultStatus(
+            "error",
+            "위치를 가져오지 못해 주유소를 검색하지 않았습니다."
+          );
+
+          resultsCount.textContent =
+            "검색 안 함";
 
           locationButton.disabled =
             false;
+
+          locationButton.classList.remove(
+            "loading"
+          );
+
+          locationButton.textContent =
+            "현재 위치 사용";
         },
 
         {
           enableHighAccuracy:
             true,
 
-          timeout: 15000,
+          timeout:
+            15000,
 
-          maximumAge: 60000,
+          maximumAge:
+            60000,
         }
       );
     }
 
-    function getPaymentOption() {
-      const type =
-        discountTypeInput.value;
-
-      if (
-        type === "none"
-      ) {
-        return {
-          type: "none",
-        };
-      }
-
-      if (
-        type === "percent"
-      ) {
-        const rate =
-          Number(
-            discountRateInput.value
-          );
-
-        const maxDiscount =
-          maxDiscountInput.value
-            ? Number(
-                maxDiscountInput.value
-              )
-            : null;
-
-        if (
-          !Number.isFinite(
-            rate
-          ) ||
-          rate < 0 ||
-          rate > 100
-        ) {
-          stationStatus.textContent =
-            "할인율은 0~100% 사이로 입력하세요.";
-
-          discountRateInput.focus();
-
-          return null;
-        }
-
-        if (
-          maxDiscount !== null &&
-          (
-            !Number.isFinite(
-              maxDiscount
-            ) ||
-            maxDiscount < 0
-          )
-        ) {
-          stationStatus.textContent =
-            "최대 할인액을 올바르게 입력하세요.";
-
-          maxDiscountInput.focus();
-
-          return null;
-        }
-
-        return {
-          type: "percent",
-
-          rate,
-
-          maxDiscount,
-        };
-      }
-
-      if (
-        type === "fixed"
-      ) {
-        const amount =
-          Number(
-            fixedDiscountInput.value
-          );
-
-        if (
-          !Number.isFinite(
-            amount
-          ) ||
-          amount < 0
-        ) {
-          stationStatus.textContent =
-            "정액 할인액을 올바르게 입력하세요.";
-
-          fixedDiscountInput.focus();
-
-          return null;
-        }
-
-        return {
-          type: "fixed",
-
-          amount,
-        };
-      }
-
-      stationStatus.textContent =
-        "할인 옵션을 확인하세요.";
-
-      return null;
-    }
+    /* ======================================================
+       API
+       ====================================================== */
 
     async function loadNearbyStations({
       latitude,
-
       longitude,
-
       productCode,
-
       liters,
-
       fuelEfficiency,
-
       paymentOption,
+      radius,
     }) {
-      stationStatus.className =
-        "";
-
-      stationStatus.textContent =
-        "오피넷과 강릉페이 정보를 확인하고 실질비용을 계산하는 중입니다...";
+      setResultStatus(
+        "loading",
+        `
+          <div class="loading-row">
+            <span class="spinner"></span>
+            <span>
+              오피넷 가격과 강릉페이 정보를 확인하는 중입니다.
+            </span>
+          </div>
+        `
+      );
 
       const response =
         await fetch(
           "/api/nearby-stations",
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
               "Content-Type":
                 "application/json",
             },
 
-            body: JSON.stringify({
-              latitude,
+            body:
+              JSON.stringify({
+                latitude,
 
-              longitude,
+                longitude,
 
-              radius: 5000,
+                radius,
 
-              productCode,
+                productCode,
 
-              liters,
+                liters,
 
-              fuelEfficiency,
+                fuelEfficiency,
 
-              paymentOption,
-            }),
+                paymentOption,
+              }),
           }
         );
 
-      const data =
-        await response.json();
+      let data;
+
+      try {
+        data =
+          await response.json();
+      } catch {
+        throw new Error(
+          `서버 응답을 읽을 수 없습니다. HTTP ${response.status}`
+        );
+      }
 
       if (
         !response.ok ||
@@ -901,25 +2891,137 @@
       ) {
         throw new Error(
           data.error ||
-            `서버 요청 실패: HTTP ${response.status}`
+          `서버 요청 실패: HTTP ${response.status}`
         );
       }
 
+      const stations =
+        Array.isArray(
+          data.stations
+        )
+          ? data.stations
+          : [];
+
       renderStations(
-        data.stations
+        stations
       );
 
       const availableCount =
-        data.stations.filter(
+        stations.filter(
           (station) =>
-            station.gangneungPay
+            station
+              .gangneungPay
               ?.status ===
             "available"
         ).length;
 
-      stationStatus.textContent =
-        `${data.stationCount}개의 ${data.productName} 주유소를 실질가격순으로 계산했습니다. 강릉페이 가맹 매칭 ${availableCount}개.`;
+      updateResultSummary({
+        stationCount:
+          stations.length,
+
+        availableCount,
+
+        radius,
+      });
+
+      if (
+        stations.length ===
+        0
+      ) {
+        setResultStatus(
+          "error",
+          "현재 조건에서 확인 가능한 주유소가 없습니다."
+        );
+
+        resultsCount.textContent =
+          "0곳";
+
+        return;
+      }
+
+      setResultStatus(
+        "success",
+        `${stations.length}개의 ${data.productName} 주유소를 실질가격순으로 계산했습니다.`
+      );
+
+      resultsCount.textContent =
+        `${stations.length}곳`;
     }
+
+    /* ======================================================
+       Result summary
+       ====================================================== */
+
+    function updateResultSummary({
+      stationCount,
+      availableCount,
+      radius,
+    }) {
+      resultSummary.hidden =
+        false;
+
+      summaryStationCount.textContent =
+        formatNumber(
+          stationCount
+        );
+
+      summaryPayCount.textContent =
+        formatNumber(
+          availableCount
+        );
+
+      summaryRadius.textContent =
+        formatRadius(
+          radius
+        );
+    }
+
+    function setResultStatus(
+      type,
+      message
+    ) {
+      stationStatus.className =
+        "result-status";
+
+      if (
+        type
+      ) {
+        stationStatus.classList.add(
+          type
+        );
+      }
+
+      stationStatus.innerHTML =
+        message;
+    }
+
+    function setLocationStatus(
+      type,
+      message
+    ) {
+      locationStatus.className =
+        "location-status";
+
+      if (
+        type
+      ) {
+        locationStatus.classList.add(
+          type
+        );
+      }
+
+      locationStatus.innerHTML =
+        `
+          <span class="location-dot"></span>
+          <span>${escapeHtml(
+            message
+          )}</span>
+        `;
+    }
+
+    /* ======================================================
+       Station rendering
+       ====================================================== */
 
     function renderStations(
       stations
@@ -931,10 +3033,27 @@
         !Array.isArray(
           stations
         ) ||
-        stations.length === 0
+        stations.length ===
+          0
       ) {
         stationList.innerHTML =
-          "<p>실질비용을 계산할 수 있는 주유소가 없습니다.</p>";
+          `
+            <div class="empty-state">
+              <div class="empty-icon">
+                ⛽
+              </div>
+
+              <p class="empty-title">
+                표시할 주유소가 없습니다.
+              </p>
+
+              <p class="empty-description">
+                현재 오피넷 조회 결과가 없거나
+                실질비용을 계산할 수 있는 주유소가 없습니다.
+                잠시 후 다시 검색해 보세요.
+              </p>
+            </div>
+          `;
 
         return;
       }
@@ -946,13 +3065,13 @@
         ) => {
           const item =
             document.createElement(
-              "div"
+              "article"
             );
 
           item.className =
             index === 0
-              ? "station station-best"
-              : "station";
+              ? "station-card best"
+              : "station-card";
 
           const kakaoUrl =
             createKakaoMapUrl(
@@ -964,130 +3083,283 @@
               station
             );
 
-          const discountText =
-            station.discountAmount >
-            0
-              ? `할인액: ${formatWon(
-                  station.discountAmount
-                )}원`
-              : "할인액: 0원";
+          const distanceText =
+            station.distanceKm ===
+            null ||
+            station.distanceKm ===
+              undefined
+              ? "거리 정보 없음"
+              : `${station.distanceKm.toFixed(
+                  2
+                )}km`;
 
-          const gangneungPayHtml =
-            createGangneungPayHtml(
-              station
+          const effectivePrice =
+            Number(
+              station.effectivePricePerLiter
             );
 
-          item.innerHTML = `
-            <div class="station-name">
-              ${index + 1}위.
-              ${escapeHtml(
-                station.name
-              )}
-            </div>
+          const totalCost =
+            Number(
+              station.totalCost
+            );
 
-            <div>
-              표시가격:
-              ${formatWon(
-                station.pricePerLiter
-              )}
-              원/L
-            </div>
+          const fuelCost =
+            Number(
+              station.fuelCost
+            );
 
-            <div>
-              거리:
+          const travelCost =
+            Number(
+              station.travelCost
+            );
+
+          const discountedFuelCost =
+            Number(
+              station.discountedFuelCost
+            );
+
+          const discountAmount =
+            Number(
+              station.discountAmount
+            );
+
+          item.innerHTML =
+            `
+              <div class="station-top">
+
+                <div>
+
+                  <div class="station-rank">
+                    ${
+                      index === 0
+                        ? "추천 1위"
+                        : `${index + 1}위`
+                    }
+                  </div>
+
+                  <div class="station-name">
+                    ${escapeHtml(
+                      station.name ||
+                        "주유소 이름 없음"
+                    )}
+                  </div>
+
+                  <div class="station-meta">
+                    <span class="meta-chip">
+                      ${escapeHtml(
+                        distanceText
+                      )}
+                    </span>
+
+                    ${
+                      Number.isFinite(
+                        station.pricePerLiter
+                      )
+                        ? `
+                          <span class="meta-chip">
+                            표시 ${formatWon(
+                              station.pricePerLiter
+                            )}원/L
+                          </span>
+                        `
+                        : ""
+                    }
+
+                    ${createGangneungPayBadge(
+                      station
+                    )}
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div class="effective-box">
+
+                <span class="effective-label">
+                  내 차 기준 실질가격
+                </span>
+
+                <div class="effective-price">
+
+                  <span class="effective-price-value">
+                    ${formatWon(
+                      Math.round(
+                        effectivePrice
+                      )
+                    )}
+                  </span>
+
+                  <span class="effective-price-unit">
+                    원/L
+                  </span>
+
+                </div>
+
+                <p class="cost-caption">
+                  주유비 + 왕복 이동비 - 입력한 할인
+                </p>
+
+              </div>
+
+              <div class="cost-grid">
+
+                <div class="cost-item">
+
+                  <span class="cost-label">
+                    실질 총비용
+                  </span>
+
+                  <span class="cost-value">
+                    ${formatWon(
+                      totalCost
+                    )}원
+                  </span>
+
+                </div>
+
+                <div class="cost-item">
+
+                  <span class="cost-label">
+                    주유비
+                  </span>
+
+                  <span class="cost-value">
+                    ${formatWon(
+                      fuelCost
+                    )}원
+                  </span>
+
+                </div>
+
+                <div class="cost-item">
+
+                  <span class="cost-label">
+                    왕복 이동비
+                  </span>
+
+                  <span class="cost-value">
+                    ${formatWon(
+                      travelCost
+                    )}원
+                  </span>
+
+                </div>
+
+                <div class="cost-item">
+
+                  <span class="cost-label">
+                    할인액
+                  </span>
+
+                  <span class="cost-value">
+                    ${
+                      discountAmount >
+                      0
+                        ? `-${formatWon(
+                            discountAmount
+                          )}원`
+                        : "0원"
+                    }
+                  </span>
+
+                </div>
+
+              </div>
+
               ${
-                station.distanceKm ===
-                null
-                  ? "거리 정보 없음"
-                  : `${station.distanceKm.toFixed(
-                      2
-                    )}km`
-              }
-            </div>
-
-            <div>
-              주유비:
-              ${formatWon(
-                station.fuelCost
-              )}
-              원
-            </div>
-
-            <div>
-              왕복 이동비:
-              ${formatWon(
-                station.travelCost
-              )}
-              원
-            </div>
-
-            <div>
-              ${discountText}
-            </div>
-
-            <div>
-              할인 후 주유비:
-              ${formatWon(
-                station.discountedFuelCost
-              )}
-              원
-            </div>
-
-            <div>
-              실질 총비용:
-              ${formatWon(
-                station.totalCost
-              )}
-              원
-            </div>
-
-            <div class="effective-price">
-              실질가격:
-              ${formatWon(
-                Math.round(
-                  station.effectivePricePerLiter
-                )
-              )}
-              원/L
-            </div>
-
-            ${gangneungPayHtml}
-
-            <div class="map-buttons">
-
-              <a
-                class="map-button"
-                href="${naverUrl}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                네이버 지도
-              </a>
-
-              ${
-                kakaoUrl
+                discountedFuelCost !==
+                  fuelCost ||
+                discountAmount >
+                  0
                   ? `
-                    <a
-                      class="map-button"
-                      href="${kakaoUrl}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      카카오맵
-                    </a>
+                    <div class="cost-grid">
+
+                      <div class="cost-item">
+
+                        <span class="cost-label">
+                          할인 후 주유비
+                        </span>
+
+                        <span class="cost-value">
+                          ${formatWon(
+                            discountedFuelCost
+                          )}원
+                        </span>
+
+                      </div>
+
+                      <div class="cost-item">
+
+                        <span class="cost-label">
+                          입력 할인 조건
+                        </span>
+
+                        <span class="cost-value">
+                          ${escapeHtml(
+                            getDiscountDescription()
+                          )}
+                        </span>
+
+                      </div>
+
+                    </div>
                   `
-                  : `
-                    <button
-                      type="button"
-                      disabled
-                    >
-                      카카오맵 위치 없음
-                    </button>
-                  `
+                  : ""
               }
 
-            </div>
-          `;
+              ${
+                station.address
+                  ? `
+                    <div class="station-address">
+                      ${escapeHtml(
+                        station.address
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+              ${createGangneungPayHtml(
+                station
+              )}
+
+              <div class="map-buttons">
+
+                <a
+                  class="map-button primary"
+                  href="${naverUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  네이버 지도
+                </a>
+
+                ${
+                  kakaoUrl
+                    ? `
+                      <a
+                        class="map-button"
+                        href="${kakaoUrl}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        카카오맵
+                      </a>
+                    `
+                    : `
+                      <button
+                        class="map-button"
+                        type="button"
+                        disabled
+                      >
+                        카카오맵 위치 없음
+                      </button>
+                    `
+                }
+
+              </div>
+            `;
 
           stationList.appendChild(
             item
@@ -1096,21 +3368,71 @@
       );
     }
 
+    function createGangneungPayBadge(
+      station
+    ) {
+      const pay =
+        station.gangneungPay;
+
+      if (
+        !pay
+      ) {
+        return "";
+      }
+
+      if (
+        pay.status ===
+        "available"
+      ) {
+        return `
+          <span class="meta-chip pay">
+            강릉페이 가능
+          </span>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "needs_confirmation"
+      ) {
+        return `
+          <span class="meta-chip check">
+            강릉페이 확인 필요
+          </span>
+        `;
+      }
+
+      return `
+        <span class="meta-chip">
+          강릉페이 미확인
+        </span>
+      `;
+    }
+
     function createGangneungPayHtml(
       station
     ) {
       const pay =
         station.gangneungPay;
 
-      if (!pay) {
+      if (
+        !pay
+      ) {
         return `
-          <div class="gangneung-pay unavailable">
-            <div class="gangneung-pay-title">
-              강릉페이
+          <div class="pay-box unavailable">
+
+            <div class="pay-title-row">
+
+              <span class="pay-title">
+                강릉페이
+              </span>
+
             </div>
-            <div>
-              정보 없음
-            </div>
+
+            <p class="pay-description">
+              가맹 정보를 확인할 수 없습니다.
+            </p>
+
           </div>
         `;
       }
@@ -1125,25 +3447,30 @@
           "";
 
         return `
-          <div class="gangneung-pay available">
-            <div class="gangneung-pay-title">
-              강릉페이 가맹점
+          <div class="pay-box available">
+
+            <div class="pay-title-row">
+
+              <span class="pay-title">
+                강릉페이 가맹점
+              </span>
+
+              <span class="pay-badge available">
+                공식 명단 매칭
+              </span>
+
             </div>
-            <div>
-              공식 가맹 명단과 매칭됨
-            </div>
-            <div>
-              매칭 신뢰도:
-              ${formatWon(
-                pay.confidence
-              )}점
-            </div>
-            <div>
-              가맹점:
-              ${escapeHtml(
+
+            <p class="pay-description">
+              ${
                 merchantName
-              )}
-            </div>
+                  ? `가맹점명: ${escapeHtml(
+                      merchantName
+                    )}`
+                  : "공식 강릉페이 가맹 주유소 명단과 매칭되었습니다."
+              }
+            </p>
+
           </div>
         `;
       }
@@ -1153,40 +3480,68 @@
         "needs_confirmation"
       ) {
         return `
-          <div class="gangneung-pay confirm">
-            <div class="gangneung-pay-title">
-              강릉페이
+          <div class="pay-box confirm">
+
+            <div class="pay-title-row">
+
+              <span class="pay-title">
+                강릉페이
+              </span>
+
+              <span class="pay-badge confirm">
+                추가 확인 필요
+              </span>
+
             </div>
-            <div>
-              추가 확인 필요
-            </div>
-            <div class="muted">
+
+            <p class="pay-description">
               ${escapeHtml(
                 pay.reason ||
-                  ""
+                  "공식 명단과의 매칭 여부를 추가 확인해야 합니다."
               )}
-            </div>
+            </p>
+
           </div>
         `;
       }
 
       return `
-        <div class="gangneung-pay unavailable">
-          <div class="gangneung-pay-title">
-            강릉페이
+        <div class="pay-box unavailable">
+
+          <div class="pay-title-row">
+
+            <span class="pay-title">
+              강릉페이
+            </span>
+
+            <span class="pay-badge">
+              미확인
+            </span>
+
           </div>
-          <div>
-            공식 가맹 명단에서 확인되지 않음
-          </div>
+
+          <p class="pay-description">
+            공식 가맹 명단에서 확인되지 않았습니다.
+          </p>
+
         </div>
       `;
     }
+
+    /* ======================================================
+       Map links
+       ====================================================== */
 
     function createNaverMapUrl(
       station
     ) {
       const query =
-        station.name;
+        [
+          station.name,
+          station.address,
+        ]
+          .filter(Boolean)
+          .join(" ");
 
       return (
         "https://map.naver.com/p/search/" +
@@ -1212,13 +3567,240 @@
 
       const name =
         encodeURIComponent(
-          station.name
+          station.name ||
+            "주유소"
         );
 
       return (
         `https://map.kakao.com/link/map/${name},${station.latitude},${station.longitude}`
       );
     }
+
+    /* ======================================================
+       Payment
+       ====================================================== */
+
+    function getPaymentOption() {
+      const type =
+        discountTypeInput.value;
+
+      if (
+        type ===
+        "none"
+      ) {
+        return {
+          type:
+            "none",
+        };
+      }
+
+      if (
+        type ===
+        "percent"
+      ) {
+        const rate =
+          Number(
+            discountRateInput.value
+          );
+
+        const maxDiscount =
+          maxDiscountInput.value
+            ? Number(
+                maxDiscountInput.value
+              )
+            : null;
+
+        if (
+          !Number.isFinite(
+            rate
+          ) ||
+          rate < 0 ||
+          rate > 100
+        ) {
+          setResultStatus(
+            "error",
+            "할인율은 0~100% 사이로 입력하세요."
+          );
+
+          discountRateInput.focus();
+
+          return null;
+        }
+
+        if (
+          maxDiscount !==
+            null &&
+          (
+            !Number.isFinite(
+              maxDiscount
+            ) ||
+            maxDiscount < 0
+          )
+        ) {
+          setResultStatus(
+            "error",
+            "최대 할인액을 올바르게 입력하세요."
+          );
+
+          maxDiscountInput.focus();
+
+          return null;
+        }
+
+        return {
+          type:
+            "percent",
+
+          rate,
+
+          maxDiscount,
+        };
+      }
+
+      if (
+        type ===
+        "fixed"
+      ) {
+        const amount =
+          Number(
+            fixedDiscountInput.value
+          );
+
+        if (
+          !Number.isFinite(
+            amount
+          ) ||
+          amount < 0
+        ) {
+          setResultStatus(
+            "error",
+            "정액 할인액을 올바르게 입력하세요."
+          );
+
+          fixedDiscountInput.focus();
+
+          return null;
+        }
+
+        return {
+          type:
+            "fixed",
+
+          amount,
+        };
+      }
+
+      setResultStatus(
+        "error",
+        "할인 옵션을 확인하세요."
+      );
+
+      return null;
+    }
+
+    function getDiscountDescription() {
+      const option =
+        getPaymentOptionWithoutUi();
+
+      if (
+        option.type ===
+        "none"
+      ) {
+        return "할인 없음";
+      }
+
+      if (
+        option.type ===
+        "percent"
+      ) {
+        if (
+          option.maxDiscount ===
+          null
+        ) {
+          return `${option.rate}% 할인`;
+        }
+
+        return `${option.rate}% / 최대 ${formatWon(
+          option.maxDiscount
+        )}원`;
+      }
+
+      if (
+        option.type ===
+        "fixed"
+      ) {
+        return `${formatWon(
+          option.amount
+        )}원 할인`;
+      }
+
+      return "할인 조건";
+    }
+
+    function getPaymentOptionWithoutUi() {
+      const type =
+        discountTypeInput.value;
+
+      if (
+        type ===
+        "none"
+      ) {
+        return {
+          type:
+            "none",
+        };
+      }
+
+      if (
+        type ===
+        "percent"
+      ) {
+        const rate =
+          Number(
+            discountRateInput.value
+          );
+
+        const maxDiscount =
+          maxDiscountInput.value
+            ? Number(
+                maxDiscountInput.value
+              )
+            : null;
+
+        return {
+          type:
+            "percent",
+
+          rate,
+
+          maxDiscount,
+        };
+      }
+
+      if (
+        type ===
+        "fixed"
+      ) {
+        return {
+          type:
+            "fixed",
+
+          amount:
+            Number(
+              fixedDiscountInput.value
+            ),
+        };
+      }
+
+      return {
+        type:
+          "none",
+      };
+    }
+
+    /* ======================================================
+       Validation
+       ====================================================== */
 
     function isSupportedProduct(
       productCode
@@ -1245,12 +3827,27 @@
       );
     }
 
+    /* ======================================================
+       Formatting
+       ====================================================== */
+
     function formatWon(
       value
     ) {
-      return Number(
-        value
-      ).toLocaleString(
+      const number =
+        Number(
+          value
+        );
+
+      if (
+        !Number.isFinite(
+          number
+        )
+      ) {
+        return "0";
+      }
+
+      return number.toLocaleString(
         "ko-KR",
         {
           maximumFractionDigits:
@@ -1259,6 +3856,56 @@
       );
     }
 
+    function formatNumber(
+      value
+    ) {
+      const number =
+        Number(
+          value
+        );
+
+      if (
+        !Number.isFinite(
+          number
+        )
+      ) {
+        return "0";
+      }
+
+      return number.toLocaleString(
+        "ko-KR",
+        {
+          maximumFractionDigits:
+            1,
+        }
+      );
+    }
+
+    function formatRadius(
+      meters
+    ) {
+      const km =
+        Number(
+          meters
+        ) / 1000;
+
+      if (
+        !Number.isFinite(
+          km
+        )
+      ) {
+        return "3km";
+      }
+
+      return `${Number.isInteger(
+        km
+      ) ? km : km.toFixed(1)}km`;
+    }
+
+    /* ======================================================
+       Location messages
+       ====================================================== */
+
     function getGeolocationErrorMessage(
       error
     ) {
@@ -1266,24 +3913,28 @@
         error.code
       ) {
         case 1:
-          return "위치 권한이 거부되었습니다.";
+          return "위치 권한이 거부되었습니다. 브라우저의 위치 권한을 허용한 뒤 다시 시도하세요.";
 
         case 2:
-          return "현재 위치를 확인할 수 없습니다.";
+          return "현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도하세요.";
 
         case 3:
-          return "위치 확인 시간이 초과되었습니다.";
+          return "위치 확인 시간이 초과되었습니다. 다시 시도하세요.";
 
         default:
           return "현재 위치를 가져오지 못했습니다.";
       }
     }
 
+    /* ======================================================
+       Escape
+       ====================================================== */
+
     function escapeHtml(
       value
     ) {
       return String(
-        value
+        value ?? ""
       )
         .replaceAll(
           "&",
@@ -1307,6 +3958,5 @@
         );
     }
   </script>
-
 </body>
 </html>
