@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: fuelfinder
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: OPINET_CERTKEY
+        sync: false
+      - key: LOCALPAY_SERVICE_KEY
+        sync: false

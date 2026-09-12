@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>FuelFinder</title>
+
+  <style>
+    body {
+      font-family:
+        Arial,
+        "Malgun Gothic",
+        sans-serif;
+
+      max-width: 800px;
+
+      margin: 0 auto;
+
+      padding: 24px;
+
+      line-height: 1.6;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    section {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+
+      margin-bottom: 12px;
+    }
+
+    input,
+    select {
+      padding: 8px;
+
+      margin-left: 8px;
+
+      box-sizing: border-box;
+    }
+
+    input {
+      width: 120px;
+    }
+
+    button,
+    a.map-button {
+      display: inline-block;
+
+      padding: 9px 13px;
+
+      border: 1px solid #ccc;
+
+      border-radius: 6px;
+
+      background: #fff;
+
+      color: #222;
+
+      text-decoration: none;
+
+      cursor: pointer;
+
+      font-size: 14px;
+    }
+
+    button:disabled {
+      cursor: default;
+
+      opacity: 0.6;
+    }
+
+    .station {
+      border: 1px solid #ddd;
+
+      border-radius: 8px;
+
+      padding: 16px;
+
+      margin-bottom: 12px;
+    }
+
+    .station-best {
+      border-width: 2px;
+    }
+
+    .station-name {
+      font-size: 18px;
+
+      font-weight: bold;
+
+      margin-bottom: 8px;
+    }
+
+    .effective-price {
+      font-size: 20px;
+
+      font-weight: bold;
+    }
+
+    .map-buttons {
+      display: flex;
+
+      gap: 8px;
+
+      flex-wrap: wrap;
+
+      margin-top: 12px;
+    }
+
+    .discount-settings {
+      margin-top: 16px;
+
+      padding: 12px;
+
+      border: 1px solid #ddd;
+
+      border-radius: 8px;
+    }
+
+    .discount-field {
+      display: none;
+
+      margin-top: 12px;
+    }
+
+    .discount-field.visible {
+      display: block;
+    }
+
+    .discount-summary {
+      margin-top: 12px;
+
+      font-size: 14px;
+
+      color: #555;
+    }
+
+    .gangneung-pay {
+      margin-top: 12px;
+
+      padding: 10px 12px;
+
+      border-radius: 6px;
+
+      background: #f5f5f5;
+
+      font-size: 14px;
+    }
+
+    .gangneung-pay.available {
+      border: 1px solid #999;
+    }
+
+    .gangneung-pay.unavailable {
+      color: #666;
+    }
+
+    .gangneung-pay.confirm {
+      color: #7a4b00;
+    }
+
+    .gangneung-pay-title {
+      font-weight: bold;
+
+      margin-bottom: 4px;
+    }
+
+    .muted {
+      color: #666;
+
+      font-size: 14px;
+    }
+
+    .error {
+      color: #b00020;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>FuelFinder</h1>
+
+  <section>
+    <h2>차량 설정</h2>
+
+    <label>
+      유종
+
+      <select id="productInput">
+        <option value="B027">
+          보통휘발유
+        </option>
+
+        <option value="B034">
+          고급휘발유
+        </option>
+
+        <option value="D047">
+          자동차용경유
+        </option>
+      </select>
+    </label>
+
+    <label>
+      주유량
+
+      <input
+        id="litersInput"
+        type="number"
+        min="1"
+        step="1"
+        value="40"
+      >
+
+      L
+    </label>
+
+    <label>
+      차량 연비
+
+      <input
+        id="fuelEfficiencyInput"
+        type="number"
+        min="1"
+        step="0.1"
+        value="12"
+      >
+
+      km/L
+    </label>
+  </section>
+
+  <section>
+    <h2>결제 할인</h2>
+
+    <div class="discount-settings">
+
+      <label>
+        할인 방식
+
+        <select
+          id="discountTypeInput"
+        >
+          <option value="none">
+            할인 없음
+          </option>
+
+          <option value="percent">
+            비율 할인
+          </option>
+
+          <option value="fixed">
+            정액 할인
+          </option>
+        </select>
+      </label>
+
+      <div
+        id="percentField"
+        class="discount-field"
+      >
+        <label>
+          할인율
+
+          <input
+            id="discountRateInput"
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            value="10"
+          >
+
+          %
+        </label>
+
+        <label>
+          최대 할인액
+
+          <input
+            id="maxDiscountInput"
+            type="number"
+            min="0"
+            step="100"
+            placeholder="제한 없음"
+          >
+
+          원
+        </label>
+      </div>
+
+      <div
+        id="fixedField"
+        class="discount-field"
+      >
+        <label>
+          정액 할인
+
+          <input
+            id="fixedDiscountInput"
+            type="number"
+            min="0"
+            step="100"
+            value="3000"
+          >
+
+          원
+        </label>
+      </div>
+
+      <div
+        id="discountSummary"
+        class="discount-summary"
+      >
+        현재 할인 없음
+      </div>
+
+      <p class="muted">
+        강릉페이 가맹 여부는 별도로 표시됩니다.
+        실제 강릉페이 할인율은 아직 적용하지 않습니다.
+      </p>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>출발 위치</h2>
+
+    <button
+      id="locationButton"
+      type="button"
+    >
+      현재 위치 사용
+    </button>
+
+    <p id="locationStatus">
+      아직 위치를 가져오지 않았습니다.
+    </p>
+  </section>
+
+  <section>
+    <h2>주변 주유소</h2>
+
+    <p id="stationStatus">
+      차량 설정 후 현재 위치를 사용하세요.
+    </p>
+
+    <div id="stationList"></div>
+  </section>
+
+  <script>
+    const locationButton =
+      document.getElementById(
+        "locationButton"
+      );
+
+    const locationStatus =
+      document.getElementById(
+        "locationStatus"
+      );
+
+    const stationStatus =
+      document.getElementById(
+        "stationStatus"
+      );
+
+    const stationList =
+      document.getElementById(
+        "stationList"
+      );
+
+    const productInput =
+      document.getElementById(
+        "productInput"
+      );
+
+    const litersInput =
+      document.getElementById(
+        "litersInput"
+      );
+
+    const fuelEfficiencyInput =
+      document.getElementById(
+        "fuelEfficiencyInput"
+      );
+
+    const discountTypeInput =
+      document.getElementById(
+        "discountTypeInput"
+      );
+
+    const discountRateInput =
+      document.getElementById(
+        "discountRateInput"
+      );
+
+    const maxDiscountInput =
+      document.getElementById(
+        "maxDiscountInput"
+      );
+
+    const fixedDiscountInput =
+      document.getElementById(
+        "fixedDiscountInput"
+      );
+
+    const percentField =
+      document.getElementById(
+        "percentField"
+      );
+
+    const fixedField =
+      document.getElementById(
+        "fixedField"
+      );
+
+    const discountSummary =
+      document.getElementById(
+        "discountSummary"
+      );
+
+    locationButton.addEventListener(
+      "click",
+      getCurrentLocation
+    );
+
+    discountTypeInput.addEventListener(
+      "change",
+      updateDiscountFields
+    );
+
+    discountRateInput.addEventListener(
+      "input",
+      updateDiscountSummary
+    );
+
+    maxDiscountInput.addEventListener(
+      "input",
+      updateDiscountSummary
+    );
+
+    fixedDiscountInput.addEventListener(
+      "input",
+      updateDiscountSummary
+    );
+
+    updateDiscountFields();
+
+    function updateDiscountFields() {
+      const type =
+        discountTypeInput.value;
+
+      percentField.classList.toggle(
+        "visible",
+        type === "percent"
+      );
+
+      fixedField.classList.toggle(
+        "visible",
+        type === "fixed"
+      );
+
+      updateDiscountSummary();
+    }
+
+    function updateDiscountSummary() {
+      const type =
+        discountTypeInput.value;
+
+      if (
+        type === "none"
+      ) {
+        discountSummary.textContent =
+          "현재 할인 없음";
+
+        return;
+      }
+
+      if (
+        type === "percent"
+      ) {
+        const rate =
+          Number(
+            discountRateInput.value
+          );
+
+        const maxDiscount =
+          maxDiscountInput.value
+            ? Number(
+                maxDiscountInput.value
+              )
+            : null;
+
+        if (
+          !Number.isFinite(
+            rate
+          ) ||
+          rate < 0 ||
+          rate > 100
+        ) {
+          discountSummary.textContent =
+            "할인율을 입력하세요.";
+
+          return;
+        }
+
+        if (
+          maxDiscount !== null &&
+          (
+            !Number.isFinite(
+              maxDiscount
+            ) ||
+            maxDiscount < 0
+          )
+        ) {
+          discountSummary.textContent =
+            "최대 할인액을 확인하세요.";
+
+          return;
+        }
+
+        if (
+          maxDiscount === null
+        ) {
+          discountSummary.textContent =
+            `${rate}% 할인 / 최대 할인액 제한 없음`;
+
+          return;
+        }
+
+        discountSummary.textContent =
+          `${rate}% 할인 / 최대 ${formatWon(
+            maxDiscount
+          )}원`;
+
+        return;
+      }
+
+      if (
+        type === "fixed"
+      ) {
+        const amount =
+          Number(
+            fixedDiscountInput.value
+          );
+
+        if (
+          !Number.isFinite(
+            amount
+          ) ||
+          amount < 0
+        ) {
+          discountSummary.textContent =
+            "정액 할인액을 입력하세요.";
+
+          return;
+        }
+
+        discountSummary.textContent =
+          `${formatWon(
+            amount
+          )}원 정액 할인`;
+      }
+    }
+
+    function getCurrentLocation() {
+      if (
+        !navigator.geolocation
+      ) {
+        locationStatus.textContent =
+          "이 브라우저에서는 위치 기능을 사용할 수 없습니다.";
+
+        return;
+      }
+
+      const productCode =
+        productInput.value;
+
+      const liters =
+        Number(
+          litersInput.value
+        );
+
+      const fuelEfficiency =
+        Number(
+          fuelEfficiencyInput.value
+        );
+
+      const paymentOption =
+        getPaymentOption();
+
+      if (
+        !isSupportedProduct(
+          productCode
+        )
+      ) {
+        stationStatus.textContent =
+          "지원하지 않는 유종입니다.";
+
+        return;
+      }
+
+      if (
+        !isValidPositiveNumber(
+          liters
+        )
+      ) {
+        stationStatus.textContent =
+          "주유량을 올바르게 입력하세요.";
+
+        litersInput.focus();
+
+        return;
+      }
+
+      if (
+        !isValidPositiveNumber(
+          fuelEfficiency
+        )
+      ) {
+        stationStatus.textContent =
+          "차량 연비를 올바르게 입력하세요.";
+
+        fuelEfficiencyInput.focus();
+
+        return;
+      }
+
+      if (
+        !paymentOption
+      ) {
+        return;
+      }
+
+      locationButton.disabled =
+        true;
+
+      locationStatus.textContent =
+        "현재 위치를 확인하는 중입니다...";
+
+      stationStatus.textContent =
+        "주변 주유소를 검색하는 중입니다...";
+
+      stationStatus.className =
+        "";
+
+      stationList.innerHTML =
+        "";
+
+      navigator.geolocation.getCurrentPosition(
+        async (
+          position
+        ) => {
+          const latitude =
+            position.coords
+              .latitude;
+
+          const longitude =
+            position.coords
+              .longitude;
+
+          locationStatus.textContent =
+            `현재 위치: ${latitude.toFixed(
+              4
+            )}, ${longitude.toFixed(
+              4
+            )}`;
+
+          try {
+            await loadNearbyStations({
+              latitude,
+
+              longitude,
+
+              productCode,
+
+              liters,
+
+              fuelEfficiency,
+
+              paymentOption,
+            });
+          } catch (
+            error
+          ) {
+            console.error(
+              error
+            );
+
+            stationStatus.textContent =
+              `검색 실패: ${error.message}`;
+
+            stationStatus.className =
+              "error";
+          } finally {
+            locationButton.disabled =
+              false;
+          }
+        },
+
+        (error) => {
+          console.error(
+            error
+          );
+
+          locationStatus.textContent =
+            getGeolocationErrorMessage(
+              error
+            );
+
+          stationStatus.textContent =
+            "위치를 가져오지 못해 주유소를 검색하지 않았습니다.";
+
+          stationStatus.className =
+            "error";
+
+          locationButton.disabled =
+            false;
+        },
+
+        {
+          enableHighAccuracy:
+            true,
+
+          timeout: 15000,
+
+          maximumAge: 60000,
+        }
+      );
+    }
+
+    function getPaymentOption() {
+      const type =
+        discountTypeInput.value;
+
+      if (
+        type === "none"
+      ) {
+        return {
+          type: "none",
+        };
+      }
+
+      if (
+        type === "percent"
+      ) {
+        const rate =
+          Number(
+            discountRateInput.value
+          );
+
+        const maxDiscount =
+          maxDiscountInput.value
+            ? Number(
+                maxDiscountInput.value
+              )
+            : null;
+
+        if (
+          !Number.isFinite(
+            rate
+          ) ||
+          rate < 0 ||
+          rate > 100
+        ) {
+          stationStatus.textContent =
+            "할인율은 0~100% 사이로 입력하세요.";
+
+          discountRateInput.focus();
+
+          return null;
+        }
+
+        if (
+          maxDiscount !== null &&
+          (
+            !Number.isFinite(
+              maxDiscount
+            ) ||
+            maxDiscount < 0
+          )
+        ) {
+          stationStatus.textContent =
+            "최대 할인액을 올바르게 입력하세요.";
+
+          maxDiscountInput.focus();
+
+          return null;
+        }
+
+        return {
+          type: "percent",
+
+          rate,
+
+          maxDiscount,
+        };
+      }
+
+      if (
+        type === "fixed"
+      ) {
+        const amount =
+          Number(
+            fixedDiscountInput.value
+          );
+
+        if (
+          !Number.isFinite(
+            amount
+          ) ||
+          amount < 0
+        ) {
+          stationStatus.textContent =
+            "정액 할인액을 올바르게 입력하세요.";
+
+          fixedDiscountInput.focus();
+
+          return null;
+        }
+
+        return {
+          type: "fixed",
+
+          amount,
+        };
+      }
+
+      stationStatus.textContent =
+        "할인 옵션을 확인하세요.";
+
+      return null;
+    }
+
+    async function loadNearbyStations({
+      latitude,
+
+      longitude,
+
+      productCode,
+
+      liters,
+
+      fuelEfficiency,
+
+      paymentOption,
+    }) {
+      stationStatus.className =
+        "";
+
+      stationStatus.textContent =
+        "오피넷과 강릉페이 정보를 확인하고 실질비용을 계산하는 중입니다...";
+
+      const response =
+        await fetch(
+          "/api/nearby-stations",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              latitude,
+
+              longitude,
+
+              radius: 5000,
+
+              productCode,
+
+              liters,
+
+              fuelEfficiency,
+
+              paymentOption,
+            }),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+        throw new Error(
+          data.error ||
+            `서버 요청 실패: HTTP ${response.status}`
+        );
+      }
+
+      renderStations(
+        data.stations
+      );
+
+      const availableCount =
+        data.stations.filter(
+          (station) =>
+            station.gangneungPay
+              ?.status ===
+            "available"
+        ).length;
+
+      stationStatus.textContent =
+        `${data.stationCount}개의 ${data.productName} 주유소를 실질가격순으로 계산했습니다. 강릉페이 가맹 매칭 ${availableCount}개.`;
+    }
+
+    function renderStations(
+      stations
+    ) {
+      stationList.innerHTML =
+        "";
+
+      if (
+        !Array.isArray(
+          stations
+        ) ||
+        stations.length === 0
+      ) {
+        stationList.innerHTML =
+          "<p>실질비용을 계산할 수 있는 주유소가 없습니다.</p>";
+
+        return;
+      }
+
+      stations.forEach(
+        (
+          station,
+          index
+        ) => {
+          const item =
+            document.createElement(
+              "div"
+            );
+
+          item.className =
+            index === 0
+              ? "station station-best"
+              : "station";
+
+          const kakaoUrl =
+            createKakaoMapUrl(
+              station
+            );
+
+          const naverUrl =
+            createNaverMapUrl(
+              station
+            );
+
+          const discountText =
+            station.discountAmount >
+            0
+              ? `할인액: ${formatWon(
+                  station.discountAmount
+                )}원`
+              : "할인액: 0원";
+
+          const gangneungPayHtml =
+            createGangneungPayHtml(
+              station
+            );
+
+          item.innerHTML = `
+            <div class="station-name">
+              ${index + 1}위.
+              ${escapeHtml(
+                station.name
+              )}
+            </div>
+
+            <div>
+              표시가격:
+              ${formatWon(
+                station.pricePerLiter
+              )}
+              원/L
+            </div>
+
+            <div>
+              거리:
+              ${
+                station.distanceKm ===
+                null
+                  ? "거리 정보 없음"
+                  : `${station.distanceKm.toFixed(
+                      2
+                    )}km`
+              }
+            </div>
+
+            <div>
+              주유비:
+              ${formatWon(
+                station.fuelCost
+              )}
+              원
+            </div>
+
+            <div>
+              왕복 이동비:
+              ${formatWon(
+                station.travelCost
+              )}
+              원
+            </div>
+
+            <div>
+              ${discountText}
+            </div>
+
+            <div>
+              할인 후 주유비:
+              ${formatWon(
+                station.discountedFuelCost
+              )}
+              원
+            </div>
+
+            <div>
+              실질 총비용:
+              ${formatWon(
+                station.totalCost
+              )}
+              원
+            </div>
+
+            <div class="effective-price">
+              실질가격:
+              ${formatWon(
+                Math.round(
+                  station.effectivePricePerLiter
+                )
+              )}
+              원/L
+            </div>
+
+            ${gangneungPayHtml}
+
+            <div class="map-buttons">
+
+              <a
+                class="map-button"
+                href="${naverUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                네이버 지도
+              </a>
+
+              ${
+                kakaoUrl
+                  ? `
+                    <a
+                      class="map-button"
+                      href="${kakaoUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      카카오맵
+                    </a>
+                  `
+                  : `
+                    <button
+                      type="button"
+                      disabled
+                    >
+                      카카오맵 위치 없음
+                    </button>
+                  `
+              }
+
+            </div>
+          `;
+
+          stationList.appendChild(
+            item
+          );
+        }
+      );
+    }
+
+    function createGangneungPayHtml(
+      station
+    ) {
+      const pay =
+        station.gangneungPay;
+
+      if (!pay) {
+        return `
+          <div class="gangneung-pay unavailable">
+            <div class="gangneung-pay-title">
+              강릉페이
+            </div>
+            <div>
+              정보 없음
+            </div>
+          </div>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "available"
+      ) {
+        const merchantName =
+          pay.merchant
+            ?.name ||
+          "";
+
+        return `
+          <div class="gangneung-pay available">
+            <div class="gangneung-pay-title">
+              강릉페이 가맹점
+            </div>
+            <div>
+              공식 가맹 명단과 매칭됨
+            </div>
+            <div>
+              매칭 신뢰도:
+              ${formatWon(
+                pay.confidence
+              )}점
+            </div>
+            <div>
+              가맹점:
+              ${escapeHtml(
+                merchantName
+              )}
+            </div>
+          </div>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "needs_confirmation"
+      ) {
+        return `
+          <div class="gangneung-pay confirm">
+            <div class="gangneung-pay-title">
+              강릉페이
+            </div>
+            <div>
+              추가 확인 필요
+            </div>
+            <div class="muted">
+              ${escapeHtml(
+                pay.reason ||
+                  ""
+              )}
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="gangneung-pay unavailable">
+          <div class="gangneung-pay-title">
+            강릉페이
+          </div>
+          <div>
+            공식 가맹 명단에서 확인되지 않음
+          </div>
+        </div>
+      `;
+    }
+
+    function createNaverMapUrl(
+      station
+    ) {
+      const query =
+        station.name;
+
+      return (
+        "https://map.naver.com/p/search/" +
+        encodeURIComponent(
+          query
+        )
+      );
+    }
+
+    function createKakaoMapUrl(
+      station
+    ) {
+      if (
+        !Number.isFinite(
+          station.latitude
+        ) ||
+        !Number.isFinite(
+          station.longitude
+        )
+      ) {
+        return null;
+      }
+
+      const name =
+        encodeURIComponent(
+          station.name
+        );
+
+      return (
+        `https://map.kakao.com/link/map/${name},${station.latitude},${station.longitude}`
+      );
+    }
+
+    function isSupportedProduct(
+      productCode
+    ) {
+      return [
+        "B027",
+        "B034",
+        "D047",
+      ].includes(
+        productCode
+      );
+    }
+
+    function isValidPositiveNumber(
+      value
+    ) {
+      return (
+        typeof value ===
+          "number" &&
+        Number.isFinite(
+          value
+        ) &&
+        value > 0
+      );
+    }
+
+    function formatWon(
+      value
+    ) {
+      return Number(
+        value
+      ).toLocaleString(
+        "ko-KR",
+        {
+          maximumFractionDigits:
+            0,
+        }
+      );
+    }
+
+    function getGeolocationErrorMessage(
+      error
+    ) {
+      switch (
+        error.code
+      ) {
+        case 1:
+          return "위치 권한이 거부되었습니다.";
+
+        case 2:
+          return "현재 위치를 확인할 수 없습니다.";
+
+        case 3:
+          return "위치 확인 시간이 초과되었습니다.";
+
+        default:
+          return "현재 위치를 가져오지 못했습니다.";
+      }
+    }
+
+    function escapeHtml(
+      value
+    ) {
+      return String(
+        value
+      )
+        .replaceAll(
+          "&",
+          "&amp;"
+        )
+        .replaceAll(
+          "<",
+          "&lt;"
+        )
+        .replaceAll(
+          ">",
+          "&gt;"
+        )
+        .replaceAll(
+          '"',
+          "&quot;"
+        )
+        .replaceAll(
+          "'",
+          "&#039;"
+        );
+    }
+  </script>
+
+</body>
+</html>

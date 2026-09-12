@@ -1,0 +1,28 @@
+{
+  "name": "fuelfinder",
+  "version": "1.0.0",
+  "description": "주유소 가격과 이동비를 포함한 실질 주유비 비교 앱",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test:localpay": "node src/testLocalpay.js",
+    "test:localpay-gas": "node src/testLocalpayGasStations.js",
+    "test:localpay-match": "node src/testLocalpayMatcher.js",
+    "test:compare-localpay": "node src/testCompareLocalPay.js",
+    "test:opinet-raw": "node src/testOpinetRaw.js",
+    "test:opinet-localpay": "node src/testOpinetLocalPayIntegration.js"
+  },
+  "keywords": [
+    "fuel",
+    "gas-station",
+    "opinet",
+    "fuel-cost"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "proj4": "^2.22.0"
+  }
+}
