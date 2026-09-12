@@ -19,9 +19,12 @@ function normalizeText(value) {
 /**
  * 주소 비교용 정규화.
  *
- * 주소 자체 비교에서는 하이픈을 제거해도 되지만
- * 지번번호 비교에서는 123-4와 1234를 구분해야 하므로
- * extractAddressNumbers()에서는 별도 원문 정규화를 사용한다.
+ * 도로명 비교에서는 대부분의 불필요한 기호를 제거하지만
+ * 지번번호 비교에 사용할 수 있도록 하이픈(-)은 보존한다.
+ *
+ * 예:
+ * 123-4 → 123-4
+ * 1234 → 1234
  */
 function normalizeAddress(value) {
   if (
@@ -31,104 +34,16 @@ function normalizeAddress(value) {
     return "";
   }
 
-  return String(value)
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace(
-      /[()[\]{}.,'’"`·\/]/g,
-      ""
-    )
-    .replace(
-      /^대한민국/,
-      ""
-    )
-    .replace(
-      /^강원특별자치도/,
-      "강원"
-    )
-    .replace(
-      /^강원도/,
-      "강원"
-    )
-    .replace(
-      /^경기도/,
-      "경기"
-    )
-    .replace(
-      /^충청북도/,
-      "충북"
-    )
-    .replace(
-      /^충청남도/,
-      "충남"
-    )
-    .replace(
-      /^전라북도/,
-      "전북"
-    )
-    .replace(
-      /^전라남도/,
-      "전남"
-    )
-    .replace(
-      /^경상북도/,
-      "경북"
-    )
-    .replace(
-      /^경상남도/,
-      "경남"
-    )
-    .replace(
-      /^제주특별자치도/,
-      "제주"
-    )
-    .replace(
-      /^서울특별시/,
-      "서울"
-    )
-    .replace(
-      /^부산광역시/,
-      "부산"
-    )
-    .replace(
-      /^대구광역시/,
-      "대구"
-    )
-    .replace(
-      /^인천광역시/,
-      "인천"
-    )
-    .replace(
-      /^광주광역시/,
-      "광주"
-    )
-    .replace(
-      /^대전광역시/,
-      "대전"
-    )
-    .replace(
-      /^울산광역시/,
-      "울산"
-    )
-    .replace(
-      /^세종특별자치시/,
-      "세종"
-    )
-    .replace(
-      /-/g,
-      ""
-    )
-    .trim();
+  return normalizeAddressBase(
+    String(value)
+  );
 }
 
 /**
  * 지번번호 비교 전용 정규화.
  *
- * 여기서는 하이픈을 보존한다.
- *
- * 예:
- * 123-4 → 123-4
- * 1234  → 1234
+ * normalizeAddress()와 동일하게 처리하되
+ * 하이픈을 반드시 보존한다.
  */
 function normalizeAddressForNumbers(
   value
@@ -140,7 +55,15 @@ function normalizeAddressForNumbers(
     return "";
   }
 
-  return String(value)
+  return normalizeAddressBase(
+    String(value)
+  );
+}
+
+function normalizeAddressBase(
+  value
+) {
+  return value
     .toLowerCase()
     .replace(/\s+/g, "")
     .replace(
