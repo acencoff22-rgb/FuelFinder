@@ -139,7 +139,6 @@ const server =
           500,
           {
             success: false,
-
             error:
               error instanceof Error
                 ? error.message
@@ -316,15 +315,33 @@ async function handleNearbyStations(
 
     try {
       const detailData = await getStationDetail(station.id);
-      const detail = extractStationDetail(detailData);
+
+      const detail =
+        extractStationDetail(
+          detailData
+        );
 
       if (detail) {
         detailedStations.set(station.id, {
           ...station,
-          name: detail.OS_NM || station.name,
-          address: detail.NEW_ADR || station.address || "",
-          oldAddress: detail.VAN_ADR || station.oldAddress || "",
-          phone: detail.TEL || station.phone || "",
+          name:
+            detail.OS_NM ||
+            station.name,
+
+          address:
+            detail.NEW_ADR ||
+            station.address ||
+            "",
+
+          oldAddress:
+            detail.VAN_ADR ||
+            station.oldAddress ||
+            "",
+
+          phone:
+            detail.TEL ||
+            station.phone ||
+            "",
         });
       }
     } catch (error) {
@@ -340,17 +357,25 @@ async function handleNearbyStations(
 
   const enrichedStations = stations.map((station) => {
     const finalStation =
-      detailedStations.get(station.id) || station;
+      detailedStations.get(station.id) ||
+      station;
 
-    const matchResult = matchStationToLocalPay(
-      finalStation,
-      gangneungPayStations
-    );
+    const matchResult =
+      matchStationToLocalPay(
+        finalStation,
+        gangneungPayStations
+      );
 
     return {
       ...finalStation,
-      localPayMatch: matchResult,
-      gangneungPay: createGangneungPayInfo(matchResult),
+
+      localPayMatch:
+        matchResult,
+
+      gangneungPay:
+        createGangneungPayInfo(
+          matchResult
+        ),
     };
   });
 
@@ -930,7 +955,7 @@ server.listen(
     console.log("");
 
     console.log(
-      `브라우저에서 http://localhost:${port} 로 접속하세요.`
+      `서버가 ${host}:${port} 에서 실행 중입니다.`
     );
 
     console.log("");
