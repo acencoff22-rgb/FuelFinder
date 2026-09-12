@@ -1,0 +1,4 @@
+node_modules/
+.env
+data/opinet-station-details.json
+data/opinet-station-details.json.tmp
