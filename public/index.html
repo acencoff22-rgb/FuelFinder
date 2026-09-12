@@ -17,7 +17,7 @@
 
   <style>
     :root {
-      --bg: #f4f6f8;
+      --bg: #f3f5f7;
       --surface: #ffffff;
       --surface-soft: #f8fafc;
       --surface-muted: #eef2f6;
@@ -30,29 +30,29 @@
       --line-strong: #d0d5dd;
 
       --primary: #111827;
-      --primary-soft: #1f2937;
+      --primary-hover: #1f2937;
 
-      --accent: #0f766e;
-      --accent-soft: #ecfdf5;
+      --accent: #087f5b;
+      --accent-soft: #ecfdf3;
 
-      --blue: #2563eb;
-      --blue-soft: #eff6ff;
-
-      --warning: #b45309;
-      --warning-soft: #fffbeb;
+      --warning: #b54708;
+      --warning-soft: #fffaeb;
 
       --danger: #b42318;
       --danger-soft: #fef3f2;
+
+      --blue: #175cd3;
+      --blue-soft: #eff8ff;
 
       --shadow-sm:
         0 1px 2px rgba(16, 24, 40, 0.05);
 
       --shadow-md:
-        0 8px 24px rgba(16, 24, 40, 0.08);
+        0 8px 28px rgba(16, 24, 40, 0.10);
 
       --radius-sm: 10px;
-      --radius-md: 16px;
-      --radius-lg: 20px;
+      --radius-md: 15px;
+      --radius-lg: 19px;
     }
 
     * {
@@ -66,11 +66,9 @@
     body {
       margin: 0;
 
-      background:
-        var(--bg);
+      background: var(--bg);
 
-      color:
-        var(--text);
+      color: var(--text);
 
       font-family:
         -apple-system,
@@ -82,8 +80,12 @@
 
       line-height: 1.5;
 
-      -webkit-font-smoothing:
-        antialiased;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body.drawer-open {
+      overflow: hidden;
     }
 
     button,
@@ -92,19 +94,13 @@
       font: inherit;
     }
 
-    button,
-    input,
-    select {
-      -webkit-tap-highlight-color:
-        transparent;
-    }
-
     button {
+      -webkit-tap-highlight-color: transparent;
       cursor: pointer;
     }
 
     button:disabled {
-      cursor: not-allowed;
+      cursor: default;
       opacity: 0.55;
     }
 
@@ -112,15 +108,24 @@
       color: inherit;
     }
 
+    /* ======================================================
+       Layout
+       ====================================================== */
+
     .page {
       width: 100%;
-      max-width: 760px;
+      max-width: 800px;
 
-      margin:
-        0 auto;
+      margin: 0 auto;
 
       padding:
-        0 14px 40px;
+        0
+        14px
+        42px;
+    }
+
+    .main-content {
+      width: 100%;
     }
 
     /* ======================================================
@@ -132,17 +137,17 @@
 
       top: 0;
 
-      z-index: 20;
+      z-index: 30;
 
       margin:
         0 -14px
         12px;
 
       padding:
-        13px 14px;
+        12px 14px;
 
       background:
-        rgba(244, 246, 248, 0.93);
+        rgba(243, 245, 247, 0.94);
 
       border-bottom:
         1px solid
@@ -156,7 +161,7 @@
     }
 
     .topbar-inner {
-      max-width: 760px;
+      max-width: 800px;
 
       margin: 0 auto;
 
@@ -166,7 +171,7 @@
 
       justify-content: space-between;
 
-      gap: 12px;
+      gap: 10px;
     }
 
     .brand {
@@ -176,37 +181,42 @@
     .brand-title {
       margin: 0;
 
-      font-size: 18px;
+      font-size: 19px;
 
-      font-weight: 900;
+      font-weight: 950;
 
-      letter-spacing:
-        -0.04em;
+      line-height: 1.2;
+
+      letter-spacing: -0.045em;
     }
 
     .brand-subtitle {
       margin:
-        1px 0 0;
+        2px 0 0;
 
-      color:
-        var(--text-soft);
+      color: var(--text-soft);
 
-      font-size: 11px;
+      font-size: 10px;
 
-      font-weight: 700;
+      font-weight: 750;
+    }
+
+    .topbar-actions {
+      display: flex;
+
+      align-items: center;
+
+      gap: 7px;
+
+      flex-shrink: 0;
     }
 
     .source-pill {
-      flex:
-        0 0 auto;
+      display: inline-flex;
 
-      display:
-        inline-flex;
+      align-items: center;
 
-      align-items:
-        center;
-
-      min-height: 29px;
+      min-height: 28px;
 
       padding:
         0 9px;
@@ -224,28 +234,58 @@
       color:
         var(--text-soft);
 
-      font-size: 10px;
+      font-size:
+        9px;
 
-      font-weight: 900;
+      font-weight:
+        900;
+    }
+
+    .settings-button {
+      width: 34px;
+      height: 34px;
+
+      display: inline-flex;
+
+      align-items: center;
+      justify-content: center;
+
+      padding: 0;
+
+      border:
+        1px solid
+        var(--line-strong);
+
+      border-radius:
+        10px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text);
+
+      font-size:
+        16px;
     }
 
     /* ======================================================
-       Card
+       Location
        ====================================================== */
 
-    .card {
+    .location-section {
       margin-bottom:
         12px;
 
       padding:
-        17px;
+        15px;
 
       border:
         1px solid
         var(--line);
 
       border-radius:
-        var(--radius-md);
+        var(--radius-lg);
 
       background:
         var(--surface);
@@ -254,9 +294,8 @@
         var(--shadow-sm);
     }
 
-    .card-header {
-      display:
-        flex;
+    .section-heading {
+      display: flex;
 
       align-items:
         flex-start;
@@ -264,67 +303,65 @@
       justify-content:
         space-between;
 
-      gap: 12px;
+      gap:
+        10px;
 
       margin-bottom:
-        13px;
+        11px;
     }
 
-    .card-title {
+    .section-title {
       margin: 0;
 
-      font-size: 16px;
+      font-size:
+        15px;
 
-      font-weight: 900;
+      font-weight:
+        950;
 
       letter-spacing:
         -0.03em;
     }
 
-    .card-description {
+    .section-description {
       margin:
-        3px 0 0;
+        2px 0 0;
 
       color:
         var(--text-soft);
 
-      font-size: 11px;
+      font-size:
+        10px;
     }
 
-    /* ======================================================
-       Start location
-       ====================================================== */
-
-    .location-card {
-      padding:
-        17px;
-    }
-
-    .location-search-row {
-      display:
-        grid;
+    .location-input-row {
+      display: grid;
 
       grid-template-columns:
         minmax(0, 1fr)
         auto;
 
-      gap: 8px;
+      gap:
+        7px;
     }
 
     .address-input {
+      min-width: 0;
+
       width: 100%;
 
-      min-height: 48px;
+      min-height:
+        46px;
 
       padding:
-        0 13px;
+        0 12px;
 
       border:
         1px solid
         var(--line-strong);
 
       border-radius:
-        11px;
+        10px;
 
       background:
         var(--surface);
@@ -332,11 +369,15 @@
       color:
         var(--text);
 
-      outline: none;
+      outline:
+        none;
+
+      font-size:
+        12px;
 
       transition:
-        border-color 0.16s ease,
-        box-shadow 0.16s ease;
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
     .address-input::placeholder {
@@ -350,22 +391,24 @@
 
       box-shadow:
         0 0 0 3px
-        rgba(16, 24, 40, 0.07);
+        rgba(17, 24, 39, 0.07);
     }
 
     .address-search-button {
-      min-width: 76px;
+      min-width:
+        74px;
 
-      min-height: 48px;
+      min-height:
+        46px;
 
       padding:
-        0 14px;
+        0 13px;
 
       border:
         0;
 
       border-radius:
-        11px;
+        10px;
 
       background:
         var(--primary);
@@ -373,26 +416,30 @@
       color:
         #ffffff;
 
-      font-size: 12px;
+      font-size:
+        11px;
 
-      font-weight: 900;
+      font-weight:
+        900;
     }
 
-    .location-actions {
+    .location-secondary-actions {
       display:
         grid;
 
       grid-template-columns:
         minmax(0, 1fr);
 
-      gap: 8px;
+      gap:
+        7px;
 
       margin-top:
-        9px;
+        7px;
     }
 
     .current-location-button {
-      min-height: 42px;
+      min-height:
+        41px;
 
       border:
         1px solid
@@ -407,9 +454,11 @@
       color:
         var(--text);
 
-      font-size: 11px;
+      font-size:
+        10px;
 
-      font-weight: 900;
+      font-weight:
+        900;
     }
 
     .location-status {
@@ -419,16 +468,17 @@
       align-items:
         flex-start;
 
-      gap: 8px;
+      gap:
+        7px;
 
       margin-top:
-        10px;
+        9px;
 
       padding:
-        10px 12px;
+        9px 10px;
 
       border-radius:
-        10px;
+        9px;
 
       background:
         var(--surface-soft);
@@ -436,20 +486,25 @@
       color:
         var(--text-soft);
 
-      font-size: 10px;
+      font-size:
+        10px;
 
-      font-weight: 700;
+      font-weight:
+        750;
 
       line-height:
         1.45;
     }
 
-    .location-dot {
+    .location-status-dot {
       flex:
         0 0 auto;
 
-      width: 8px;
-      height: 8px;
+      width:
+        7px;
+
+      height:
+        7px;
 
       margin-top:
         4px;
@@ -470,7 +525,7 @@
     }
 
     .location-status.success
-    .location-dot {
+    .location-status-dot {
       background:
         var(--accent);
     }
@@ -484,7 +539,7 @@
     }
 
     .location-status.error
-    .location-dot {
+    .location-status-dot {
       background:
         var(--danger);
     }
@@ -494,17 +549,17 @@
         none;
 
       margin-top:
-        10px;
+        8px;
 
       padding:
-        11px 12px;
+        9px 10px;
 
       border:
         1px solid
         var(--line);
 
       border-radius:
-        10px;
+        9px;
 
       background:
         var(--surface-soft);
@@ -522,154 +577,40 @@
       color:
         var(--text-muted);
 
-      font-size: 9px;
+      font-size:
+        8px;
 
-      font-weight: 900;
+      font-weight:
+        900;
     }
 
     .selected-location-text {
       margin-top:
-        2px;
+        1px;
 
-      font-size: 12px;
+      font-size:
+        11px;
 
-      font-weight: 900;
+      font-weight:
+        900;
 
       word-break:
         keep-all;
     }
 
     /* ======================================================
-       Vehicle
+       Search status
        ====================================================== */
 
-    .field-grid {
+    .search-status {
       display:
-        grid;
-
-      grid-template-columns:
-        minmax(0, 1.4fr)
-        minmax(0, 0.8fr)
-        minmax(0, 0.8fr);
-
-      gap:
-        9px;
-    }
-
-    .field {
-      min-width:
-        0;
-    }
-
-    .field-label {
-      display:
-        block;
+        none;
 
       margin-bottom:
-        5px;
-
-      color:
-        var(--text-soft);
-
-      font-size: 10px;
-
-      font-weight: 900;
-    }
-
-    .field-control {
-      width:
-        100%;
-
-      min-height:
-        44px;
+        12px;
 
       padding:
-        0 11px;
-
-      border:
-        1px solid
-        var(--line-strong);
-
-      border-radius:
-        10px;
-
-      background:
-        var(--surface);
-
-      color:
-        var(--text);
-
-      outline:
-        none;
-    }
-
-    .field-control:focus {
-      border-color:
-        #667085;
-
-      box-shadow:
-        0 0 0 3px
-        rgba(16, 24, 40, 0.07);
-    }
-
-    .input-with-unit {
-      position:
-        relative;
-    }
-
-    .input-with-unit
-    .field-control {
-      padding-right:
-        42px;
-    }
-
-    .input-unit {
-      position:
-        absolute;
-
-      top:
-        50%;
-
-      right:
-        11px;
-
-      transform:
-        translateY(-50%);
-
-      color:
-        var(--text-muted);
-
-      font-size:
-        10px;
-
-      font-weight:
-        900;
-
-      pointer-events:
-        none;
-    }
-
-    /* ======================================================
-       Search radius
-       ====================================================== */
-
-    .radius-row {
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
-      gap:
-        7px;
-
-      margin-top:
-        12px;
-    }
-
-    .radius-button {
-      min-height:
-        40px;
+        10px 11px;
 
       border:
         1px solid
@@ -677,173 +618,6 @@
 
       border-radius:
         10px;
-
-      background:
-        var(--surface);
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        11px;
-
-      font-weight:
-        900;
-    }
-
-    .radius-button.active {
-      border-color:
-        var(--primary);
-
-      background:
-        var(--primary);
-
-      color:
-        #ffffff;
-    }
-
-    /* ======================================================
-       Discount
-       ====================================================== */
-
-    .settings-toggle {
-      width:
-        100%;
-
-      min-height:
-        45px;
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        space-between;
-
-      padding:
-        0 12px;
-
-      border:
-        1px solid
-        var(--line);
-
-      border-radius:
-        11px;
-
-      background:
-        var(--surface-soft);
-
-      color:
-        var(--text);
-
-      text-align:
-        left;
-
-      font-size:
-        12px;
-
-      font-weight:
-        900;
-    }
-
-    .settings-left {
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      gap:
-        8px;
-    }
-
-    .settings-icon {
-      width:
-        26px;
-
-      height:
-        26px;
-
-      display:
-        inline-flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        center;
-
-      border-radius:
-        8px;
-
-      background:
-        var(--surface-muted);
-
-      font-size:
-        12px;
-
-      font-weight:
-        900;
-    }
-
-    .settings-arrow {
-      transition:
-        transform 0.15s ease;
-    }
-
-    .discount-panel {
-      display:
-        none;
-
-      margin-top:
-        10px;
-
-      padding:
-        12px;
-
-      border:
-        1px solid
-        var(--line);
-
-      border-radius:
-        12px;
-
-      background:
-        var(--surface-soft);
-    }
-
-    .discount-panel.open {
-      display:
-        block;
-    }
-
-    .discount-fields {
-      margin-top:
-        10px;
-    }
-
-    .discount-row {
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-      gap:
-        8px;
-    }
-
-    .discount-summary {
-      margin-top:
-        9px;
-
-      padding:
-        9px 10px;
-
-      border-radius:
-        9px;
 
       background:
         var(--surface);
@@ -858,72 +632,96 @@
         800;
     }
 
-    .discount-help {
-      margin:
-        8px 0 0;
-
-      color:
-        var(--text-muted);
-
-      font-size:
-        9px;
-
-      line-height:
-        1.5;
+    .search-status.visible {
+      display:
+        flex;
     }
 
-    /* ======================================================
-       Main search button
-       ====================================================== */
+    .search-status.success {
+      background:
+        var(--accent-soft);
 
-    .search-button {
+      border-color:
+        #a7f3d0;
+
+      color:
+        var(--accent);
+    }
+
+    .search-status.error {
+      background:
+        var(--danger-soft);
+
+      border-color:
+        #fecdca;
+
+      color:
+        var(--danger);
+    }
+
+    .search-status.loading {
+      background:
+        var(--blue-soft);
+
+      border-color:
+        #b2ddff;
+
+      color:
+        var(--blue);
+    }
+
+    .loading-row {
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      gap:
+        8px;
+    }
+
+    .spinner {
       width:
-        100%;
+        14px;
 
-      min-height:
-        51px;
+      height:
+        14px;
 
-      margin-top:
-        12px;
+      flex:
+        0 0 auto;
 
       border:
-        0;
+        2px solid
+        #b2ddff;
+
+      border-top-color:
+        var(--blue);
 
       border-radius:
-        13px;
+        50%;
 
-      background:
-        var(--primary);
-
-      color:
-        #ffffff;
-
-      font-size:
-        13px;
-
-      font-weight:
-        900;
-
-      box-shadow:
-        0 5px 14px
-        rgba(17, 24, 39, 0.14);
+      animation:
+        spin 0.75s linear infinite;
     }
 
-    .search-button.loading {
-      opacity:
-        0.72;
+    @keyframes spin {
+      to {
+        transform:
+          rotate(360deg);
+      }
     }
 
     /* ======================================================
-       Results
+       Results heading
        ====================================================== */
 
     .results-section {
       margin-top:
-        18px;
+        4px;
     }
 
-    .results-header {
+    .results-heading {
       display:
         flex;
 
@@ -941,8 +739,7 @@
     }
 
     .results-title {
-      margin:
-        0;
+      margin: 0;
 
       font-size:
         18px;
@@ -962,7 +759,7 @@
         var(--text-soft);
 
       font-size:
-        10px;
+        9px;
     }
 
     .results-count {
@@ -979,78 +776,13 @@
         900;
     }
 
-    .station-status {
-      min-height:
-        41px;
+    /* ======================================================
+       Summary
+       ====================================================== */
 
+    .result-summary {
       display:
-        flex;
-
-      align-items:
-        center;
-
-      margin-bottom:
-        9px;
-
-      padding:
-        9px 11px;
-
-      border:
-        1px solid
-        var(--line);
-
-      border-radius:
-        10px;
-
-      background:
-        var(--surface);
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        10px;
-
-      font-weight:
-        800;
-    }
-
-    .station-status.success {
-      background:
-        var(--accent-soft);
-
-      color:
-        var(--accent);
-
-      border-color:
-        #a7f3d0;
-    }
-
-    .station-status.error {
-      background:
-        var(--danger-soft);
-
-      color:
-        var(--danger);
-
-      border-color:
-        #fecdca;
-    }
-
-    .station-status.loading {
-      background:
-        var(--blue-soft);
-
-      color:
-        var(--blue);
-
-      border-color:
-        #bfdbfe;
-    }
-
-    .summary-grid {
-      display:
-        grid;
+        none;
 
       grid-template-columns:
         repeat(3, minmax(0, 1fr));
@@ -1062,9 +794,14 @@
         9px;
     }
 
-    .summary-item {
+    .result-summary.visible {
+      display:
+        grid;
+    }
+
+    .summary-card {
       padding:
-        10px;
+        9px 10px;
 
       border:
         1px solid
@@ -1075,6 +812,9 @@
 
       background:
         var(--surface);
+
+      box-shadow:
+        var(--shadow-sm);
     }
 
     .summary-label {
@@ -1085,7 +825,7 @@
         var(--text-muted);
 
       font-size:
-        9px;
+        8px;
 
       font-weight:
         900;
@@ -1099,10 +839,500 @@
         1px;
 
       font-size:
-        15px;
+        14px;
 
       font-weight:
         950;
+    }
+
+    /* ======================================================
+       Station cards
+       ====================================================== */
+
+    .station {
+      margin-bottom:
+        10px;
+
+      padding:
+        15px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        16px;
+
+      background:
+        var(--surface);
+
+      box-shadow:
+        var(--shadow-sm);
+    }
+
+    .station.best {
+      border:
+        2px solid
+        var(--primary);
+
+      padding:
+        14px;
+    }
+
+    .station-header {
+      display:
+        flex;
+
+      align-items:
+        flex-start;
+
+      justify-content:
+        space-between;
+
+      gap:
+        10px;
+    }
+
+    .station-rank {
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      min-height:
+        24px;
+
+      padding:
+        0 8px;
+
+      border-radius:
+        999px;
+
+      background:
+        var(--surface-muted);
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        8px;
+
+      font-weight:
+        950;
+    }
+
+    .station.best .station-rank {
+      background:
+        var(--primary);
+
+      color:
+        #ffffff;
+    }
+
+    .station-name {
+      margin-top:
+        6px;
+
+      font-size:
+        17px;
+
+      font-weight:
+        950;
+
+      line-height:
+        1.35;
+
+      letter-spacing:
+        -0.035em;
+
+      word-break:
+        keep-all;
+    }
+
+    .station-meta {
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        5px;
+
+      margin-top:
+        6px;
+    }
+
+    .meta-chip {
+      display:
+        inline-flex;
+
+      align-items:
+        center;
+
+      min-height:
+        23px;
+
+      padding:
+        0 7px;
+
+      border-radius:
+        999px;
+
+      background:
+        var(--surface-soft);
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        8px;
+
+      font-weight:
+        850;
+    }
+
+    .meta-chip.pay {
+      background:
+        var(--accent-soft);
+
+      color:
+        var(--accent);
+    }
+
+    .meta-chip.confirm {
+      background:
+        var(--warning-soft);
+
+      color:
+        var(--warning);
+    }
+
+    /* ======================================================
+       Effective cost
+       ====================================================== */
+
+    .effective-box {
+      margin-top:
+        12px;
+
+      padding:
+        13px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        12px;
+
+      background:
+        var(--surface-soft);
+    }
+
+    .effective-label {
+      display:
+        block;
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        9px;
+
+      font-weight:
+        900;
+    }
+
+    .effective-price-line {
+      display:
+        flex;
+
+      align-items:
+        baseline;
+
+      gap:
+        3px;
+
+      margin-top:
+        2px;
+    }
+
+    .effective-price {
+      font-size:
+        clamp(
+          28px,
+          8vw,
+          37px
+        );
+
+      font-weight:
+        950;
+
+      line-height:
+        1.05;
+
+      letter-spacing:
+        -0.06em;
+    }
+
+    .effective-unit {
+      color:
+        var(--text-soft);
+
+      font-size:
+        11px;
+
+      font-weight:
+        900;
+    }
+
+    .effective-caption {
+      margin:
+        5px 0 0;
+
+      color:
+        var(--text-muted);
+
+      font-size:
+        8px;
+
+      line-height:
+        1.45;
+    }
+
+    /* ======================================================
+       Cost grid
+       ====================================================== */
+
+    .cost-grid {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap:
+        7px;
+
+      margin-top:
+        8px;
+    }
+
+    .cost-item {
+      min-width:
+        0;
+
+      padding:
+        9px 10px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        9px;
+
+      background:
+        var(--surface);
+    }
+
+    .cost-label {
+      display:
+        block;
+
+      color:
+        var(--text-muted);
+
+      font-size:
+        8px;
+
+      font-weight:
+        850;
+    }
+
+    .cost-value {
+      display:
+        block;
+
+      margin-top:
+        1px;
+
+      font-size:
+        13px;
+
+      font-weight:
+        950;
+
+      white-space:
+        nowrap;
+
+      overflow:
+        hidden;
+
+      text-overflow:
+        ellipsis;
+    }
+
+    .cost-item.total {
+      background:
+        var(--surface-soft);
+    }
+
+    .cost-item.total
+    .cost-value {
+      font-size:
+        14px;
+    }
+
+    /* ======================================================
+       Station address
+       ====================================================== */
+
+    .station-address {
+      margin-top:
+        10px;
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        9px;
+
+      line-height:
+        1.5;
+    }
+
+    /* ======================================================
+       Gangneung pay
+       ====================================================== */
+
+    .gangneung-pay {
+      margin-top:
+        9px;
+
+      padding:
+        10px 11px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        10px;
+
+      background:
+        var(--surface-soft);
+    }
+
+    .gangneung-pay.available {
+      border-color:
+        #a7f3d0;
+
+      background:
+        var(--accent-soft);
+    }
+
+    .gangneung-pay.confirm {
+      border-color:
+        #fedf89;
+
+      background:
+        var(--warning-soft);
+    }
+
+    .gangneung-pay-title {
+      font-size:
+        10px;
+
+      font-weight:
+        950;
+    }
+
+    .gangneung-pay-description {
+      margin-top:
+        2px;
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        8px;
+
+      line-height:
+        1.45;
+    }
+
+    .gangneung-pay.available
+    .gangneung-pay-description {
+      color:
+        var(--accent);
+    }
+
+    /* ======================================================
+       Map
+       ====================================================== */
+
+    .map-buttons {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap:
+        7px;
+
+      margin-top:
+        9px;
+    }
+
+    .map-button {
+      min-height:
+        40px;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        center;
+
+      border:
+        1px solid
+        var(--line-strong);
+
+      border-radius:
+        10px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text);
+
+      text-decoration:
+        none;
+
+      font-size:
+        9px;
+
+      font-weight:
+        900;
+    }
+
+    .map-button.primary {
+      background:
+        var(--primary);
+
+      border-color:
+        var(--primary);
+
+      color:
+        #ffffff;
     }
 
     /* ======================================================
@@ -1111,7 +1341,7 @@
 
     .empty-state {
       padding:
-        25px 16px;
+        26px 17px;
 
       border:
         1px dashed
@@ -1157,8 +1387,7 @@
     }
 
     .empty-title {
-      margin:
-        0;
+      margin: 0;
 
       font-size:
         13px;
@@ -1178,101 +1407,112 @@
         var(--text-soft);
 
       font-size:
-        10px;
+        9px;
 
       line-height:
         1.55;
     }
 
     /* ======================================================
-       Station card
+       Settings drawer
        ====================================================== */
 
-    .station {
-      margin-bottom:
-        10px;
+    .drawer-overlay {
+      position:
+        fixed;
 
-      padding:
-        16px;
+      inset:
+        0;
 
-      border:
-        1px solid
-        var(--line);
+      z-index:
+        50;
 
-      border-radius:
-        16px;
+      display:
+        none;
+
+      background:
+        rgba(15, 23, 42, 0.38);
+    }
+
+    .drawer-overlay.open {
+      display:
+        block;
+    }
+
+    .settings-drawer {
+      position:
+        fixed;
+
+      z-index:
+        60;
+
+      top:
+        0;
+
+      right:
+        0;
+
+      width:
+        min(
+          380px,
+          92vw
+        );
+
+      height:
+        100dvh;
+
+      display:
+        flex;
+
+      flex-direction:
+        column;
 
       background:
         var(--surface);
 
       box-shadow:
-        var(--shadow-sm);
+        -10px 0 35px
+        rgba(16, 24, 40, 0.14);
+
+      transform:
+        translateX(105%);
+
+      transition:
+        transform 0.2s ease;
     }
 
-    .station.station-best {
-      border:
-        2px solid
-        var(--primary);
-
-      padding:
-        15px;
+    .settings-drawer.open {
+      transform:
+        translateX(0);
     }
 
-    .station-top {
+    .drawer-header {
+      flex:
+        0 0 auto;
+
       display:
         flex;
 
       align-items:
-        flex-start;
+        center;
 
       justify-content:
         space-between;
 
       gap:
         10px;
-    }
-
-    .station-rank {
-      display:
-        inline-flex;
-
-      align-items:
-        center;
-
-      min-height:
-        25px;
 
       padding:
-        0 8px;
+        15px;
 
-      border-radius:
-        999px;
-
-      background:
-        var(--surface-muted);
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        9px;
-
-      font-weight:
-        950;
+      border-bottom:
+        1px solid
+        var(--line);
     }
 
-    .station-best
-    .station-rank {
-      background:
-        var(--primary);
-
-      color:
-        #ffffff;
-    }
-
-    .station-name {
-      margin-top:
-        7px;
+    .drawer-title {
+      margin:
+        0;
 
       font-size:
         17px;
@@ -1280,305 +1520,30 @@
       font-weight:
         950;
 
-      line-height:
-        1.35;
-
       letter-spacing:
         -0.035em;
-
-      word-break:
-        keep-all;
     }
 
-    .station-meta {
-      display:
-        flex;
+    .drawer-subtitle {
+      margin:
+        2px 0 0;
 
-      flex-wrap:
-        wrap;
+      color:
+        var(--text-soft);
 
-      gap:
-        5px;
-
-      margin-top:
-        7px;
+      font-size:
+        9px;
     }
 
-    .meta-chip {
+    .drawer-close {
+      width:
+        34px;
+
+      height:
+        34px;
+
       display:
         inline-flex;
-
-      align-items:
-        center;
-
-      min-height:
-        24px;
-
-      padding:
-        0 7px;
-
-      border-radius:
-        999px;
-
-      background:
-        var(--surface-soft);
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        9px;
-
-      font-weight:
-        850;
-    }
-
-    .meta-chip.pay {
-      background:
-        var(--accent-soft);
-
-      color:
-        var(--accent);
-    }
-
-    .meta-chip.confirm {
-      background:
-        var(--warning-soft);
-
-      color:
-        var(--warning);
-    }
-
-    .effective-box {
-      margin-top:
-        13px;
-
-      padding:
-        13px;
-
-      border:
-        1px solid
-        var(--line);
-
-      border-radius:
-        12px;
-
-      background:
-        var(--surface-soft);
-    }
-
-    .effective-label {
-      display:
-        block;
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        9px;
-
-      font-weight:
-        900;
-    }
-
-    .effective-price {
-      display:
-        flex;
-
-      align-items:
-        baseline;
-
-      gap:
-        3px;
-
-      margin-top:
-        2px;
-    }
-
-    .effective-price-value {
-      font-size:
-        clamp(
-          27px,
-          7vw,
-          35px
-        );
-
-      font-weight:
-        950;
-
-      line-height:
-        1.1;
-
-      letter-spacing:
-        -0.055em;
-    }
-
-    .effective-price-unit {
-      color:
-        var(--text-soft);
-
-      font-size:
-        11px;
-
-      font-weight:
-        900;
-    }
-
-    .effective-caption {
-      margin:
-        5px 0 0;
-
-      color:
-        var(--text-muted);
-
-      font-size:
-        9px;
-    }
-
-    .cost-grid {
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-      gap:
-        7px;
-
-      margin-top:
-        9px;
-    }
-
-    .cost-item {
-      padding:
-        9px 10px;
-
-      border:
-        1px solid
-        var(--line);
-
-      border-radius:
-        9px;
-
-      background:
-        var(--surface);
-    }
-
-    .cost-label {
-      display:
-        block;
-
-      color:
-        var(--text-muted);
-
-      font-size:
-        9px;
-
-      font-weight:
-        800;
-    }
-
-    .cost-value {
-      display:
-        block;
-
-      margin-top:
-        1px;
-
-      font-size:
-        13px;
-
-      font-weight:
-        950;
-    }
-
-    .station-address {
-      margin-top:
-        10px;
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        10px;
-
-      line-height:
-        1.5;
-    }
-
-    .gangneung-pay {
-      margin-top:
-        10px;
-
-      padding:
-        10px 11px;
-
-      border:
-        1px solid
-        var(--line);
-
-      border-radius:
-        10px;
-
-      background:
-        var(--surface-soft);
-
-      font-size:
-        10px;
-    }
-
-    .gangneung-pay.available {
-      background:
-        var(--accent-soft);
-
-      border-color:
-        #a7f3d0;
-    }
-
-    .gangneung-pay.confirm {
-      background:
-        var(--warning-soft);
-
-      border-color:
-        #fde68a;
-    }
-
-    .gangneung-pay-title {
-      font-weight:
-        950;
-
-      margin-bottom:
-        2px;
-    }
-
-    .gangneung-pay-description {
-      color:
-        var(--text-soft);
-
-      line-height:
-        1.45;
-    }
-
-    .map-buttons {
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-      gap:
-        7px;
-
-      margin-top:
-        10px;
-    }
-
-    .map-button {
-      min-height:
-        41px;
-
-      display:
-        flex;
 
       align-items:
         center;
@@ -1588,7 +1553,7 @@
 
       border:
         1px solid
-        var(--line-strong);
+        var(--line);
 
       border-radius:
         10px;
@@ -1599,8 +1564,197 @@
       color:
         var(--text);
 
-      text-decoration:
+      font-size:
+        17px;
+    }
+
+    .drawer-body {
+      flex:
+        1 1 auto;
+
+      overflow:
+        auto;
+
+      padding:
+        14px;
+    }
+
+    .setting-group {
+      margin-bottom:
+        18px;
+    }
+
+    .setting-group:last-child {
+      margin-bottom:
+        0;
+    }
+
+    .setting-group-title {
+      margin:
+        0 0 8px;
+
+      font-size:
+        12px;
+
+      font-weight:
+        950;
+    }
+
+    .setting-group-description {
+      margin:
+        -3px 0 9px;
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        9px;
+
+      line-height:
+        1.45;
+    }
+
+    .setting-field {
+      margin-bottom:
+        9px;
+    }
+
+    .setting-field:last-child {
+      margin-bottom:
+        0;
+    }
+
+    .setting-label {
+      display:
+        block;
+
+      margin-bottom:
+        4px;
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        9px;
+
+      font-weight:
+        900;
+    }
+
+    .setting-control {
+      width:
+        100%;
+
+      min-height:
+        43px;
+
+      padding:
+        0 10px;
+
+      border:
+        1px solid
+        var(--line-strong);
+
+      border-radius:
+        9px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text);
+
+      outline:
         none;
+
+      font-size:
+        11px;
+    }
+
+    .setting-control:focus {
+      border-color:
+        #667085;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(17, 24, 39, 0.07);
+    }
+
+    .setting-unit-wrap {
+      position:
+        relative;
+    }
+
+    .setting-unit-wrap
+    .setting-control {
+      padding-right:
+        42px;
+    }
+
+    .setting-unit {
+      position:
+        absolute;
+
+      right:
+        10px;
+
+      top:
+        50%;
+
+      transform:
+        translateY(-50%);
+
+      color:
+        var(--text-muted);
+
+      font-size:
+        9px;
+
+      font-weight:
+        900;
+
+      pointer-events:
+        none;
+    }
+
+    .drawer-grid {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap:
+        8px;
+    }
+
+    .radius-setting {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap:
+        6px;
+    }
+
+    .radius-option {
+      min-height:
+        38px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius:
+        8px;
+
+      background:
+        var(--surface);
+
+      color:
+        var(--text-soft);
 
       font-size:
         10px;
@@ -1609,61 +1763,65 @@
         900;
     }
 
-    .map-button.primary {
-      border-color:
+    .radius-option.active {
+      background:
         var(--primary);
 
-      background:
+      border-color:
         var(--primary);
 
       color:
         #ffffff;
     }
 
-    /* ======================================================
-       Spinner
-       ====================================================== */
-
-    .loading-row {
+    .discount-fields {
       display:
-        flex;
-
-      align-items:
-        center;
-
-      gap:
-        8px;
+        none;
     }
 
-    .spinner {
-      width:
-        15px;
+    .discount-fields.visible {
+      display:
+        block;
+    }
 
-      height:
-        15px;
+    .setting-summary {
+      margin-top:
+        8px;
 
-      flex:
-        0 0 auto;
-
-      border:
-        2px solid
-        #bfdbfe;
-
-      border-top-color:
-        var(--blue);
+      padding:
+        9px 10px;
 
       border-radius:
-        50%;
+        9px;
 
-      animation:
-        spin 0.75s linear infinite;
+      background:
+        var(--surface-soft);
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        9px;
+
+      font-weight:
+        800;
+
+      line-height:
+        1.45;
     }
 
-    @keyframes spin {
-      to {
-        transform:
-          rotate(360deg);
-      }
+    .drawer-hint {
+      margin-top:
+        9px;
+
+      color:
+        var(--text-muted);
+
+      font-size:
+        8px;
+
+      line-height:
+        1.5;
     }
 
     /* ======================================================
@@ -1681,7 +1839,7 @@
         center;
 
       font-size:
-        9px;
+        8px;
 
       line-height:
         1.6;
@@ -1692,32 +1850,11 @@
        ====================================================== */
 
     @media (
-      max-width: 600px
-    ) {
-      .field-grid {
-        grid-template-columns:
-          minmax(0, 1fr)
-          minmax(0, 1fr);
-      }
-
-      .field:first-child {
-        grid-column:
-          1 / -1;
-      }
-
-      .location-search-row {
-        grid-template-columns:
-          minmax(0, 1fr)
-          auto;
-      }
-    }
-
-    @media (
-      max-width: 420px
+      max-width: 560px
     ) {
       .page {
         padding:
-          0 10px 32px;
+          0 10px 34px;
       }
 
       .topbar {
@@ -1726,12 +1863,21 @@
           10px;
       }
 
-      .card {
+      .location-section {
         padding:
-          15px;
+          14px;
+      }
+    }
+
+    @media (
+      max-width: 410px
+    ) {
+      .source-pill {
+        display:
+          none;
       }
 
-      .location-search-row {
+      .location-input-row {
         grid-template-columns:
           minmax(0, 1fr);
       }
@@ -1741,26 +1887,364 @@
           100%;
       }
 
-      .field-grid {
+      .drawer-grid {
         grid-template-columns:
-          minmax(0, 1fr)
           minmax(0, 1fr);
-      }
-
-      .station {
-        padding:
-          14px;
-      }
-
-      .station.station-best {
-        padding:
-          13px;
       }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- ======================================================
+       Settings overlay
+       ====================================================== -->
+
+  <div
+    id="drawerOverlay"
+    class="drawer-overlay"
+  ></div>
+
+  <!-- ======================================================
+       Settings drawer
+       ====================================================== -->
+
+  <aside
+    id="settingsDrawer"
+    class="settings-drawer"
+    aria-hidden="true"
+  >
+
+    <div class="drawer-header">
+
+      <div>
+        <h2 class="drawer-title">
+          설정
+        </h2>
+
+        <p class="drawer-subtitle">
+          한 번 설정하면 다음에도 유지됩니다.
+        </p>
+      </div>
+
+      <button
+        id="drawerCloseButton"
+        class="drawer-close"
+        type="button"
+        aria-label="설정 닫기"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="drawer-body">
+
+      <!-- 차량 -->
+
+      <section class="setting-group">
+
+        <h3 class="setting-group-title">
+          차량
+        </h3>
+
+        <div class="setting-field">
+
+          <label
+            class="setting-label"
+            for="productInput"
+          >
+            유종
+          </label>
+
+          <select
+            id="productInput"
+            class="setting-control"
+          >
+            <option value="B027">
+              보통휘발유
+            </option>
+
+            <option value="B034">
+              고급휘발유
+            </option>
+
+            <option value="D047">
+              자동차용경유
+            </option>
+          </select>
+
+        </div>
+
+        <div class="drawer-grid">
+
+          <div class="setting-field">
+
+            <label
+              class="setting-label"
+              for="litersInput"
+            >
+              주유량
+            </label>
+
+            <div class="setting-unit-wrap">
+
+              <input
+                id="litersInput"
+                class="setting-control"
+                type="number"
+                min="1"
+                step="1"
+                inputmode="decimal"
+              >
+
+              <span class="setting-unit">
+                L
+              </span>
+
+            </div>
+
+          </div>
+
+          <div class="setting-field">
+
+            <label
+              class="setting-label"
+              for="fuelEfficiencyInput"
+            >
+              연비
+            </label>
+
+            <div class="setting-unit-wrap">
+
+              <input
+                id="fuelEfficiencyInput"
+                class="setting-control"
+                type="number"
+                min="1"
+                step="0.1"
+                inputmode="decimal"
+              >
+
+              <span class="setting-unit">
+                km/L
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- 검색 -->
+
+      <section class="setting-group">
+
+        <h3 class="setting-group-title">
+          검색
+        </h3>
+
+        <p class="setting-group-description">
+          출발 위치에서 이 거리 안의 주유소를 찾습니다.
+        </p>
+
+        <div
+          id="radiusSetting"
+          class="radius-setting"
+        >
+
+          <button
+            class="radius-option"
+            type="button"
+            data-radius="2000"
+          >
+            2 km
+          </button>
+
+          <button
+            class="radius-option active"
+            type="button"
+            data-radius="3000"
+          >
+            3 km
+          </button>
+
+          <button
+            class="radius-option"
+            type="button"
+            data-radius="5000"
+          >
+            5 km
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- 할인 -->
+
+      <section class="setting-group">
+
+        <h3 class="setting-group-title">
+          할인
+        </h3>
+
+        <p class="setting-group-description">
+          주유비 계산에 적용할 할인 조건입니다.
+        </p>
+
+        <div class="setting-field">
+
+          <label
+            class="setting-label"
+            for="discountTypeInput"
+          >
+            할인 방식
+          </label>
+
+          <select
+            id="discountTypeInput"
+            class="setting-control"
+          >
+            <option value="none">
+              할인 없음
+            </option>
+
+            <option value="percent">
+              비율 할인
+            </option>
+
+            <option value="fixed">
+              정액 할인
+            </option>
+          </select>
+
+        </div>
+
+        <div
+          id="percentFields"
+          class="discount-fields"
+        >
+
+          <div class="drawer-grid">
+
+            <div class="setting-field">
+
+              <label
+                class="setting-label"
+                for="discountRateInput"
+              >
+                할인율
+              </label>
+
+              <div class="setting-unit-wrap">
+
+                <input
+                  id="discountRateInput"
+                  class="setting-control"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  inputmode="decimal"
+                >
+
+                <span class="setting-unit">
+                  %
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="setting-field">
+
+              <label
+                class="setting-label"
+                for="maxDiscountInput"
+              >
+                최대 할인
+              </label>
+
+              <div class="setting-unit-wrap">
+
+                <input
+                  id="maxDiscountInput"
+                  class="setting-control"
+                  type="number"
+                  min="0"
+                  step="100"
+                  inputmode="numeric"
+                  placeholder="제한 없음"
+                >
+
+                <span class="setting-unit">
+                  원
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          id="fixedFields"
+          class="discount-fields"
+        >
+
+          <div class="setting-field">
+
+            <label
+              class="setting-label"
+              for="fixedDiscountInput"
+            >
+              정액 할인
+            </label>
+
+            <div class="setting-unit-wrap">
+
+              <input
+                id="fixedDiscountInput"
+                class="setting-control"
+                type="number"
+                min="0"
+                step="100"
+                inputmode="numeric"
+              >
+
+              <span class="setting-unit">
+                원
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          id="discountSummary"
+          class="setting-summary"
+        >
+          현재 할인 없음
+        </div>
+
+        <p class="drawer-hint">
+          강릉페이 가맹 여부는 주유소 카드에 별도로 표시됩니다.
+        </p>
+
+      </section>
+
+    </div>
+
+  </aside>
+
   <div class="page">
 
     <!-- ====================================================
@@ -1768,57 +2252,74 @@
          ==================================================== -->
 
     <header class="topbar">
+
       <div class="topbar-inner">
 
         <div class="brand">
-          <h1 class="brand-title">
+
+          <p class="brand-title">
             FuelFinder
-          </h1>
+          </p>
 
           <p class="brand-subtitle">
             실질 주유비 비교
           </p>
+
         </div>
 
-        <div class="source-pill">
-          오피넷 기반
+        <div class="topbar-actions">
+
+          <div class="source-pill">
+            오피넷 기반
+          </div>
+
+          <button
+            id="settingsButton"
+            class="settings-button"
+            type="button"
+            aria-label="설정 열기"
+          >
+            ⚙
+          </button>
+
         </div>
 
       </div>
+
     </header>
 
-    <main>
+    <main class="main-content">
 
       <!-- ==================================================
-           출발 위치
+           Location
            ================================================== -->
 
-      <section class="card location-card">
+      <section class="location-section">
 
-        <div class="card-header">
+        <div class="section-heading">
 
           <div>
 
-            <h2 class="card-title">
+            <h2 class="section-title">
               출발 위치
             </h2>
 
-            <p class="card-description">
-              주소나 장소를 입력해 미리 주유소를 찾아보세요.
+            <p class="section-description">
+              주소나 장소를 입력하면 바로 검색합니다.
             </p>
 
           </div>
 
         </div>
 
-        <div class="location-search-row">
+        <div class="location-input-row">
 
           <input
             id="addressInput"
             class="address-input"
             type="text"
-            placeholder="예: 강릉역, 서울역, 숙소 주소"
             autocomplete="street-address"
+            placeholder="예: 강릉역, 서울역, 숙소 주소"
           >
 
           <button
@@ -1831,10 +2332,10 @@
 
         </div>
 
-        <div class="location-actions">
+        <div class="location-secondary-actions">
 
           <button
-            id="locationButton"
+            id="currentLocationButton"
             class="current-location-button"
             type="button"
           >
@@ -1847,11 +2348,13 @@
           id="locationStatus"
           class="location-status"
         >
-          <span class="location-dot"></span>
+
+          <span class="location-status-dot"></span>
 
           <span>
             주소를 검색하거나 현재 위치를 사용할 수 있습니다.
           </span>
+
         </div>
 
         <div
@@ -1873,349 +2376,13 @@
       </section>
 
       <!-- ==================================================
-           차량
+           Search status
            ================================================== -->
 
-      <section class="card">
-
-        <div class="card-header">
-
-          <div>
-
-            <h2 class="card-title">
-              차량 설정
-            </h2>
-
-            <p class="card-description">
-              주유비와 이동비 계산에 사용됩니다.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div class="field-grid">
-
-          <div class="field">
-
-            <label
-              class="field-label"
-              for="productInput"
-            >
-              유종
-            </label>
-
-            <select
-              id="productInput"
-              class="field-control"
-            >
-              <option value="B027">
-                보통휘발유
-              </option>
-
-              <option value="B034">
-                고급휘발유
-              </option>
-
-              <option value="D047">
-                자동차용경유
-              </option>
-            </select>
-
-          </div>
-
-          <div class="field">
-
-            <label
-              class="field-label"
-              for="litersInput"
-            >
-              주유량
-            </label>
-
-            <div class="input-with-unit">
-
-              <input
-                id="litersInput"
-                class="field-control"
-                type="number"
-                min="1"
-                step="1"
-                value="40"
-                inputmode="decimal"
-              >
-
-              <span class="input-unit">
-                L
-              </span>
-
-            </div>
-
-          </div>
-
-          <div class="field">
-
-            <label
-              class="field-label"
-              for="fuelEfficiencyInput"
-            >
-              차량 연비
-            </label>
-
-            <div class="input-with-unit">
-
-              <input
-                id="fuelEfficiencyInput"
-                class="field-control"
-                type="number"
-                min="1"
-                step="0.1"
-                value="12"
-                inputmode="decimal"
-              >
-
-              <span class="input-unit">
-                km/L
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="radius-row">
-
-          <button
-            class="radius-button"
-            type="button"
-            data-radius="2000"
-          >
-            2 km
-          </button>
-
-          <button
-            class="radius-button active"
-            type="button"
-            data-radius="3000"
-          >
-            3 km
-          </button>
-
-          <button
-            class="radius-button"
-            type="button"
-            data-radius="5000"
-          >
-            5 km
-          </button>
-
-        </div>
-
-      </section>
-
-      <!-- ==================================================
-           할인
-           ================================================== -->
-
-      <section class="card">
-
-        <button
-          id="discountToggle"
-          class="settings-toggle"
-          type="button"
-          aria-expanded="false"
-        >
-
-          <span class="settings-left">
-
-            <span class="settings-icon">
-              ₩
-            </span>
-
-            <span>
-              할인 / 카드 조건
-            </span>
-
-          </span>
-
-          <span
-            id="settingsArrow"
-            class="settings-arrow"
-          >
-            ▾
-          </span>
-
-        </button>
-
-        <div
-          id="discountPanel"
-          class="discount-panel"
-        >
-
-          <div class="field">
-
-            <label
-              class="field-label"
-              for="discountTypeInput"
-            >
-              할인 방식
-            </label>
-
-            <select
-              id="discountTypeInput"
-              class="field-control"
-            >
-              <option value="none">
-                할인 없음
-              </option>
-
-              <option value="percent">
-                비율 할인
-              </option>
-
-              <option value="fixed">
-                정액 할인
-              </option>
-            </select>
-
-          </div>
-
-          <div
-            id="percentField"
-            class="discount-fields"
-            hidden
-          >
-
-            <div class="discount-row">
-
-              <div class="field">
-
-                <label
-                  class="field-label"
-                  for="discountRateInput"
-                >
-                  할인율
-                </label>
-
-                <div class="input-with-unit">
-
-                  <input
-                    id="discountRateInput"
-                    class="field-control"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value="10"
-                    inputmode="decimal"
-                  >
-
-                  <span class="input-unit">
-                    %
-                  </span>
-
-                </div>
-
-              </div>
-
-              <div class="field">
-
-                <label
-                  class="field-label"
-                  for="maxDiscountInput"
-                >
-                  최대 할인액
-                </label>
-
-                <div class="input-with-unit">
-
-                  <input
-                    id="maxDiscountInput"
-                    class="field-control"
-                    type="number"
-                    min="0"
-                    step="100"
-                    placeholder="제한 없음"
-                    inputmode="numeric"
-                  >
-
-                  <span class="input-unit">
-                    원
-                  </span>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <div
-            id="fixedField"
-            class="discount-fields"
-            hidden
-          >
-
-            <div class="field">
-
-              <label
-                class="field-label"
-                for="fixedDiscountInput"
-              >
-                정액 할인
-              </label>
-
-              <div class="input-with-unit">
-
-                <input
-                  id="fixedDiscountInput"
-                  class="field-control"
-                  type="number"
-                  min="0"
-                  step="100"
-                  value="3000"
-                  inputmode="numeric"
-                >
-
-                <span class="input-unit">
-                  원
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <div
-            id="discountSummary"
-            class="discount-summary"
-          >
-            현재 할인 없음
-          </div>
-
-          <p class="discount-help">
-            강릉페이 가맹 여부는 주유소별로 별도 표시됩니다.
-            실제 강릉페이 할인 정책과는 구분해서 계산합니다.
-          </p>
-
-        </div>
-
-      </section>
-
-      <!-- ==================================================
-           Search
-           ================================================== -->
-
-      <button
-        id="searchButton"
-        class="search-button"
-        type="button"
-      >
-        이 위치에서 주유소 찾기
-      </button>
+      <div
+        id="searchStatus"
+        class="search-status"
+      ></div>
 
       <!-- ==================================================
            Results
@@ -2223,7 +2390,7 @@
 
       <section class="results-section">
 
-        <div class="results-header">
+        <div class="results-heading">
 
           <div>
 
@@ -2232,7 +2399,7 @@
             </h2>
 
             <p class="results-subtitle">
-              실질가격이 낮은 순서로 표시합니다.
+              실질가격이 낮은 순서
             </p>
 
           </div>
@@ -2247,19 +2414,11 @@
         </div>
 
         <div
-          id="stationStatus"
-          class="station-status"
-        >
-          출발 위치를 설정한 뒤 검색하세요.
-        </div>
-
-        <div
           id="resultSummary"
-          class="summary-grid"
-          hidden
+          class="result-summary"
         >
 
-          <div class="summary-item">
+          <div class="summary-card">
 
             <span class="summary-label">
               검색 주유소
@@ -2274,7 +2433,7 @@
 
           </div>
 
-          <div class="summary-item">
+          <div class="summary-card">
 
             <span class="summary-label">
               강릉페이
@@ -2289,7 +2448,7 @@
 
           </div>
 
-          <div class="summary-item">
+          <div class="summary-card">
 
             <span class="summary-label">
               반경
@@ -2315,9 +2474,8 @@
     </main>
 
     <footer class="footer">
-      오피넷 가격 정보를 기준으로 계산합니다.
-      <br>
-      이동비는 입력한 차량 연비와 주행거리 기준입니다.
+      오피넷 가격을 기준으로 계산하며,
+      이동비는 차량 연비와 주유소까지의 거리를 기준으로 합니다.
     </footer>
 
   </div>
@@ -2337,9 +2495,9 @@
         "addressSearchButton"
       );
 
-    const locationButton =
+    const currentLocationButton =
       document.getElementById(
-        "locationButton"
+        "currentLocationButton"
       );
 
     const locationStatus =
@@ -2357,84 +2515,9 @@
         "selectedLocationText"
       );
 
-    const productInput =
+    const searchStatus =
       document.getElementById(
-        "productInput"
-      );
-
-    const litersInput =
-      document.getElementById(
-        "litersInput"
-      );
-
-    const fuelEfficiencyInput =
-      document.getElementById(
-        "fuelEfficiencyInput"
-      );
-
-    const radiusButtons =
-      document.querySelectorAll(
-        ".radius-button"
-      );
-
-    const discountToggle =
-      document.getElementById(
-        "discountToggle"
-      );
-
-    const discountPanel =
-      document.getElementById(
-        "discountPanel"
-      );
-
-    const settingsArrow =
-      document.getElementById(
-        "settingsArrow"
-      );
-
-    const discountTypeInput =
-      document.getElementById(
-        "discountTypeInput"
-      );
-
-    const discountRateInput =
-      document.getElementById(
-        "discountRateInput"
-      );
-
-    const maxDiscountInput =
-      document.getElementById(
-        "maxDiscountInput"
-      );
-
-    const fixedDiscountInput =
-      document.getElementById(
-        "fixedDiscountInput"
-      );
-
-    const percentField =
-      document.getElementById(
-        "percentField"
-      );
-
-    const fixedField =
-      document.getElementById(
-        "fixedField"
-      );
-
-    const discountSummary =
-      document.getElementById(
-        "discountSummary"
-      );
-
-    const searchButton =
-      document.getElementById(
-        "searchButton"
-      );
-
-    const stationStatus =
-      document.getElementById(
-        "stationStatus"
+        "searchStatus"
       );
 
     const stationList =
@@ -2467,71 +2550,451 @@
         "summaryRadius"
       );
 
-    let selectedRadius =
-      3000;
+    const settingsButton =
+      document.getElementById(
+        "settingsButton"
+      );
+
+    const settingsDrawer =
+      document.getElementById(
+        "settingsDrawer"
+      );
+
+    const drawerOverlay =
+      document.getElementById(
+        "drawerOverlay"
+      );
+
+    const drawerCloseButton =
+      document.getElementById(
+        "drawerCloseButton"
+      );
+
+    const productInput =
+      document.getElementById(
+        "productInput"
+      );
+
+    const litersInput =
+      document.getElementById(
+        "litersInput"
+      );
+
+    const fuelEfficiencyInput =
+      document.getElementById(
+        "fuelEfficiencyInput"
+      );
+
+    const discountTypeInput =
+      document.getElementById(
+        "discountTypeInput"
+      );
+
+    const discountRateInput =
+      document.getElementById(
+        "discountRateInput"
+      );
+
+    const maxDiscountInput =
+      document.getElementById(
+        "maxDiscountInput"
+      );
+
+    const fixedDiscountInput =
+      document.getElementById(
+        "fixedDiscountInput"
+      );
+
+    const percentFields =
+      document.getElementById(
+        "percentFields"
+      );
+
+    const fixedFields =
+      document.getElementById(
+        "fixedFields"
+      );
+
+    const discountSummary =
+      document.getElementById(
+        "discountSummary"
+      );
+
+    const radiusOptions =
+      document.querySelectorAll(
+        ".radius-option"
+      );
+
+    /* ======================================================
+       State
+       ====================================================== */
+
+    let selectedRadius = 3000;
 
     let selectedLocationData =
       null;
 
+    let lastStations =
+      [];
+
+    let hasSearched =
+      false;
+
+    let searchRequestId =
+      0;
+
+    const STORAGE_KEY =
+      "fuelfinder-settings-v2";
+
     /* ======================================================
-       Events
+       Defaults
        ====================================================== */
 
-    addressSearchButton.addEventListener(
+    const DEFAULT_SETTINGS = {
+      productCode:
+        "B027",
+
+      liters:
+        40,
+
+      fuelEfficiency:
+        12,
+
+      radius:
+        3000,
+
+      discountType:
+        "none",
+
+      discountRate:
+        10,
+
+      maxDiscount:
+        null,
+
+      fixedDiscount:
+        3000,
+    };
+
+    /* ======================================================
+       Initialisation
+       ====================================================== */
+
+    loadSettings();
+
+    updateDiscountFields();
+
+    updateDiscountSummary();
+
+    /* ======================================================
+       Settings drawer
+       ====================================================== */
+
+    settingsButton.addEventListener(
       "click",
-      searchAddress
+      openSettings
     );
 
-    addressInput.addEventListener(
+    drawerCloseButton.addEventListener(
+      "click",
+      closeSettings
+    );
+
+    drawerOverlay.addEventListener(
+      "click",
+      closeSettings
+    );
+
+    document.addEventListener(
       "keydown",
       (event) => {
         if (
           event.key ===
-          "Enter"
+          "Escape"
         ) {
-          event.preventDefault();
-
-          searchAddress();
+          closeSettings();
         }
       }
     );
 
-    locationButton.addEventListener(
-      "click",
-      useCurrentLocation
+    function openSettings() {
+      settingsDrawer.classList.add(
+        "open"
+      );
+
+      drawerOverlay.classList.add(
+        "open"
+      );
+
+      settingsDrawer.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+
+      document.body.classList.add(
+        "drawer-open"
+      );
+    }
+
+    function closeSettings() {
+      settingsDrawer.classList.remove(
+        "open"
+      );
+
+      drawerOverlay.classList.remove(
+        "open"
+      );
+
+      settingsDrawer.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      document.body.classList.remove(
+        "drawer-open"
+      );
+    }
+
+    /* ======================================================
+       Settings persistence
+       ====================================================== */
+
+    productInput.addEventListener(
+      "change",
+      handleSettingChange
     );
 
-    searchButton.addEventListener(
-      "click",
-      searchStations
+    litersInput.addEventListener(
+      "input",
+      handleSettingChange
     );
 
-    discountToggle.addEventListener(
-      "click",
-      toggleDiscountPanel
+    fuelEfficiencyInput.addEventListener(
+      "input",
+      handleSettingChange
     );
 
     discountTypeInput.addEventListener(
       "change",
-      updateDiscountFields
+      handleSettingChange
     );
 
     discountRateInput.addEventListener(
       "input",
-      updateDiscountSummary
+      handleSettingChange
     );
 
     maxDiscountInput.addEventListener(
       "input",
-      updateDiscountSummary
+      handleSettingChange
     );
 
     fixedDiscountInput.addEventListener(
       "input",
-      updateDiscountSummary
+      handleSettingChange
     );
 
-    radiusButtons.forEach(
+    function handleSettingChange() {
+      saveSettings();
+
+      updateDiscountFields();
+
+      updateDiscountSummary();
+
+      /*
+       * 위치 검색이 이미 완료되었다면
+       * 오피넷을 다시 호출하지 않고
+       * 마지막 결과를 새 조건으로 즉시 계산합니다.
+       */
+      if (
+        hasSearched &&
+        Array.isArray(
+          lastStations
+        ) &&
+        lastStations.length > 0
+      ) {
+        rerenderFromCache();
+      }
+    }
+
+    function saveSettings() {
+      const settings = {
+        productCode:
+          productInput.value,
+
+        liters:
+          Number(
+            litersInput.value
+          ),
+
+        fuelEfficiency:
+          Number(
+            fuelEfficiencyInput.value
+          ),
+
+        radius:
+          selectedRadius,
+
+        discountType:
+          discountTypeInput.value,
+
+        discountRate:
+          Number(
+            discountRateInput.value
+          ),
+
+        maxDiscount:
+          maxDiscountInput.value
+            ? Number(
+                maxDiscountInput.value
+              )
+            : null,
+
+        fixedDiscount:
+          Number(
+            fixedDiscountInput.value
+          ),
+      };
+
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(
+            settings
+          )
+        );
+      } catch (
+        error
+      ) {
+        console.warn(
+          "설정 저장 실패:",
+          error
+        );
+      }
+    }
+
+    function loadSettings() {
+      let settings =
+        {};
+
+      try {
+        const raw =
+          localStorage.getItem(
+            STORAGE_KEY
+          );
+
+        if (
+          raw
+        ) {
+          settings =
+            JSON.parse(
+              raw
+            ) || {};
+        }
+      } catch (
+        error
+      ) {
+        console.warn(
+          "설정 불러오기 실패:",
+          error
+        );
+      }
+
+      const merged =
+        {
+          ...DEFAULT_SETTINGS,
+          ...settings,
+        };
+
+      productInput.value =
+        isSupportedProduct(
+          merged.productCode
+        )
+          ? merged.productCode
+          : DEFAULT_SETTINGS.productCode;
+
+      litersInput.value =
+        isValidPositiveNumber(
+          Number(
+            merged.liters
+          )
+        )
+          ? merged.liters
+          : DEFAULT_SETTINGS.liters;
+
+      fuelEfficiencyInput.value =
+        isValidPositiveNumber(
+          Number(
+            merged.fuelEfficiency
+          )
+        )
+          ? merged.fuelEfficiency
+          : DEFAULT_SETTINGS.fuelEfficiency;
+
+      selectedRadius =
+        [2000, 3000, 5000].includes(
+          Number(
+            merged.radius
+          )
+        )
+          ? Number(
+              merged.radius
+            )
+          : DEFAULT_SETTINGS.radius;
+
+      discountTypeInput.value =
+        [
+          "none",
+          "percent",
+          "fixed",
+        ].includes(
+          merged.discountType
+        )
+          ? merged.discountType
+          : "none";
+
+      discountRateInput.value =
+        Number.isFinite(
+          Number(
+            merged.discountRate
+          )
+        )
+          ? merged.discountRate
+          : DEFAULT_SETTINGS.discountRate;
+
+      if (
+        merged.maxDiscount !==
+          null &&
+        Number.isFinite(
+          Number(
+            merged.maxDiscount
+          )
+        )
+      ) {
+        maxDiscountInput.value =
+          merged.maxDiscount;
+      } else {
+        maxDiscountInput.value =
+          "";
+      }
+
+      fixedDiscountInput.value =
+        Number.isFinite(
+          Number(
+            merged.fixedDiscount
+          )
+        )
+          ? merged.fixedDiscount
+          : DEFAULT_SETTINGS.fixedDiscount;
+
+      updateRadiusButtons();
+    }
+
+    /* ======================================================
+       Radius
+       ====================================================== */
+
+    radiusOptions.forEach(
       (button) => {
         button.addEventListener(
           "click",
@@ -2541,1121 +3004,63 @@
                 button.dataset.radius
               );
 
-            radiusButtons.forEach(
-              (item) => {
-                item.classList.toggle(
-                  "active",
-                  item === button
-                );
-              }
-            );
+            updateRadiusButtons();
+
+            saveSettings();
 
             summaryRadius.textContent =
               formatRadius(
                 selectedRadius
               );
+
+            /*
+             * 반경은 오피넷 조회 범위 자체가 달라지므로
+             * 위치가 잡혀 있어도 자동 재조회하지 않습니다.
+             * 사용자가 다음 위치 검색을 수행하면 새 반경이 적용됩니다.
+             */
           }
         );
       }
     );
 
-    /* ======================================================
-       Initial state
-       ====================================================== */
-
-    updateDiscountFields();
-
-    /* ======================================================
-       Address search
-       ====================================================== */
-
-    async function searchAddress() {
-      const query =
-        addressInput.value.trim();
-
-      if (!query) {
-        setLocationStatus(
-          "error",
-          "주소나 장소명을 입력하세요."
-        );
-
-        addressInput.focus();
-
-        return;
-      }
-
-      addressSearchButton.disabled =
-        true;
-
-      addressSearchButton.textContent =
-        "검색 중";
-
-      setLocationStatus(
-        "",
-        "입력한 위치를 좌표로 확인하는 중입니다."
-      );
-
-      try {
-        const result =
-          await geocodeAddress(
-            query
-          );
-
-        if (
-          !result
-        ) {
-          throw new Error(
-            "해당 위치를 찾지 못했습니다. 조금 더 구체적인 주소나 장소명을 입력하세요."
+    function updateRadiusButtons() {
+      radiusOptions.forEach(
+        (button) => {
+          button.classList.toggle(
+            "active",
+            Number(
+              button.dataset.radius
+            ) ===
+              selectedRadius
           );
         }
-
-        selectedLocationData = {
-          latitude:
-            Number(
-              result.lat
-            ),
-
-          longitude:
-            Number(
-              result.lon
-            ),
-
-          label:
-            result.display_name ||
-            query,
-        };
-
-        showSelectedLocation(
-          selectedLocationData.label
-        );
-
-        setLocationStatus(
-          "success",
-          "출발 위치가 설정되었습니다."
-        );
-
-        stationStatus.textContent =
-          "이 위치에서 주유소 찾기를 누르세요.";
-      } catch (
-        error
-      ) {
-        console.error(
-          error
-        );
-
-        selectedLocationData =
-          null;
-
-        selectedLocation.classList.remove(
-          "visible"
-        );
-
-        setLocationStatus(
-          "error",
-          error.message ||
-            "주소 검색에 실패했습니다."
-        );
-      } finally {
-        addressSearchButton.disabled =
-          false;
-
-        addressSearchButton.textContent =
-          "주소 검색";
-      }
-    }
-
-    async function geocodeAddress(
-      query
-    ) {
-      const url =
-        "https://nominatim.openstreetmap.org/search?" +
-        new URLSearchParams({
-          format:
-            "jsonv2",
-
-          limit:
-            "1",
-
-          countrycodes:
-            "kr",
-
-          q:
-            query,
-        }).toString();
-
-      const response =
-        await fetch(
-          url,
-          {
-            headers: {
-              Accept:
-                "application/json",
-            },
-          }
-        );
-
-      if (
-        !response.ok
-      ) {
-        throw new Error(
-          `주소 검색 서버 응답 오류: HTTP ${response.status}`
-        );
-      }
-
-      const data =
-        await response.json();
-
-      if (
-        !Array.isArray(
-          data
-        ) ||
-        data.length ===
-          0
-      ) {
-        return null;
-      }
-
-      return data[0];
-    }
-
-    /* ======================================================
-       Current location
-       ====================================================== */
-
-    function useCurrentLocation() {
-      if (
-        !navigator.geolocation
-      ) {
-        setLocationStatus(
-          "error",
-          "이 브라우저에서는 위치 기능을 사용할 수 없습니다."
-        );
-
-        return;
-      }
-
-      locationButton.disabled =
-        true;
-
-      locationButton.textContent =
-        "위치 확인 중";
-
-      setLocationStatus(
-        "",
-        "현재 위치를 확인하는 중입니다."
       );
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const latitude =
-            position.coords
-              .latitude;
-
-          const longitude =
-            position.coords
-              .longitude;
-
-          const accuracy =
-            position.coords
-              .accuracy;
-
-          selectedLocationData = {
-            latitude,
-
-            longitude,
-
-            label:
-              `현재 위치 (${latitude.toFixed(
-                4
-              )}, ${longitude.toFixed(
-                4
-              )})`,
-          };
-
-          showSelectedLocation(
-            "현재 위치"
-          );
-
-          setLocationStatus(
-            "success",
-            `현재 위치 확인 완료 · 정확도 약 ${Math.round(
-              accuracy
-            )}m`
-          );
-
-          addressInput.value =
-            "";
-
-          locationButton.disabled =
-            false;
-
-          locationButton.textContent =
-            "현재 위치 다시 사용";
-        },
-
-        (error) => {
-          console.error(
-            error
-          );
-
-          setLocationStatus(
-            "error",
-            getGeolocationErrorMessage(
-              error
-            )
-          );
-
-          locationButton.disabled =
-            false;
-
-          locationButton.textContent =
-            "현재 위치 사용";
-        },
-
-        {
-          enableHighAccuracy:
-            true,
-
-          timeout:
-            15000,
-
-          maximumAge:
-            60000,
-        }
-      );
-    }
-
-    function showSelectedLocation(
-      label
-    ) {
-      selectedLocationText.textContent =
-        label;
-
-      selectedLocation.classList.add(
-        "visible"
-      );
-    }
-
-    /* ======================================================
-       Search stations
-       ====================================================== */
-
-    async function searchStations() {
-      if (
-        !selectedLocationData
-      ) {
-        setLocationStatus(
-          "error",
-          "먼저 주소를 검색하거나 현재 위치를 사용하세요."
-        );
-
-        addressInput.focus();
-
-        return;
-      }
-
-      const productCode =
-        productInput.value;
-
-      const liters =
-        Number(
-          litersInput.value
-        );
-
-      const fuelEfficiency =
-        Number(
-          fuelEfficiencyInput.value
-        );
-
-      const paymentOption =
-        getPaymentOption();
-
-      if (
-        !isSupportedProduct(
-          productCode
-        )
-      ) {
-        setStationStatus(
-          "error",
-          "지원하지 않는 유종입니다."
-        );
-
-        return;
-      }
-
-      if (
-        !isValidPositiveNumber(
-          liters
-        )
-      ) {
-        setStationStatus(
-          "error",
-          "주유량을 올바르게 입력하세요."
-        );
-
-        litersInput.focus();
-
-        return;
-      }
-
-      if (
-        !isValidPositiveNumber(
-          fuelEfficiency
-        )
-      ) {
-        setStationStatus(
-          "error",
-          "차량 연비를 올바르게 입력하세요."
-        );
-
-        fuelEfficiencyInput.focus();
-
-        return;
-      }
-
-      if (
-        !paymentOption
-      ) {
-        return;
-      }
-
-      searchButton.disabled =
-        true;
-
-      searchButton.classList.add(
-        "loading"
-      );
-
-      searchButton.textContent =
-        "주유소 검색 중...";
-
-      resultsCount.textContent =
-        "검색 중";
-
-      resultSummary.hidden =
-        true;
-
-      stationList.innerHTML =
-        "";
-
-      setStationStatus(
-        "loading",
-        `
-          <div class="loading-row">
-            <span class="spinner"></span>
-            <span>
-              오피넷 가격과 이동비를 계산하는 중입니다.
-            </span>
-          </div>
-        `
-      );
-
-      try {
-        await loadNearbyStations({
-          latitude:
-            selectedLocationData.latitude,
-
-          longitude:
-            selectedLocationData.longitude,
-
-          productCode,
-
-          liters,
-
-          fuelEfficiency,
-
-          paymentOption,
-
-          radius:
-            selectedRadius,
-        });
-      } catch (
-        error
-      ) {
-        console.error(
-          error
-        );
-
-        setStationStatus(
-          "error",
-          `검색 실패: ${error.message}`
-        );
-
-        resultsCount.textContent =
-          "검색 실패";
-      } finally {
-        searchButton.disabled =
-          false;
-
-        searchButton.classList.remove(
-          "loading"
-        );
-
-        searchButton.textContent =
-          "이 위치에서 주유소 찾기";
-      }
-    }
-
-    async function loadNearbyStations({
-      latitude,
-      longitude,
-      productCode,
-      liters,
-      fuelEfficiency,
-      paymentOption,
-      radius,
-    }) {
-      const response =
-        await fetch(
-          "/api/nearby-stations",
-          {
-            method:
-              "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body:
-              JSON.stringify({
-                latitude,
-
-                longitude,
-
-                radius,
-
-                productCode,
-
-                liters,
-
-                fuelEfficiency,
-
-                paymentOption,
-              }),
-          }
-        );
-
-      let data;
-
-      try {
-        data =
-          await response.json();
-      } catch {
-        throw new Error(
-          `서버 응답을 읽을 수 없습니다. HTTP ${response.status}`
-        );
-      }
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.error ||
-            `서버 요청 실패: HTTP ${response.status}`
-        );
-      }
-
-      const stations =
-        Array.isArray(
-          data.stations
-        )
-          ? data.stations
-          : [];
-
-      renderStations(
-        stations
-      );
-
-      const availableCount =
-        stations.filter(
-          (station) =>
-            station.gangneungPay
-              ?.status ===
-            "available"
-        ).length;
-
-      updateResultSummary({
-        stationCount:
-          stations.length,
-
-        availableCount,
-
-        radius,
-      });
-
-      if (
-        stations.length ===
-        0
-      ) {
-        setStationStatus(
-          "error",
-          "현재 위치 주변에서 확인 가능한 주유소가 없습니다."
-        );
-
-        resultsCount.textContent =
-          "0곳";
-
-        return;
-      }
-
-      setStationStatus(
-        "success",
-        `${stations.length}개의 ${data.productName} 주유소를 실질가격순으로 계산했습니다.`
-      );
-
-      resultsCount.textContent =
-        `${stations.length}곳`;
-    }
-
-    /* ======================================================
-       Results
-       ====================================================== */
-
-    function updateResultSummary({
-      stationCount,
-      availableCount,
-      radius,
-    }) {
-      resultSummary.hidden =
-        false;
-
-      summaryStationCount.textContent =
-        formatNumber(
-          stationCount
-        );
-
-      summaryPayCount.textContent =
-        formatNumber(
-          availableCount
-        );
 
       summaryRadius.textContent =
         formatRadius(
-          radius
+          selectedRadius
         );
-    }
-
-    function renderStations(
-      stations
-    ) {
-      stationList.innerHTML =
-        "";
-
-      if (
-        !Array.isArray(
-          stations
-        ) ||
-        stations.length ===
-          0
-      ) {
-        stationList.innerHTML =
-          `
-            <div class="empty-state">
-
-              <div class="empty-icon">
-                ⛽
-              </div>
-
-              <p class="empty-title">
-                표시할 주유소가 없습니다.
-              </p>
-
-              <p class="empty-description">
-                오피넷 조회 결과가 없거나 현재 조건에서
-                실질비용을 계산할 수 있는 주유소가 없습니다.
-              </p>
-
-            </div>
-          `;
-
-        return;
-      }
-
-      stations.forEach(
-        (
-          station,
-          index
-        ) => {
-          const item =
-            document.createElement(
-              "article"
-            );
-
-          item.className =
-            index === 0
-              ? "station station-best"
-              : "station";
-
-          const kakaoUrl =
-            createKakaoMapUrl(
-              station
-            );
-
-          const naverUrl =
-            createNaverMapUrl(
-              station
-            );
-
-          const distanceText =
-            station.distanceKm ===
-              null ||
-            station.distanceKm ===
-              undefined
-              ? "거리 정보 없음"
-              : `${station.distanceKm.toFixed(
-                  2
-                )}km`;
-
-          const effectivePrice =
-            Number(
-              station.effectivePricePerLiter
-            );
-
-          const pricePerLiter =
-            Number(
-              station.pricePerLiter
-            );
-
-          const fuelCost =
-            Number(
-              station.fuelCost
-            );
-
-          const travelCost =
-            Number(
-              station.travelCost
-            );
-
-          const discountedFuelCost =
-            Number(
-              station.discountedFuelCost
-            );
-
-          const discountAmount =
-            Number(
-              station.discountAmount
-            );
-
-          const totalCost =
-            Number(
-              station.totalCost
-            );
-
-          item.innerHTML =
-            `
-              <div class="station-top">
-
-                <div>
-
-                  <div class="station-rank">
-                    ${
-                      index === 0
-                        ? "추천 1위"
-                        : `${index + 1}위`
-                    }
-                  </div>
-
-                  <div class="station-name">
-                    ${escapeHtml(
-                      station.name ||
-                        "주유소 이름 없음"
-                    )}
-                  </div>
-
-                  <div class="station-meta">
-
-                    <span class="meta-chip">
-                      ${escapeHtml(
-                        distanceText
-                      )}
-                    </span>
-
-                    ${
-                      Number.isFinite(
-                        pricePerLiter
-                      )
-                        ? `
-                          <span class="meta-chip">
-                            표시 ${formatWon(
-                              pricePerLiter
-                            )}원/L
-                          </span>
-                        `
-                        : ""
-                    }
-
-                    ${createGangneungPayBadge(
-                      station
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              <div class="effective-box">
-
-                <span class="effective-label">
-                  내 차 기준 실질가격
-                </span>
-
-                <div class="effective-price">
-
-                  <span class="effective-price-value">
-                    ${formatWon(
-                      Math.round(
-                        effectivePrice
-                      )
-                    )}
-                  </span>
-
-                  <span class="effective-price-unit">
-                    원/L
-                  </span>
-
-                </div>
-
-                <p class="effective-caption">
-                  주유비 + 왕복 이동비 - 할인
-                </p>
-
-              </div>
-
-              <div class="cost-grid">
-
-                <div class="cost-item">
-
-                  <span class="cost-label">
-                    실질 총비용
-                  </span>
-
-                  <span class="cost-value">
-                    ${formatWon(
-                      totalCost
-                    )}원
-                  </span>
-
-                </div>
-
-                <div class="cost-item">
-
-                  <span class="cost-label">
-                    표시 주유비
-                  </span>
-
-                  <span class="cost-value">
-                    ${formatWon(
-                      fuelCost
-                    )}원
-                  </span>
-
-                </div>
-
-                <div class="cost-item">
-
-                  <span class="cost-label">
-                    왕복 이동비
-                  </span>
-
-                  <span class="cost-value">
-                    ${formatWon(
-                      travelCost
-                    )}원
-                  </span>
-
-                </div>
-
-                <div class="cost-item">
-
-                  <span class="cost-label">
-                    할인액
-                  </span>
-
-                  <span class="cost-value">
-                    ${
-                      discountAmount >
-                      0
-                        ? `-${formatWon(
-                            discountAmount
-                          )}원`
-                        : "0원"
-                    }
-                  </span>
-
-                </div>
-
-              </div>
-
-              ${
-                discountedFuelCost !==
-                  fuelCost
-                  ? `
-                    <div class="cost-grid">
-
-                      <div class="cost-item">
-
-                        <span class="cost-label">
-                          할인 후 주유비
-                        </span>
-
-                        <span class="cost-value">
-                          ${formatWon(
-                            discountedFuelCost
-                          )}원
-                        </span>
-
-                      </div>
-
-                      <div class="cost-item">
-
-                        <span class="cost-label">
-                          계산 조건
-                        </span>
-
-                        <span class="cost-value">
-                          ${escapeHtml(
-                            getDiscountDescription()
-                          )}
-                        </span>
-
-                      </div>
-
-                    </div>
-                  `
-                  : ""
-              }
-
-              ${
-                station.address
-                  ? `
-                    <div class="station-address">
-                      ${escapeHtml(
-                        station.address
-                      )}
-                    </div>
-                  `
-                  : ""
-              }
-
-              ${createGangneungPayHtml(
-                station
-              )}
-
-              <div class="map-buttons">
-
-                <a
-                  class="map-button primary"
-                  href="${naverUrl}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  네이버 지도
-                </a>
-
-                ${
-                  kakaoUrl
-                    ? `
-                      <a
-                        class="map-button"
-                        href="${kakaoUrl}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        카카오맵
-                      </a>
-                    `
-                    : `
-                      <button
-                        class="map-button"
-                        type="button"
-                        disabled
-                      >
-                        카카오맵 위치 없음
-                      </button>
-                    `
-                }
-
-              </div>
-            `;
-
-          stationList.appendChild(
-            item
-          );
-        }
-      );
-    }
-
-    function createGangneungPayBadge(
-      station
-    ) {
-      const pay =
-        station.gangneungPay;
-
-      if (
-        !pay
-      ) {
-        return "";
-      }
-
-      if (
-        pay.status ===
-        "available"
-      ) {
-        return `
-          <span class="meta-chip pay">
-            강릉페이 가능
-          </span>
-        `;
-      }
-
-      if (
-        pay.status ===
-        "needs_confirmation"
-      ) {
-        return `
-          <span class="meta-chip confirm">
-            강릉페이 확인 필요
-          </span>
-        `;
-      }
-
-      return `
-        <span class="meta-chip">
-          강릉페이 미확인
-        </span>
-      `;
-    }
-
-    function createGangneungPayHtml(
-      station
-    ) {
-      const pay =
-        station.gangneungPay;
-
-      if (
-        !pay
-      ) {
-        return `
-          <div class="gangneung-pay">
-
-            <div class="gangneung-pay-title">
-              강릉페이
-            </div>
-
-            <div class="gangneung-pay-description">
-              가맹 정보를 확인할 수 없습니다.
-            </div>
-
-          </div>
-        `;
-      }
-
-      if (
-        pay.status ===
-        "available"
-      ) {
-        const merchantName =
-          pay.merchant
-            ?.name ||
-          "";
-
-        return `
-          <div class="gangneung-pay available">
-
-            <div class="gangneung-pay-title">
-              강릉페이 가맹점
-            </div>
-
-            <div class="gangneung-pay-description">
-              ${
-                merchantName
-                  ? `가맹점명: ${escapeHtml(
-                      merchantName
-                    )}`
-                  : "공식 가맹 명단과 매칭되었습니다."
-              }
-            </div>
-
-          </div>
-        `;
-      }
-
-      if (
-        pay.status ===
-        "needs_confirmation"
-      ) {
-        return `
-          <div class="gangneung-pay confirm">
-
-            <div class="gangneung-pay-title">
-              강릉페이
-            </div>
-
-            <div class="gangneung-pay-description">
-              ${escapeHtml(
-                pay.reason ||
-                  "공식 명단과의 추가 확인이 필요합니다."
-              )}
-            </div>
-
-          </div>
-        `;
-      }
-
-      return `
-        <div class="gangneung-pay">
-
-          <div class="gangneung-pay-title">
-            강릉페이
-          </div>
-
-          <div class="gangneung-pay-description">
-            공식 가맹 명단에서 확인되지 않았습니다.
-          </div>
-
-        </div>
-      `;
     }
 
     /* ======================================================
        Discount
        ====================================================== */
 
-    function toggleDiscountPanel() {
-      const open =
-        discountPanel.classList.toggle(
-          "open"
-        );
-
-      discountToggle.setAttribute(
-        "aria-expanded",
-        String(
-          open
-        )
-      );
-
-      settingsArrow.style.transform =
-        open
-          ? "rotate(180deg)"
-          : "rotate(0deg)";
-    }
-
     function updateDiscountFields() {
       const type =
         discountTypeInput.value;
 
-      percentField.hidden =
-        type !==
-        "percent";
+      percentFields.classList.toggle(
+        "visible",
+        type ===
+          "percent"
+      );
 
-      fixedField.hidden =
-        type !==
-        "fixed";
-
-      updateDiscountSummary();
+      fixedFields.classList.toggle(
+        "visible",
+        type ===
+          "fixed"
+      );
     }
 
     function updateDiscountSummary() {
@@ -3696,7 +3101,7 @@
           rate > 100
         ) {
           discountSummary.textContent =
-            "할인율을 0~100% 사이로 입력하세요.";
+            "할인율은 0~100%로 입력하세요.";
 
           return;
         }
@@ -3717,20 +3122,13 @@
           return;
         }
 
-        if (
-          maxDiscount ===
-          null
-        ) {
-          discountSummary.textContent =
-            `${rate}% 할인 / 최대 할인액 제한 없음`;
-
-          return;
-        }
-
         discountSummary.textContent =
-          `${rate}% 할인 / 최대 ${formatWon(
-            maxDiscount
-          )}원`;
+          maxDiscount ===
+            null
+            ? `${rate}% 할인`
+            : `${rate}% 할인 / 최대 ${formatWon(
+                maxDiscount
+              )}원`;
 
         return;
       }
@@ -3800,12 +3198,10 @@
           rate < 0 ||
           rate > 100
         ) {
-          setStationStatus(
+          showSearchStatus(
             "error",
             "할인율은 0~100% 사이로 입력하세요."
           );
-
-          discountRateInput.focus();
 
           return null;
         }
@@ -3820,12 +3216,10 @@
             maxDiscount < 0
           )
         ) {
-          setStationStatus(
+          showSearchStatus(
             "error",
             "최대 할인액을 올바르게 입력하세요."
           );
-
-          maxDiscountInput.focus();
 
           return null;
         }
@@ -3855,12 +3249,10 @@
           ) ||
           amount < 0
         ) {
-          setStationStatus(
+          showSearchStatus(
             "error",
             "정액 할인액을 올바르게 입력하세요."
           );
-
-          fixedDiscountInput.focus();
 
           return null;
         }
@@ -3873,15 +3265,829 @@
         };
       }
 
-      setStationStatus(
-        "error",
-        "할인 옵션을 확인하세요."
-      );
-
       return null;
     }
 
-    function getDiscountDescription() {
+    /* ======================================================
+       Address search
+       ====================================================== */
+
+    addressSearchButton.addEventListener(
+      "click",
+      searchAddress
+    );
+
+    addressInput.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key ===
+          "Enter"
+        ) {
+          event.preventDefault();
+
+          searchAddress();
+        }
+      }
+    );
+
+    async function searchAddress() {
+      const query =
+        addressInput.value.trim();
+
+      if (!query) {
+        setLocationStatus(
+          "error",
+          "주소나 장소명을 입력하세요."
+        );
+
+        addressInput.focus();
+
+        return;
+      }
+
+      const requestId =
+        ++searchRequestId;
+
+      addressSearchButton.disabled =
+        true;
+
+      addressSearchButton.textContent =
+        "검색 중";
+
+      setLocationStatus(
+        "",
+        "입력한 위치를 확인하는 중입니다."
+      );
+
+      showSearchStatus(
+        "loading",
+        `
+          <div class="loading-row">
+            <span class="spinner"></span>
+            <span>
+              위치를 찾은 뒤 주변 주유소를 자동으로 검색합니다.
+            </span>
+          </div>
+        `
+      );
+
+      try {
+        const result =
+          await geocodeAddress(
+            query
+          );
+
+        if (
+          requestId !==
+          searchRequestId
+        ) {
+          return;
+        }
+
+        if (
+          !result
+        ) {
+          throw new Error(
+            "위치를 찾지 못했습니다. 주소를 더 구체적으로 입력해 주세요."
+          );
+        }
+
+        selectedLocationData = {
+          latitude:
+            result.latitude,
+
+          longitude:
+            result.longitude,
+
+          label:
+            result.label ||
+            query,
+        };
+
+        showSelectedLocation(
+          selectedLocationData.label
+        );
+
+        setLocationStatus(
+          "success",
+          "출발 위치가 설정되었습니다."
+        );
+
+        await searchStations(
+          selectedLocationData
+        );
+      } catch (
+        error
+      ) {
+        console.error(
+          error
+        );
+
+        selectedLocationData =
+          null;
+
+        selectedLocation.classList.remove(
+          "visible"
+        );
+
+        setLocationStatus(
+          "error",
+          error.message ||
+            "주소 검색에 실패했습니다."
+        );
+
+        showSearchStatus(
+          "error",
+          "주소 검색에 실패했습니다."
+        );
+      } finally {
+        if (
+          requestId ===
+          searchRequestId
+        ) {
+          addressSearchButton.disabled =
+            false;
+
+          addressSearchButton.textContent =
+            "주소 검색";
+        }
+      }
+    }
+
+    async function geocodeAddress(
+      query
+    ) {
+      /*
+       * Korean address geocoder.
+       *
+       * x = longitude
+       * y = latitude
+       */
+      const url =
+        "https://geocode-kr.gimi9.com/geocode?" +
+        new URLSearchParams({
+          q:
+            query,
+        }).toString();
+
+      const response =
+        await fetch(
+          url,
+          {
+            headers: {
+              Accept:
+                "application/json",
+            },
+          }
+        );
+
+      if (
+        !response.ok
+      ) {
+        throw new Error(
+          `주소 검색 서버 오류: HTTP ${response.status}`
+        );
+      }
+
+      const data =
+        await response.json();
+
+      const results =
+        Array.isArray(
+          data?.results
+        )
+          ? data.results
+          : [];
+
+      if (
+        results.length ===
+        0
+      ) {
+        return null;
+      }
+
+      const item =
+        results[0];
+
+      const latitude =
+        Number(
+          item.y
+        );
+
+      const longitude =
+        Number(
+          item.x
+        );
+
+      if (
+        !Number.isFinite(
+          latitude
+        ) ||
+        !Number.isFinite(
+          longitude
+        )
+      ) {
+        return null;
+      }
+
+      const label =
+        item.address ||
+        item.addr ||
+        item.full_address ||
+        query;
+
+      return {
+        latitude,
+
+        longitude,
+
+        label,
+      };
+    }
+
+    /* ======================================================
+       Current location
+       ====================================================== */
+
+    currentLocationButton.addEventListener(
+      "click",
+      useCurrentLocation
+    );
+
+    function useCurrentLocation() {
+      if (
+        !navigator.geolocation
+      ) {
+        setLocationStatus(
+          "error",
+          "이 브라우저에서는 현재 위치를 사용할 수 없습니다."
+        );
+
+        return;
+      }
+
+      ++searchRequestId;
+
+      currentLocationButton.disabled =
+        true;
+
+      currentLocationButton.textContent =
+        "위치 확인 중";
+
+      setLocationStatus(
+        "",
+        "현재 위치를 확인하는 중입니다."
+      );
+
+      showSearchStatus(
+        "loading",
+        `
+          <div class="loading-row">
+            <span class="spinner"></span>
+            <span>
+              현재 위치를 확인한 뒤 주유소를 자동으로 검색합니다.
+            </span>
+          </div>
+        `
+      );
+
+      navigator.geolocation.getCurrentPosition(
+        async (
+          position
+        ) => {
+          try {
+            const latitude =
+              position.coords
+                .latitude;
+
+            const longitude =
+              position.coords
+                .longitude;
+
+            const accuracy =
+              position.coords
+                .accuracy;
+
+            selectedLocationData = {
+              latitude,
+
+              longitude,
+
+              label:
+                "현재 위치",
+            };
+
+            addressInput.value =
+              "";
+
+            showSelectedLocation(
+              "현재 위치"
+            );
+
+            setLocationStatus(
+              "success",
+              `현재 위치 확인 완료 · 정확도 약 ${Math.round(
+                accuracy
+              )}m`
+            );
+
+            await searchStations(
+              selectedLocationData
+            );
+          } catch (
+            error
+          ) {
+            console.error(
+              error
+            );
+
+            showSearchStatus(
+              "error",
+              error.message ||
+                "주유소 검색에 실패했습니다."
+            );
+          } finally {
+            currentLocationButton.disabled =
+              false;
+
+            currentLocationButton.textContent =
+              "현재 위치 다시 사용";
+          }
+        },
+
+        (error) => {
+          console.error(
+            error
+          );
+
+          setLocationStatus(
+            "error",
+            getGeolocationErrorMessage(
+              error
+            )
+          );
+
+          showSearchStatus(
+            "error",
+            "현재 위치를 확인하지 못했습니다."
+          );
+
+          currentLocationButton.disabled =
+            false;
+
+          currentLocationButton.textContent =
+            "현재 위치 사용";
+        },
+
+        {
+          enableHighAccuracy:
+            true,
+
+          timeout:
+            15000,
+
+          maximumAge:
+            60000,
+        }
+      );
+    }
+
+    /* ======================================================
+       Station search
+       ====================================================== */
+
+    async function searchStations(
+      location
+    ) {
+      const productCode =
+        productInput.value;
+
+      const liters =
+        Number(
+          litersInput.value
+        );
+
+      const fuelEfficiency =
+        Number(
+          fuelEfficiencyInput.value
+        );
+
+      const paymentOption =
+        getPaymentOption();
+
+      if (
+        !paymentOption
+      ) {
+        return;
+      }
+
+      if (
+        !isSupportedProduct(
+          productCode
+        )
+      ) {
+        throw new Error(
+          "지원하지 않는 유종입니다."
+        );
+      }
+
+      if (
+        !isValidPositiveNumber(
+          liters
+        )
+      ) {
+        litersInput.focus();
+
+        throw new Error(
+          "주유량을 올바르게 입력하세요."
+        );
+      }
+
+      if (
+        !isValidPositiveNumber(
+          fuelEfficiency
+        )
+      ) {
+        fuelEfficiencyInput.focus();
+
+        throw new Error(
+          "차량 연비를 올바르게 입력하세요."
+        );
+      }
+
+      const requestId =
+        ++searchRequestId;
+
+      hasSearched =
+        false;
+
+      lastStations =
+        [];
+
+      stationList.innerHTML =
+        "";
+
+      resultSummary.classList.remove(
+        "visible"
+      );
+
+      resultsCount.textContent =
+        "검색 중";
+
+      showSearchStatus(
+        "loading",
+        `
+          <div class="loading-row">
+            <span class="spinner"></span>
+            <span>
+              오피넷 가격과 강릉페이 정보를 확인하는 중입니다.
+            </span>
+          </div>
+        `
+      );
+
+      saveSettings();
+
+      try {
+        const response =
+          await fetch(
+            "/api/nearby-stations",
+            {
+              method:
+                "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  latitude:
+                    location.latitude,
+
+                  longitude:
+                    location.longitude,
+
+                  radius:
+                    selectedRadius,
+
+                  productCode,
+
+                  liters,
+
+                  fuelEfficiency,
+
+                  paymentOption,
+                }),
+            }
+          );
+
+        let data;
+
+        try {
+          data =
+            await response.json();
+        } catch {
+          throw new Error(
+            `서버 응답을 읽을 수 없습니다. HTTP ${response.status}`
+          );
+        }
+
+        if (
+          requestId !==
+          searchRequestId
+        ) {
+          return;
+        }
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.error ||
+              `서버 요청 실패: HTTP ${response.status}`
+          );
+        }
+
+        const stations =
+          Array.isArray(
+            data.stations
+          )
+            ? data.stations
+            : [];
+
+        lastStations =
+          deepClone(
+            stations
+          );
+
+        hasSearched =
+          true;
+
+        renderStations(
+          stations
+        );
+
+        updateResultSummary(
+          stations,
+          selectedRadius
+        );
+
+        if (
+          stations.length ===
+          0
+        ) {
+          resultsCount.textContent =
+            "0곳";
+
+          showSearchStatus(
+            "error",
+            "현재 위치 주변에서 확인 가능한 주유소가 없습니다."
+          );
+
+          return;
+        }
+
+        resultsCount.textContent =
+          `${stations.length}곳`;
+
+        showSearchStatus(
+          "success",
+          `${stations.length}개의 주유소를 실질가격순으로 계산했습니다.`
+        );
+      } catch (
+        error
+      ) {
+        console.error(
+          error
+        );
+
+        if (
+          requestId !==
+          searchRequestId
+        ) {
+          return;
+        }
+
+        lastStations =
+          [];
+
+        hasSearched =
+          false;
+
+        resultsCount.textContent =
+          "검색 실패";
+
+        showSearchStatus(
+          "error",
+          `검색 실패: ${error.message}`
+        );
+
+        stationList.innerHTML =
+          `
+            <div class="empty-state">
+
+              <div class="empty-icon">
+                ⚠
+              </div>
+
+              <p class="empty-title">
+                주유소 정보를 가져오지 못했습니다.
+              </p>
+
+              <p class="empty-description">
+                잠시 후 다시 검색하거나 다른 위치를 입력해 주세요.
+              </p>
+
+            </div>
+          `;
+      }
+    }
+
+    /* ======================================================
+       Cached recalculation
+       ====================================================== */
+
+    function rerenderFromCache() {
+      if (
+        !Array.isArray(
+          lastStations
+        ) ||
+        lastStations.length ===
+          0
+      ) {
+        return;
+      }
+
+      const recalculated =
+        recalculateStations(
+          lastStations
+        );
+
+      renderStations(
+        recalculated
+      );
+
+      updateResultSummary(
+        recalculated,
+        selectedRadius
+      );
+
+      resultsCount.textContent =
+        `${recalculated.length}곳`;
+
+      showSearchStatus(
+        "success",
+        "저장된 주유소 정보를 새 설정으로 다시 계산했습니다."
+      );
+    }
+
+    function recalculateStations(
+      stations
+    ) {
+      const liters =
+        Number(
+          litersInput.value
+        );
+
+      const fuelEfficiency =
+        Number(
+          fuelEfficiencyInput.value
+        );
+
+      const paymentOption =
+        getPaymentOptionWithoutUi();
+
+      if (
+        !isValidPositiveNumber(
+          liters
+        ) ||
+        !isValidPositiveNumber(
+          fuelEfficiency
+        ) ||
+        !paymentOption
+      ) {
+        return stations;
+      }
+
+      return stations
+        .map(
+          (station) => {
+            const pricePerLiter =
+              Number(
+                station.pricePerLiter
+              );
+
+            const distanceKm =
+              Number(
+                station.distanceKm
+              );
+
+            if (
+              !Number.isFinite(
+                pricePerLiter
+              ) ||
+              pricePerLiter <=
+                0 ||
+              !Number.isFinite(
+                distanceKm
+              ) ||
+              distanceKm < 0
+            ) {
+              return {
+                ...station,
+                calculationAvailable:
+                  false,
+              };
+            }
+
+            const fuelCost =
+              pricePerLiter *
+              liters;
+
+            const roundTripDistanceKm =
+              distanceKm *
+              2;
+
+            const travelFuelLiters =
+              roundTripDistanceKm /
+              fuelEfficiency;
+
+            const travelCost =
+              travelFuelLiters *
+              pricePerLiter;
+
+            const discountEligible =
+              isDiscountEligible(
+                station,
+                paymentOption
+              );
+
+            const discountAmount =
+              calculateDiscountAmount({
+                fuelCost,
+
+                paymentOption,
+
+                eligible:
+                  discountEligible,
+              });
+
+            const discountedFuelCost =
+              Math.max(
+                0,
+                fuelCost -
+                  discountAmount
+              );
+
+            const totalCost =
+              discountedFuelCost +
+              travelCost;
+
+            const effectivePricePerLiter =
+              totalCost /
+              liters;
+
+            return {
+              ...station,
+
+              fuelCost,
+
+              roundTripDistanceKm,
+
+              travelFuelLiters,
+
+              travelCost,
+
+              discountAmount,
+
+              discountedFuelCost,
+
+              totalCost,
+
+              effectivePricePerLiter,
+
+              calculationAvailable:
+                true,
+            };
+          }
+        )
+        .filter(
+          (station) =>
+            station.calculationAvailable !==
+            false
+        )
+        .sort(
+          (a, b) =>
+            a.effectivePricePerLiter -
+            b.effectivePricePerLiter
+        );
+    }
+
+    function getPaymentOptionWithoutUi() {
       const type =
         discountTypeInput.value;
 
@@ -3889,7 +4095,10 @@
         type ===
         "none"
       ) {
-        return "할인 없음";
+        return {
+          type:
+            "none",
+        };
       }
 
       if (
@@ -3908,73 +4117,700 @@
               )
             : null;
 
-        return maxDiscount ===
-          null
-          ? `${rate}% 할인`
-          : `${rate}% / 최대 ${formatWon(
+        if (
+          !Number.isFinite(
+            rate
+          ) ||
+          rate < 0 ||
+          rate > 100
+        ) {
+          return null;
+        }
+
+        if (
+          maxDiscount !==
+            null &&
+          (
+            !Number.isFinite(
               maxDiscount
-            )}원`;
+            ) ||
+            maxDiscount < 0
+          )
+        ) {
+          return null;
+        }
+
+        return {
+          type:
+            "percent",
+
+          rate,
+
+          maxDiscount,
+        };
       }
 
       if (
         type ===
         "fixed"
       ) {
-        return `${formatWon(
+        const amount =
           Number(
             fixedDiscountInput.value
-          )
-        )}원 할인`;
+          );
+
+        if (
+          !Number.isFinite(
+            amount
+          ) ||
+          amount < 0
+        ) {
+          return null;
+        }
+
+        return {
+          type:
+            "fixed",
+
+          amount,
+        };
       }
 
-      return "할인 조건";
+      return null;
+    }
+
+    function isDiscountEligible(
+      station,
+      paymentOption
+    ) {
+      if (
+        !paymentOption ||
+        paymentOption.type ===
+          "none"
+      ) {
+        return false;
+      }
+
+      /*
+       * 현재 설정 UI의 할인은 일반 할인으로 취급합니다.
+       * 강릉페이 전용 할인 옵션을 만들 때에는
+       * requiresLocalPayMatch=true를 추가해
+       * matched 상태에서만 적용하도록 확장합니다.
+       */
+      if (
+        paymentOption.requiresLocalPayMatch
+      ) {
+        return (
+          station.localPayMatch
+            ?.matchStatus ===
+          "matched"
+        );
+      }
+
+      return true;
+    }
+
+    function calculateDiscountAmount({
+      fuelCost,
+      paymentOption,
+      eligible,
+    }) {
+      if (
+        !eligible ||
+        !paymentOption ||
+        paymentOption.type ===
+          "none"
+      ) {
+        return 0;
+      }
+
+      if (
+        paymentOption.type ===
+        "percent"
+      ) {
+        let amount =
+          fuelCost *
+          (
+            paymentOption.rate /
+            100
+          );
+
+        if (
+          paymentOption.maxDiscount !==
+            null &&
+          paymentOption.maxDiscount !==
+            undefined
+        ) {
+          amount =
+            Math.min(
+              amount,
+              paymentOption.maxDiscount
+            );
+        }
+
+        return Math.min(
+          amount,
+          fuelCost
+        );
+      }
+
+      if (
+        paymentOption.type ===
+        "fixed"
+      ) {
+        return Math.min(
+          paymentOption.amount,
+          fuelCost
+        );
+      }
+
+      return 0;
     }
 
     /* ======================================================
-       Status
+       Results summary
        ====================================================== */
 
-    function setLocationStatus(
-      type,
-      message
+    function updateResultSummary(
+      stations,
+      radius
     ) {
-      locationStatus.className =
-        "location-status";
+      const list =
+        Array.isArray(
+          stations
+        )
+          ? stations
+          : [];
 
-      if (
-        type
-      ) {
-        locationStatus.classList.add(
-          type
+      const payCount =
+        list.filter(
+          (station) =>
+            station.gangneungPay
+              ?.status ===
+            "matched" ||
+            station.gangneungPay
+              ?.status ===
+            "available"
+        ).length;
+
+      summaryStationCount.textContent =
+        formatNumber(
+          list.length
         );
-      }
 
-      locationStatus.innerHTML =
-        `
-          <span class="location-dot"></span>
-          <span>${escapeHtml(
-            message
-          )}</span>
-        `;
+      summaryPayCount.textContent =
+        formatNumber(
+          payCount
+        );
+
+      summaryRadius.textContent =
+        formatRadius(
+          radius
+        );
+
+      resultSummary.classList.toggle(
+        "visible",
+        list.length >
+          0
+      );
     }
 
-    function setStationStatus(
-      type,
-      message
+    /* ======================================================
+       Render stations
+       ====================================================== */
+
+    function renderStations(
+      stations
     ) {
-      stationStatus.className =
-        "station-status";
+      stationList.innerHTML =
+        "";
 
       if (
-        type
+        !Array.isArray(
+          stations
+        ) ||
+        stations.length ===
+          0
       ) {
-        stationStatus.classList.add(
-          type
-        );
+        stationList.innerHTML =
+          `
+            <div class="empty-state">
+
+              <div class="empty-icon">
+                ⛽
+              </div>
+
+              <p class="empty-title">
+                표시할 주유소가 없습니다.
+              </p>
+
+              <p class="empty-description">
+                오피넷에서 확인된 주유소가 없거나
+                계산 가능한 데이터가 없습니다.
+              </p>
+
+            </div>
+          `;
+
+        return;
       }
 
-      stationStatus.innerHTML =
-        message;
+      stations.forEach(
+        (
+          station,
+          index
+        ) => {
+          const item =
+            document.createElement(
+              "article"
+            );
+
+          item.className =
+            index === 0
+              ? "station best"
+              : "station";
+
+          item.innerHTML =
+            createStationHtml(
+              station,
+              index
+            );
+
+          stationList.appendChild(
+            item
+          );
+        }
+      );
+    }
+
+    function createStationHtml(
+      station,
+      index
+    ) {
+      const distanceKm =
+        Number(
+          station.distanceKm
+        );
+
+      const pricePerLiter =
+        Number(
+          station.pricePerLiter
+        );
+
+      const fuelCost =
+        Number(
+          station.fuelCost
+        );
+
+      const travelCost =
+        Number(
+          station.travelCost
+        );
+
+      const discountAmount =
+        Number(
+          station.discountAmount
+        );
+
+      const discountedFuelCost =
+        Number(
+          station.discountedFuelCost
+        );
+
+      const totalCost =
+        Number(
+          station.totalCost
+        );
+
+      const effectivePrice =
+        Number(
+          station.effectivePricePerLiter
+        );
+
+      const distanceText =
+        Number.isFinite(
+          distanceKm
+        )
+          ? `${distanceKm.toFixed(
+              2
+            )}km`
+          : "거리 정보 없음";
+
+      const rankText =
+        index === 0
+          ? "추천 1위"
+          : `${index + 1}위`;
+
+      const naverUrl =
+        createNaverMapUrl(
+          station
+        );
+
+      const kakaoUrl =
+        createKakaoMapUrl(
+          station
+        );
+
+      return `
+        <div class="station-header">
+
+          <div>
+
+            <div class="station-rank">
+              ${rankText}
+            </div>
+
+            <div class="station-name">
+              ${escapeHtml(
+                station.name ||
+                  "주유소"
+              )}
+            </div>
+
+            <div class="station-meta">
+
+              <span class="meta-chip">
+                ${escapeHtml(
+                  distanceText
+                )}
+              </span>
+
+              ${
+                Number.isFinite(
+                  pricePerLiter
+                )
+                  ? `
+                    <span class="meta-chip">
+                      표시 ${formatWon(
+                        pricePerLiter
+                      )}원/L
+                    </span>
+                  `
+                  : ""
+              }
+
+              ${createPayBadge(
+                station
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="effective-box">
+
+          <span class="effective-label">
+            내 차 기준 실질가격
+          </span>
+
+          <div class="effective-price-line">
+
+            <span class="effective-price">
+              ${formatWon(
+                Math.round(
+                  effectivePrice
+                )
+              )}
+            </span>
+
+            <span class="effective-unit">
+              원/L
+            </span>
+
+          </div>
+
+          <p class="effective-caption">
+            주유비 + 왕복 이동비 - 할인
+          </p>
+
+        </div>
+
+        <div class="cost-grid">
+
+          <div class="cost-item total">
+
+            <span class="cost-label">
+              실제 부담 총액
+            </span>
+
+            <span class="cost-value">
+              ${formatWon(
+                totalCost
+              )}원
+            </span>
+
+          </div>
+
+          <div class="cost-item">
+
+            <span class="cost-label">
+              표시 주유비
+            </span>
+
+            <span class="cost-value">
+              ${formatWon(
+                fuelCost
+              )}원
+            </span>
+
+          </div>
+
+          <div class="cost-item">
+
+            <span class="cost-label">
+              왕복 이동비
+            </span>
+
+            <span class="cost-value">
+              ${formatWon(
+                travelCost
+              )}원
+            </span>
+
+          </div>
+
+          <div class="cost-item">
+
+            <span class="cost-label">
+              할인
+            </span>
+
+            <span class="cost-value">
+              ${
+                discountAmount >
+                0
+                  ? `-${formatWon(
+                      discountAmount
+                    )}원`
+                  : "0원"
+              }
+            </span>
+
+          </div>
+
+        </div>
+
+        ${
+          discountAmount >
+          0
+            ? `
+              <div class="cost-grid">
+
+                <div class="cost-item">
+
+                  <span class="cost-label">
+                    할인 후 주유비
+                  </span>
+
+                  <span class="cost-value">
+                    ${formatWon(
+                      discountedFuelCost
+                    )}원
+                  </span>
+
+                </div>
+
+                <div class="cost-item">
+
+                  <span class="cost-label">
+                    할인 조건
+                  </span>
+
+                  <span class="cost-value">
+                    ${escapeHtml(
+                      getDiscountDescription()
+                    )}
+                  </span>
+
+                </div>
+
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          station.address
+            ? `
+              <div class="station-address">
+                ${escapeHtml(
+                  station.address
+                )}
+              </div>
+            `
+            : ""
+        }
+
+        ${createGangneungPayHtml(
+          station
+        )}
+
+        <div class="map-buttons">
+
+          <a
+            class="map-button primary"
+            href="${naverUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            네이버 지도
+          </a>
+
+          ${
+            kakaoUrl
+              ? `
+                <a
+                  class="map-button"
+                  href="${kakaoUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  카카오맵
+                </a>
+              `
+              : `
+                <button
+                  class="map-button"
+                  type="button"
+                  disabled
+                >
+                  카카오맵 위치 없음
+                </button>
+              `
+          }
+
+        </div>
+      `;
+    }
+
+    /* ======================================================
+       Gangneung Pay
+       ====================================================== */
+
+    function createPayBadge(
+      station
+    ) {
+      const pay =
+        station.gangneungPay;
+
+      if (
+        !pay
+      ) {
+        return "";
+      }
+
+      if (
+        pay.status ===
+          "matched" ||
+        pay.status ===
+          "available"
+      ) {
+        return `
+          <span class="meta-chip pay">
+            강릉페이 가능
+          </span>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "needs_confirmation"
+      ) {
+        return `
+          <span class="meta-chip confirm">
+            강릉페이 확인 필요
+          </span>
+        `;
+      }
+
+      return `
+        <span class="meta-chip">
+          강릉페이 미확인
+        </span>
+      `;
+    }
+
+    function createGangneungPayHtml(
+      station
+    ) {
+      const pay =
+        station.gangneungPay;
+
+      if (
+        !pay
+      ) {
+        return "";
+      }
+
+      if (
+        pay.status ===
+          "matched" ||
+        pay.status ===
+          "available"
+      ) {
+        const merchant =
+          pay.merchant
+            ?.name ||
+          "";
+
+        return `
+          <div class="gangneung-pay available">
+
+            <div class="gangneung-pay-title">
+              강릉페이 가맹점
+            </div>
+
+            <div class="gangneung-pay-description">
+              ${
+                merchant
+                  ? `공식 명단 매칭 · ${escapeHtml(
+                      merchant
+                    )}`
+                  : "공식 가맹 명단과 매칭되었습니다."
+              }
+            </div>
+
+          </div>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "needs_confirmation"
+      ) {
+        return `
+          <div class="gangneung-pay confirm">
+
+            <div class="gangneung-pay-title">
+              강릉페이
+            </div>
+
+            <div class="gangneung-pay-description">
+              ${escapeHtml(
+                pay.reason ||
+                  "공식 명단과 추가 확인이 필요합니다."
+              )}
+            </div>
+
+          </div>
+        `;
+      }
+
+      return `
+        <div class="gangneung-pay">
+
+          <div class="gangneung-pay-title">
+            강릉페이
+          </div>
+
+          <div class="gangneung-pay-description">
+            공식 가맹 명단에서 확인되지 않았습니다.
+          </div>
+
+        </div>
+      `;
     }
 
     /* ======================================================
@@ -4003,16 +4839,22 @@
     function createKakaoMapUrl(
       station
     ) {
+      const latitude =
+        Number(
+          station.latitude
+        );
+
+      const longitude =
+        Number(
+          station.longitude
+        );
+
       if (
         !Number.isFinite(
-          Number(
-            station.latitude
-          )
+          latitude
         ) ||
         !Number.isFinite(
-          Number(
-            station.longitude
-          )
+          longitude
         )
       ) {
         return null;
@@ -4025,8 +4867,55 @@
         );
 
       return (
-        `https://map.kakao.com/link/map/${name},${station.latitude},${station.longitude}`
+        `https://map.kakao.com/link/map/${name},${latitude},${longitude}`
       );
+    }
+
+    /* ======================================================
+       Search status
+       ====================================================== */
+
+    function showSearchStatus(
+      type,
+      message
+    ) {
+      searchStatus.className =
+        "search-status visible";
+
+      if (
+        type
+      ) {
+        searchStatus.classList.add(
+          type
+        );
+      }
+
+      searchStatus.innerHTML =
+        message;
+    }
+
+    function setLocationStatus(
+      type,
+      message
+    ) {
+      locationStatus.className =
+        "location-status";
+
+      if (
+        type
+      ) {
+        locationStatus.classList.add(
+          type
+        );
+      }
+
+      locationStatus.innerHTML =
+        `
+          <span class="location-status-dot"></span>
+          <span>${escapeHtml(
+            message
+          )}</span>
+        `;
     }
 
     /* ======================================================
@@ -4056,6 +4945,30 @@
         ) &&
         value > 0
       );
+    }
+
+    /* ======================================================
+       Geolocation error
+       ====================================================== */
+
+    function getGeolocationErrorMessage(
+      error
+    ) {
+      switch (
+        error.code
+      ) {
+        case 1:
+          return "위치 권한이 거부되었습니다. 브라우저의 위치 권한을 허용한 뒤 다시 시도하세요.";
+
+        case 2:
+          return "현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도하세요.";
+
+        case 3:
+          return "위치 확인 시간이 초과되었습니다. 다시 시도하세요.";
+
+        default:
+          return "현재 위치를 가져오지 못했습니다.";
+      }
     }
 
     /* ======================================================
@@ -4118,7 +5031,8 @@
       const km =
         Number(
           meters
-        ) / 1000;
+        ) /
+        1000;
 
       if (
         !Number.isFinite(
@@ -4130,35 +5044,90 @@
 
       return `${Number.isInteger(
         km
-      ) ? km : km.toFixed(1)}km`;
+      )
+        ? km
+        : km.toFixed(
+            1
+          )}km`;
     }
 
     /* ======================================================
-       Geolocation error
+       Discount description
        ====================================================== */
 
-    function getGeolocationErrorMessage(
-      error
-    ) {
-      switch (
-        error.code
+    function getDiscountDescription() {
+      const type =
+        discountTypeInput.value;
+
+      if (
+        type ===
+        "none"
       ) {
-        case 1:
-          return "위치 권한이 거부되었습니다. 브라우저의 위치 권한을 허용한 뒤 다시 시도하세요.";
+        return "할인 없음";
+      }
 
-        case 2:
-          return "현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도하세요.";
+      if (
+        type ===
+        "percent"
+      ) {
+        const rate =
+          Number(
+            discountRateInput.value
+          );
 
-        case 3:
-          return "위치 확인 시간이 초과되었습니다. 다시 시도하세요.";
+        const maxDiscount =
+          maxDiscountInput.value
+            ? Number(
+                maxDiscountInput.value
+              )
+            : null;
 
-        default:
-          return "현재 위치를 가져오지 못했습니다.";
+        return maxDiscount ===
+          null
+          ? `${rate}% 할인`
+          : `${rate}% / 최대 ${formatWon(
+              maxDiscount
+            )}원`;
+      }
+
+      if (
+        type ===
+        "fixed"
+      ) {
+        return `${formatWon(
+          Number(
+            fixedDiscountInput.value
+          )
+        )}원 할인`;
+      }
+
+      return "할인 조건";
+    }
+
+    /* ======================================================
+       Clone
+       ====================================================== */
+
+    function deepClone(
+      value
+    ) {
+      try {
+        return JSON.parse(
+          JSON.stringify(
+            value
+          )
+        );
+      } catch {
+        return Array.isArray(
+          value
+        )
+          ? [...value]
+          : value;
       }
     }
 
     /* ======================================================
-       HTML escape
+       Escape HTML
        ====================================================== */
 
     function escapeHtml(
@@ -4190,5 +5159,6 @@
         );
     }
   </script>
+
 </body>
 </html>
