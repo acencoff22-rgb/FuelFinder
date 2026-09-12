@@ -41,8 +41,14 @@ const publicDirectory =
     "../public"
   );
 
-const port = Number(process.env.PORT || 3000);
-const host = process.env.HOST || "0.0.0.0";
+const port =
+  Number(
+    process.env.PORT || 3000
+  );
+
+const host =
+  process.env.HOST ||
+  "0.0.0.0";
 
 const mimeTypes = {
   ".html":
@@ -94,10 +100,14 @@ const server =
           request.method === "GET" &&
           request.url === "/health"
         ) {
-          sendJson(response, 200, {
-            success: true,
-            service: "FuelFinder",
-          });
+          sendJson(
+            response,
+            200,
+            {
+              success: true,
+              service: "FuelFinder",
+            }
+          );
 
           return;
         }
@@ -134,17 +144,22 @@ const server =
           error
         );
 
-        sendJson(
-          response,
-          500,
-          {
-            success: false,
-            error:
-              error instanceof Error
-                ? error.message
-                : "알 수 없는 서버 오류가 발생했습니다.",
-          }
-        );
+        if (
+          !response.headersSent
+        ) {
+          sendJson(
+            response,
+            500,
+            {
+              success: false,
+
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "알 수 없는 서버 오류가 발생했습니다.",
+            }
+          );
+        }
       }
     }
   );
@@ -251,6 +266,14 @@ async function handleNearbyStations(
     console.log(
       `할인율: ${paymentOption.rate}%`
     );
+
+    if (
+      paymentOption.requiresLocalPayMatch
+    ) {
+      console.log(
+        "강릉페이 가맹점 매칭 확인 후 할인 적용"
+      );
+    }
   }
 
   if (
@@ -260,6 +283,14 @@ async function handleNearbyStations(
     console.log(
       `정액 할인: ${paymentOption.amount}원`
     );
+
+    if (
+      paymentOption.requiresLocalPayMatch
+    ) {
+      console.log(
+        "강릉페이 가맹점 매칭 확인 후 할인 적용"
+      );
+    }
   }
 
   const data =
@@ -288,33 +319,58 @@ async function handleNearbyStations(
   );
 
   /**
-   * 1차 매칭은 aroundAll의 상호명으로 수행합니다.
-   * 이름이 맞는 주유소만 상세조회하여 API 호출을 줄입니다.
+   * 1차 매칭
+   *
+   * aroundAll의 기본 상호명/주소를 이용합니다.
+   *
+   * 매칭 확정 후보뿐 아니라
+   * 확인이 필요한 후보도 상세조회 대상으로 넣습니다.
    */
-  const preliminary = stations.map((station) => ({
-    station,
-    result: matchStationToLocalPay(
+  const preliminary =
+    stations.map(
+      (station) => ({
+        station,
+
+        result:
+          matchStationToLocalPay(
+            station,
+            gangneungPayStations
+          ),
+      })
+    );
+
+  const detailTargets =
+    preliminary.filter(
+      ({
+        result,
+      }) =>
+        result.matchStatus ===
+          "matched" ||
+        result.matchStatus ===
+          "ambiguous" ||
+        result.reviewRequired ===
+          true
+    );
+
+  const detailedStations =
+    new Map();
+
+  for (
+    const {
       station,
-      gangneungPayStations
-    ),
-  }));
-
-  const detailTargets = preliminary.filter(
-    ({ result }) =>
-      result.matchStatus === "matched" ||
-      result.matchStatus === "ambiguous" ||
-      result.reviewRequired === true
-  );
-
-  const detailedStations = new Map();
-
-  for (const { station } of detailTargets) {
-    if (!station.id) {
+    } of detailTargets
+  ) {
+    if (
+      !station.id
+    ) {
       continue;
     }
 
     try {
-      const detailData = await getStationDetail(station.id);
+      const detailData =
+        await getStationDetail(
+          station.id
+        );
 
       const detail =
         extractStationDetail(
@@ -322,29 +378,35 @@ async function handleNearbyStations(
         );
 
       if (detail) {
-        detailedStations.set(station.id, {
-          ...station,
-          name:
-            detail.OS_NM ||
-            station.name,
+        detailedStations.set(
+          station.id,
+          {
+            ...station,
 
-          address:
-            detail.NEW_ADR ||
-            station.address ||
-            "",
+            name:
+              detail.OS_NM ||
+              station.name,
 
-          oldAddress:
-            detail.VAN_ADR ||
-            station.oldAddress ||
-            "",
+            address:
+              detail.NEW_ADR ||
+              station.address ||
+              "",
 
-          phone:
-            detail.TEL ||
-            station.phone ||
-            "",
-        });
+            oldAddress:
+              detail.VAN_ADR ||
+              station.oldAddress ||
+              "",
+
+            phone:
+              detail.TEL ||
+              station.phone ||
+              "",
+          }
+        );
       }
-    } catch (error) {
+    } catch (
+      error
+    ) {
       console.warn(
         `[오피넷 상세조회 실패] ${station.id}: ${error.message}`
       );
@@ -355,29 +417,38 @@ async function handleNearbyStations(
     `상세조회 대상: ${detailTargets.length}개`
   );
 
-  const enrichedStations = stations.map((station) => {
-    const finalStation =
-      detailedStations.get(station.id) ||
-      station;
+  /**
+   * 상세조회 결과를 반영한
+   * 최종 강릉페이 매칭
+   */
+  const enrichedStations =
+    stations.map(
+      (station) => {
+        const finalStation =
+          detailedStations.get(
+            station.id
+          ) ||
+          station;
 
-    const matchResult =
-      matchStationToLocalPay(
-        finalStation,
-        gangneungPayStations
-      );
+        const matchResult =
+          matchStationToLocalPay(
+            finalStation,
+            gangneungPayStations
+          );
 
-    return {
-      ...finalStation,
+        return {
+          ...finalStation,
 
-      localPayMatch:
-        matchResult,
+          localPayMatch:
+            matchResult,
 
-      gangneungPay:
-        createGangneungPayInfo(
-          matchResult
-        ),
-    };
-  });
+          gangneungPay:
+            createGangneungPayInfo(
+              matchResult
+            ),
+        };
+      }
+    );
 
   const calculatedStations =
     compareStations(
@@ -390,6 +461,14 @@ async function handleNearbyStations(
         paymentOption,
       }
     );
+
+  const eligibleStationCount =
+    calculatedStations.filter(
+      (station) =>
+        station
+          .appliedPaymentOption
+          ?.eligible === true
+    ).length;
 
   sendJson(
     response,
@@ -427,10 +506,14 @@ async function handleNearbyStations(
           gangneungPayStations.length,
 
         discountApplied:
-          false,
+          eligibleStationCount > 0,
+
+        eligibleStationCount,
 
         discountPolicyStatus:
-          "not-configured",
+          getDiscountPolicyStatus(
+            paymentOption
+          ),
       },
 
       stationCount:
@@ -464,6 +547,9 @@ function createGangneungPayInfo(
       reason:
         matchResult?.reason ??
         "공식 강릉페이 가맹 주유소 명단에서 일치 항목을 찾지 못했습니다.",
+
+      source:
+        "gangneung-pay-official-list",
     };
   }
 
@@ -493,7 +579,9 @@ function createGangneungPayInfo(
     matchResult.matchStatus ===
       "probable" ||
     matchResult.matchStatus ===
-      "possible"
+      "possible" ||
+    matchResult.matchStatus ===
+      "needs_confirmation"
   ) {
     return {
       status:
@@ -503,7 +591,8 @@ function createGangneungPayInfo(
         matchResult.confidence,
 
       merchant:
-        matchResult.merchant,
+        matchResult.merchant ??
+        null,
 
       reason:
         matchResult.reason,
@@ -540,18 +629,40 @@ function createGangneungPayInfo(
       "needs_confirmation",
 
     confidence:
-      matchResult.confidence,
+      matchResult.confidence ??
+      0,
 
     merchant:
       matchResult.merchant ??
       null,
 
     reason:
-      matchResult.reason,
+      matchResult.reason ??
+      "강릉페이 가맹 여부를 확정할 수 없습니다.",
 
     source:
       "gangneung-pay-official-list",
   };
+}
+
+function getDiscountPolicyStatus(
+  paymentOption
+) {
+  if (
+    !paymentOption ||
+    paymentOption.type ===
+      "none"
+  ) {
+    return "not-configured";
+  }
+
+  if (
+    paymentOption.requiresLocalPayMatch
+  ) {
+    return "local-pay-match-required";
+  }
+
+  return "configured";
 }
 
 function normalizePaymentOption(
@@ -590,6 +701,15 @@ function normalizePaymentOption(
       type: "none",
     };
   }
+
+  /**
+   * 강릉페이 등
+   * 특정 가맹점 매칭이 필요한 할인인지
+   * 서버에서도 반드시 보존합니다.
+   */
+  const requiresLocalPayMatch =
+    value.requiresLocalPayMatch ===
+    true;
 
   if (
     type === "percent"
@@ -644,6 +764,8 @@ function normalizePaymentOption(
       rate,
 
       maxDiscount,
+
+      requiresLocalPayMatch,
     };
   }
 
@@ -670,6 +792,8 @@ function normalizePaymentOption(
       type: "fixed",
 
       amount,
+
+      requiresLocalPayMatch,
     };
   }
 
@@ -792,10 +916,23 @@ async function handleStaticFile(
       decodedPath
     );
 
-  if (
-    !filePath.startsWith(
+  const normalizedPublicDirectory =
+    path.resolve(
       publicDirectory
-    )
+    );
+
+  const normalizedFilePath =
+    path.resolve(
+      filePath
+    );
+
+  if (
+    !normalizedFilePath.startsWith(
+      normalizedPublicDirectory +
+        path.sep
+    ) &&
+    normalizedFilePath !==
+      normalizedPublicDirectory
   ) {
     response.writeHead(
       403,
@@ -813,7 +950,7 @@ async function handleStaticFile(
   }
 
   fs.readFile(
-    filePath,
+    normalizedFilePath,
     (
       error,
       data
@@ -836,7 +973,7 @@ async function handleStaticFile(
 
       const extension =
         path.extname(
-          filePath
+          normalizedFilePath
         );
 
       const contentType =
@@ -962,12 +1099,6 @@ server.listen(
 
     console.log(
       "오피넷 주변 주유소 + 실질 주유비 + 강릉페이 가맹 여부가 연결되어 있습니다."
-    );
-
-    console.log("");
-
-    console.log(
-      "홍길동주유소 매칭 진단 로그가 활성화되어 있습니다."
     );
 
     console.log("");
