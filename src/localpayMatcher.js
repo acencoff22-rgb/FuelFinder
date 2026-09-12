@@ -16,6 +16,13 @@ function normalizeText(value) {
     .trim();
 }
 
+/**
+ * 주소 비교용 정규화.
+ *
+ * 주소 자체 비교에서는 하이픈을 제거해도 되지만
+ * 지번번호 비교에서는 123-4와 1234를 구분해야 하므로
+ * extractAddressNumbers()에서는 별도 원문 정규화를 사용한다.
+ */
 function normalizeAddress(value) {
   if (
     value === null ||
@@ -28,7 +35,7 @@ function normalizeAddress(value) {
     .toLowerCase()
     .replace(/\s+/g, "")
     .replace(
-      /[()[\]{}.,'’"`·\-_\/]/g,
+      /[()[\]{}.,'’"`·\/]/g,
       ""
     )
     .replace(
@@ -106,7 +113,117 @@ function normalizeAddress(value) {
     .replace(
       /^세종특별자치시/,
       "세종"
-    );
+    )
+    .replace(
+      /-/g,
+      ""
+    )
+    .trim();
+}
+
+/**
+ * 지번번호 비교 전용 정규화.
+ *
+ * 여기서는 하이픈을 보존한다.
+ *
+ * 예:
+ * 123-4 → 123-4
+ * 1234  → 1234
+ */
+function normalizeAddressForNumbers(
+  value
+) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return String(value)
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(
+      /[()[\]{}.,'’"`·\/]/g,
+      ""
+    )
+    .replace(
+      /^대한민국/,
+      ""
+    )
+    .replace(
+      /^강원특별자치도/,
+      "강원"
+    )
+    .replace(
+      /^강원도/,
+      "강원"
+    )
+    .replace(
+      /^경기도/,
+      "경기"
+    )
+    .replace(
+      /^충청북도/,
+      "충북"
+    )
+    .replace(
+      /^충청남도/,
+      "충남"
+    )
+    .replace(
+      /^전라북도/,
+      "전북"
+    )
+    .replace(
+      /^전라남도/,
+      "전남"
+    )
+    .replace(
+      /^경상북도/,
+      "경북"
+    )
+    .replace(
+      /^경상남도/,
+      "경남"
+    )
+    .replace(
+      /^제주특별자치도/,
+      "제주"
+    )
+    .replace(
+      /^서울특별시/,
+      "서울"
+    )
+    .replace(
+      /^부산광역시/,
+      "부산"
+    )
+    .replace(
+      /^대구광역시/,
+      "대구"
+    )
+    .replace(
+      /^인천광역시/,
+      "인천"
+    )
+    .replace(
+      /^광주광역시/,
+      "광주"
+    )
+    .replace(
+      /^대전광역시/,
+      "대전"
+    )
+    .replace(
+      /^울산광역시/,
+      "울산"
+    )
+    .replace(
+      /^세종특별자치시/,
+      "세종"
+    )
+    .trim();
 }
 
 function getStationAddresses(
@@ -140,7 +257,9 @@ function extractAddressNumbers(
   value
 ) {
   const normalized =
-    normalizeAddress(value);
+    normalizeAddressForNumbers(
+      value
+    );
 
   if (!normalized) {
     return [];
@@ -160,7 +279,9 @@ function extractRoadName(
   value
 ) {
   const normalized =
-    normalizeAddress(value);
+    normalizeAddress(
+      value
+    );
 
   if (!normalized) {
     return "";
@@ -196,8 +317,11 @@ function compareAddress(
   ) {
     return {
       score: 0,
+
       type: "none",
+
       sameRoad: false,
+
       commonNumbers: [],
     };
   }
@@ -208,11 +332,14 @@ function compareAddress(
   ) {
     return {
       score: 100,
+
       type: "exact",
+
       sameRoad: true,
+
       commonNumbers:
         extractAddressNumbers(
-          station
+          stationAddress
         ),
     };
   }
@@ -238,20 +365,23 @@ function compareAddress(
   if (!sameRoad) {
     return {
       score: 0,
+
       type: "none",
+
       sameRoad: false,
+
       commonNumbers: [],
     };
   }
 
   const stationNumbers =
     extractAddressNumbers(
-      station
+      stationAddress
     );
 
   const merchantNumbers =
     extractAddressNumbers(
-      merchant
+      merchantAddress
     );
 
   const commonNumbers =
@@ -263,20 +393,27 @@ function compareAddress(
     );
 
   if (
-    commonNumbers.length > 0
+    commonNumbers.length >
+    0
   ) {
     return {
       score: 95,
+
       type: "roadAndNumber",
+
       sameRoad: true,
+
       commonNumbers,
     };
   }
 
   return {
     score: 35,
+
     type: "roadOnly",
+
     sameRoad: true,
+
     commonNumbers: [],
   };
 }
@@ -296,21 +433,29 @@ function getAddressMatch(
     );
 
   if (
-    stationAddresses.length === 0 ||
-    merchantAddresses.length === 0
+    stationAddresses.length ===
+      0 ||
+    merchantAddresses.length ===
+      0
   ) {
     return {
       score: 0,
+
       type: "none",
+
       sameRoad: false,
+
       commonNumbers: [],
     };
   }
 
   let best = {
     score: 0,
+
     type: "none",
+
     sameRoad: false,
+
     commonNumbers: [],
   };
 
@@ -342,20 +487,7 @@ function getAddressMatch(
 }
 
 /**
- * 회사명으로 볼 가능성이 높은 문자열인지
- * 확인한다.
- *
- * 예:
- * 에스제이와이에너지
- * 백두가스산업
- * 호진상사
- * 지에스이앤알
- *
- * 반면:
- * 남
- * 강
- * 교
- * 등은 회사명으로 취급하지 않는다.
+ * 회사명으로 볼 가능성이 높은 문자열인지 확인한다.
  */
 function isCompanyLike(
   value
@@ -397,22 +529,6 @@ function isCompanyLike(
 
 /**
  * 주유소 이름을 분석한다.
- *
- * 중요한 점:
- *
- * 남강릉주유소
- * 강릉주유소
- *
- * 는 강릉주유소가 포함되어 있어도
- * 자동 매칭하지 않는다.
- *
- * 반면:
- *
- * 홍길동주유소에스제이와이에너지
- * 에스제이와이에너지홍길동주유소
- *
- * 처럼 실제 회사명 조각이 존재하면
- * 같은 업체명으로 판단할 수 있다.
  */
 function analyzeStationName(
   stationName,
@@ -434,9 +550,13 @@ function analyzeStationName(
   ) {
     return {
       score: 0,
+
       exact: false,
+
       coreMatch: false,
+
       companyMatch: false,
+
       commonCore: "",
     };
   }
@@ -450,60 +570,88 @@ function analyzeStationName(
   ) {
     return {
       score: 100,
+
       exact: true,
+
       coreMatch: true,
+
       companyMatch: false,
+
       commonCore:
         station,
     };
   }
 
   /**
-   * 한쪽 이름에 다른 쪽의 전체 주유소명이 들어 있고
-   * 남는 문자열이 실제 회사명처럼 보이는 경우를 허용한다.
-   *
-   * 예:
-   * 홍길동주유소 + 에스제이와이에너지
-   * 에스제이와이에너지 + 홍길동주유소
+   * 한쪽 이름에 다른 쪽 전체 주유소명이 들어 있고
+   * 남는 문자열이 실제 회사명처럼 보이는 경우만 허용.
    */
   const stationContainsMerchant =
-    station.includes(merchant);
+    station.includes(
+      merchant
+    );
 
   if (
     stationContainsMerchant &&
     merchant.length >= 4
   ) {
     const remainder =
-      station.replace(merchant, "");
+      station.replace(
+        merchant,
+        ""
+      );
 
-    if (isCompanyLike(remainder)) {
+    if (
+      isCompanyLike(
+        remainder
+      )
+    ) {
       return {
         score: 100,
+
         exact: false,
+
         coreMatch: true,
+
         companyMatch: true,
-        commonCore: merchant,
+
+        commonCore:
+          merchant,
       };
     }
   }
 
   const merchantContainsStation =
-    merchant.includes(station);
+    merchant.includes(
+      station
+    );
 
   if (
     merchantContainsStation &&
     station.length >= 4
   ) {
     const remainder =
-      merchant.replace(station, "");
+      merchant.replace(
+        station,
+        ""
+      );
 
-    if (isCompanyLike(remainder)) {
+    if (
+      isCompanyLike(
+        remainder
+      )
+    ) {
       return {
         score: 100,
+
         exact: false,
+
         coreMatch: true,
+
         companyMatch: true,
-        commonCore: station,
+
+        commonCore:
+          station,
       };
     }
   }
@@ -527,16 +675,17 @@ function analyzeStationName(
   ) {
     return {
       score: 0,
+
       exact: false,
+
       coreMatch: false,
+
       companyMatch: false,
+
       commonCore: "",
     };
   }
 
-  /**
-   * 주유소명 앞부분
-   */
   const stationBefore =
     station.slice(
       0,
@@ -549,20 +698,6 @@ function analyzeStationName(
       merchantSuffixIndex
     );
 
-  /**
-   * 두 이름의 마지막 부분에서
-   * 공통 주유소 핵심명을 찾는다.
-   *
-   * 예:
-   *
-   * station:
-   * 홍길동
-   *
-   * merchant:
-   * 에스제이와이에너지홍길동
-   *
-   * → 홍길동주유소
-   */
   const maxCoreLength =
     Math.min(
       stationBefore.length,
@@ -610,7 +745,8 @@ function analyzeStationName(
       );
 
     /**
-     * 회사명이 양쪽에 실제로 존재
+     * 양쪽 모두 회사명이 붙어 있고
+     * 회사명까지 동일/포함 관계인 경우
      */
     if (
       isCompanyLike(
@@ -642,71 +778,72 @@ function analyzeStationName(
       ) {
         return {
           score: 100,
+
           exact: false,
+
           coreMatch: true,
+
           companyMatch: true,
+
           commonCore,
         };
       }
     }
 
     /**
-     * 한쪽이 주유소명만 가지고 있고
-     * 다른 쪽에 회사명이 붙은 경우
-     *
-     * 예:
-     *
-     * 홍길동주유소
-     * 에스제이와이에너지홍길동주유소
-     *
-     * 회사명이 실제 회사 형태이면 인정한다.
+     * 한쪽은 주유소명만,
+     * 다른 쪽에는 회사명이 붙은 경우
      */
     if (
-      stationRemainder === "" &&
+      stationRemainder ===
+        "" &&
       isCompanyLike(
         merchantRemainder
       )
     ) {
       return {
         score: 100,
+
         exact: false,
+
         coreMatch: true,
+
         companyMatch: true,
+
         commonCore,
       };
     }
 
     if (
-      merchantRemainder === "" &&
+      merchantRemainder ===
+        "" &&
       isCompanyLike(
         stationRemainder
       )
     ) {
       return {
         score: 100,
+
         exact: false,
+
         coreMatch: true,
+
         companyMatch: true,
+
         commonCore,
       };
     }
-
-    /**
-     * 회사명이 아닌 한 글자/짧은 접두어는
-     * 주유소명 일치로 인정하지 않는다.
-     *
-     * 남강릉주유소
-     * 강릉주유소
-     *
-     * 여기서 "남"은 탈락한다.
-     */
   }
 
   return {
     score: 0,
+
     exact: false,
+
     coreMatch: false,
+
     companyMatch: false,
+
     commonCore: "",
   };
 }
@@ -728,8 +865,15 @@ function calculateCandidate(
     );
 
   let score = 0;
+
   let matchStatus =
     "unmatched";
+
+  let reviewRequired =
+    false;
+
+  let reviewType =
+    null;
 
   let reason =
     "주유소명과 주소가 일치하지 않습니다.";
@@ -743,74 +887,77 @@ function calculateCandidate(
   ) {
     score = 70;
 
-    /**
-     * 주소가 정확하면 최고
-     */
     if (
       address.type ===
       "exact"
     ) {
       score += 30;
-    }
 
-    /**
-     * 도로명 + 번호
-     */
-    else if (
-      address.type ===
-      "roadAndNumber"
-    ) {
-      score += 25;
-    }
+      matchStatus =
+        "matched";
 
-    /**
-     * 도로명만 동일
-     */
-    else if (
-      address.type ===
-      "roadOnly"
-    ) {
-      score += 5;
-    }
-
-    matchStatus =
-      "matched";
-
-    if (
-      address.type ===
-      "exact"
-    ) {
       reason =
         "주유소명과 주소가 모두 일치합니다.";
     } else if (
       address.type ===
       "roadAndNumber"
     ) {
+      score += 25;
+
+      matchStatus =
+        "matched";
+
       reason =
         "주유소명과 주소의 도로명·번호가 일치합니다.";
     } else if (
       address.type ===
       "roadOnly"
     ) {
-      reason =
-        "주유소명과 동일 도로명이 일치합니다.";
-    } else if (
-      name.companyMatch
-    ) {
-      reason =
-        "주유소명과 사업자명 구성이 일치합니다.";
-    } else {
-      reason =
-        "주유소명이 정확히 일치합니다.";
-    }
-  }
+      score += 5;
 
-  /**
-   * 이름이 전혀 안 맞고
-   * 주소만 같은 경우는
-   * 절대로 매칭 후보로 올리지 않는다.
-   */
-  else {
+      /**
+       * 같은 도로만으로는
+       * 자동 할인 적용을 하지 않는다.
+       *
+       * 상세조회 후 다시 판단할 수 있도록
+       * 확인 필요 상태로 둔다.
+       */
+      matchStatus =
+        "needs_confirmation";
+
+      reviewRequired =
+        true;
+
+      reviewType =
+        "road-only";
+
+      reason =
+        "주유소명은 일치하지만 주소가 동일 도로까지만 확인되어 추가 확인이 필요합니다.";
+    } else {
+      /**
+       * 이름만 일치하는 경우도
+       * 자동 할인 적용하지 않는다.
+       */
+      matchStatus =
+        "needs_confirmation";
+
+      reviewRequired =
+        true;
+
+      reviewType =
+        "name-only";
+
+      if (
+        name.companyMatch
+      ) {
+        reason =
+          "주유소명과 사업자명 구성이 일치하지만 주소 확인이 필요합니다.";
+      } else {
+        reason =
+          "주유소명이 일치하지만 주소 확인이 필요합니다.";
+      }
+    }
+  } else {
     score = 0;
 
     matchStatus =
@@ -826,6 +973,10 @@ function calculateCandidate(
     score,
 
     matchStatus,
+
+    reviewRequired,
+
+    reviewType,
 
     nameScore:
       name.score,
@@ -935,8 +1086,7 @@ export function matchStationToLocalPay(
       );
 
   /**
-   * 실제로 이름이 맞는 후보만
-   * 검토 대상으로 사용한다.
+   * 실제로 이름이 맞는 후보만 검토한다.
    */
   const nameCandidates =
     allCandidates.filter(
@@ -945,13 +1095,6 @@ export function matchStationToLocalPay(
         100
     );
 
-  /**
-   * 이름이 맞는 공식 가맹점이
-   * 하나도 없다.
-   *
-   * 같은 도로라는 이유만으로
-   * 후보를 만들지 않는다.
-   */
   if (
     nameCandidates.length ===
     0
@@ -987,11 +1130,8 @@ export function matchStationToLocalPay(
     nameCandidates[0];
 
   /**
-   * 같은 이름의 공식 가맹점이
-   * 여러 개 존재하면 자동 선택하지 않는다.
-   *
-   * 주소가 정확히 다른 경우에도
-   * 사용자가 확인할 수 있도록 후보로 남긴다.
+   * 같은 이름의 공식 가맹점이 여러 개면
+   * 자동 선택하지 않는다.
    */
   if (
     nameCandidates.length >
@@ -1046,7 +1186,7 @@ export function matchStationToLocalPay(
   }
 
   /**
-   * 주소까지 강하게 확인
+   * 이름 + 정확한 주소
    */
   if (
     best.addressType ===
@@ -1079,6 +1219,9 @@ export function matchStationToLocalPay(
     };
   }
 
+  /**
+   * 이름 + 도로명 + 번호
+   */
   if (
     best.addressType ===
     "roadAndNumber"
@@ -1111,10 +1254,9 @@ export function matchStationToLocalPay(
   }
 
   /**
-   * 공식 명단 주소가
-   * 도로명까지만 있는 경우
+   * 이름 + 같은 도로만 일치
    *
-   * 이름이 유일하면 매칭한다.
+   * 자동 할인 적용은 하지 않는다.
    */
   if (
     best.addressType ===
@@ -1124,7 +1266,7 @@ export function matchStationToLocalPay(
   ) {
     return {
       matchStatus:
-        "matched",
+        "needs_confirmation",
 
       confidence:
         75,
@@ -1142,19 +1284,20 @@ export function matchStationToLocalPay(
         allCandidates,
 
       reviewRequired:
-        false,
+        true,
+
+      reviewType:
+        "road-only",
 
       reason:
-        "주유소명이 하나로 일치하고 공식 명단과 동일 도로입니다.",
+        "주유소명이 일치하지만 주소가 동일 도로까지만 확인되어 추가 확인이 필요합니다.",
     };
   }
 
   /**
-   * 주소가 전혀 없지만
-   * 이름이 정확히 하나인 경우
+   * 주소가 없고 이름만 유일하게 일치
    *
-   * 이 경우도 자동 매칭은 가능하지만
-   * 신뢰도는 낮게 둔다.
+   * 자동 할인 적용은 하지 않는다.
    */
   if (
     nameCandidates.length ===
@@ -1164,7 +1307,7 @@ export function matchStationToLocalPay(
   ) {
     return {
       matchStatus:
-        "matched",
+        "needs_confirmation",
 
       confidence:
         70,
@@ -1182,18 +1325,18 @@ export function matchStationToLocalPay(
         allCandidates,
 
       reviewRequired:
-        false,
+        true,
+
+      reviewType:
+        "name-only",
 
       reason:
         best.companyMatch
-          ? "주유소명과 사업자명 구성이 일치합니다."
-          : "주유소명이 공식 가맹점과 정확히 일치합니다.",
+          ? "주유소명과 사업자명 구성이 일치하지만 주소 확인이 필요합니다."
+          : "주유소명이 공식 가맹점과 정확히 일치하지만 주소 확인이 필요합니다.",
     };
   }
 
-  /**
-   * 마지막 안전장치
-   */
   return {
     matchStatus:
       "unmatched",
