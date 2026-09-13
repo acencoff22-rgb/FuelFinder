@@ -10,5 +10,3 @@ services:
     envVars:
       - key: OPINET_CERTKEY
         sync: false
-      - key: LOCALPAY_SERVICE_KEY
-        sync: false
