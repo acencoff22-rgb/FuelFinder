@@ -21,15 +21,16 @@
  */
 
 /**
- * 지역화폐 연동 할인의 최종 적용 여부(eligible)를 결정합니다.
+ * 할인 조건(강릉페이 매칭 / 특정 정유사 브랜드)에 따라
+ * 이 결제수단을 이 주유소에 실제로 적용할 수 있는지(eligible) 결정합니다.
  *
- * 일반 할인(requiresLocalPayMatch가 없거나 false):
- *   paymentOption을 그대로 통과시킵니다.
- *
- * 지역화폐 연동 할인(requiresLocalPayMatch=true):
- *   station.localPayMatch.matchStatus가 "matched"일 때만
- *   eligible=true로 확정합니다. probable/possible 등은
- *   잘못된 할인 계산을 막기 위해 제외합니다.
+ * - requiresLocalPayMatch=true: station.localPayMatch.matchStatus가
+ *   "matched"일 때만 적용. probable/possible 등은 잘못된 할인 계산을
+ *   막기 위해 제외합니다.
+ * - brandCode 지정(예: "SOL" = S-OIL): station.brandCode가 정확히
+ *   같을 때만 적용.
+ * - 두 조건은 동시에 걸 수 있고, 모두 만족해야 eligible=true입니다.
+ * - 조건이 하나도 없으면 항상 eligible=true (기존 일반 할인과 동일).
  */
 export function resolveEffectivePaymentOption({
   station,
@@ -44,18 +45,33 @@ export function resolveEffectivePaymentOption({
     };
   }
 
-  if (!paymentOption.requiresLocalPayMatch) {
-    return {
-      ...paymentOption,
-    };
+  let eligible = true;
+
+  if (
+    paymentOption.requiresLocalPayMatch
+  ) {
+    const matchStatus =
+      station?.localPayMatch?.matchStatus ??
+      "unmatched";
+
+    if (matchStatus !== "matched") {
+      eligible = false;
+    }
   }
 
-  const matchStatus =
-    station?.localPayMatch?.matchStatus ??
-    "unmatched";
+  if (
+    paymentOption.brandCode
+  ) {
+    const stationBrand =
+      station?.brandCode || "";
 
-  const eligible =
-    matchStatus === "matched";
+    if (
+      stationBrand !==
+      paymentOption.brandCode
+    ) {
+      eligible = false;
+    }
+  }
 
   return {
     ...paymentOption,
@@ -63,8 +79,116 @@ export function resolveEffectivePaymentOption({
   };
 }
 
+/**
+ * 등록된 여러 할인 항목(discounts) 중, 이 주유소에 실제로
+ * 적용 가능한 것들을 조건 검사한 뒤, 할인액이 가장 큰 것을 고릅니다.
+ * 적용 가능한 게 없으면 할인 없음을 반환합니다.
+ */
+export function pickBestPaymentOption({
+  station,
+  discounts,
+  liters,
+}) {
+  if (
+    !Array.isArray(discounts) ||
+    discounts.length === 0
+  ) {
+    return {
+      type: "none",
+    };
+  }
+
+  const pricePerLiter =
+    Number(
+      station?.pricePerLiter
+    );
+
+  if (
+    !Number.isFinite(
+      pricePerLiter
+    ) ||
+    pricePerLiter <= 0 ||
+    !Number.isFinite(
+      Number(liters)
+    ) ||
+    Number(liters) <= 0
+  ) {
+    return {
+      type: "none",
+    };
+  }
+
+  const fuelCost =
+    pricePerLiter *
+    Number(liters);
+
+  let best = null;
+  let bestAmount = 0;
+
+  for (
+    const discount of discounts
+  ) {
+    const resolved =
+      resolveEffectivePaymentOption(
+        {
+          station,
+          paymentOption:
+            discount,
+        }
+      );
+
+    if (
+      resolved.type ===
+        "none" ||
+      resolved.eligible ===
+        false
+    ) {
+      continue;
+    }
+
+    let discountResult;
+
+    try {
+      discountResult =
+        calculateDiscount(
+          {
+            fuelCost,
+            liters,
+            paymentOption:
+              resolved,
+          }
+        );
+    } catch {
+      continue;
+    }
+
+    if (
+      discountResult.discountAmount >
+      bestAmount
+    ) {
+      bestAmount =
+        discountResult.discountAmount;
+
+      best = {
+        ...resolved,
+
+        label:
+          discount.label ||
+          null,
+      };
+    }
+  }
+
+  return (
+    best || {
+      type: "none",
+    }
+  );
+}
+
 export function calculateDiscount({
   fuelCost,
+  liters,
   paymentOption,
 }) {
   validateFuelCost(fuelCost);
@@ -104,9 +228,54 @@ export function calculateDiscount({
     });
   }
 
+  if (type === "perLiter") {
+    return calculatePerLiterDiscount({
+      fuelCost,
+      liters,
+      rate,
+    });
+  }
+
   throw new Error(
     `지원하지 않는 할인 방식입니다: ${type}`
   );
+}
+
+function calculatePerLiterDiscount({
+  fuelCost,
+  liters,
+  rate,
+}) {
+  if (
+    typeof rate !== "number" ||
+    !Number.isFinite(rate) ||
+    rate < 0
+  ) {
+    throw new Error(
+      "리터당 할인액이 올바르지 않습니다."
+    );
+  }
+
+  if (
+    typeof liters !== "number" ||
+    !Number.isFinite(liters) ||
+    liters <= 0
+  ) {
+    throw new Error(
+      "리터당 할인을 계산하려면 주유량이 필요합니다."
+    );
+  }
+
+  const discountAmount = Math.min(
+    rate * liters,
+    fuelCost
+  );
+
+  return createDiscountResult({
+    discountAmount,
+    type: "perLiter",
+    rate,
+  });
 }
 
 function calculatePercentDiscount({
@@ -292,6 +461,7 @@ export function calculateFuelCost({
   const discountResult =
     calculateDiscount({
       fuelCost,
+      liters,
       paymentOption,
     });
 

@@ -2031,6 +2031,145 @@
       color: var(--accent);
     }
 
+    .discount-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .discount-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface-soft);
+    }
+
+    .discount-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .discount-item-name {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .discount-item-value {
+      font-size: 9px;
+      color: var(--text-soft);
+      font-weight: 800;
+    }
+
+    .discount-item-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .discount-item-tag {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 8px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .discount-item-remove {
+      flex-shrink: 0;
+      min-width: 26px;
+      min-height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .discount-empty {
+      padding: 10px 11px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 11px;
+      color: var(--text-muted);
+      font-size: 9px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .add-discount-button {
+      width: 100%;
+      min-height: 40px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--text-soft);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .discount-form {
+      margin-top: 10px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface-soft);
+    }
+
+    .discount-form[hidden] {
+      display: none;
+    }
+
+    .setting-field-checkbox {
+      margin-bottom: 9px;
+    }
+
+    .setting-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-soft);
+    }
+
+    .discount-form-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .setting-primary-button {
+      min-height: 40px;
+      border: none;
+      border-radius: 9px;
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .setting-secondary-button {
+      min-height: 40px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      background: var(--surface);
+      color: var(--text-soft);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
     .result-insight {
       display: none;
       margin: 0 0 9px;
@@ -2389,129 +2528,129 @@
         </h3>
 
         <p class="setting-group-description">
-          주유비 계산에 적용할 할인 조건입니다.
+          카드/페이별로 등록해두면, 주유소마다 적용 가능한 것 중 가장 유리한 걸 자동으로 골라 계산합니다.
         </p>
 
-        <div class="setting-field">
-
-          <label
-            class="setting-label"
-            for="discountTypeInput"
-          >
-            할인 방식
-          </label>
-
-          <select
-            id="discountTypeInput"
-            class="setting-control"
-          >
-            <option value="none">
-              할인 없음
-            </option>
-
-            <option value="percent">
-              비율 할인
-            </option>
-
-            <option value="fixed">
-              정액 할인
-            </option>
-          </select>
-
-        </div>
-
         <div
-          id="percentFields"
-          class="discount-fields"
+          id="discountList"
+          class="discount-list"
+        ></div>
+
+        <button
+          id="addDiscountButton"
+          type="button"
+          class="add-discount-button"
         >
-
-          <div class="drawer-grid">
-
-            <div class="setting-field">
-
-              <label
-                class="setting-label"
-                for="discountRateInput"
-              >
-                할인율
-              </label>
-
-              <div class="setting-unit-wrap">
-
-                <input
-                  id="discountRateInput"
-                  class="setting-control"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  inputmode="decimal"
-                >
-
-                <span class="setting-unit">
-                  %
-                </span>
-
-              </div>
-
-            </div>
-
-            <div class="setting-field">
-
-              <label
-                class="setting-label"
-                for="maxDiscountInput"
-              >
-                최대 할인
-              </label>
-
-              <div class="setting-unit-wrap">
-
-                <input
-                  id="maxDiscountInput"
-                  class="setting-control"
-                  type="number"
-                  min="0"
-                  step="100"
-                  inputmode="numeric"
-                  placeholder="제한 없음"
-                >
-
-                <span class="setting-unit">
-                  원
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
+          + 할인 추가
+        </button>
 
         <div
-          id="fixedFields"
-          class="discount-fields"
+          id="discountForm"
+          class="discount-form"
+          hidden
         >
 
           <div class="setting-field">
 
             <label
               class="setting-label"
-              for="fixedDiscountInput"
+              for="discountLabelInput"
             >
-              정액 할인
+              이름
+            </label>
+
+            <input
+              id="discountLabelInput"
+              class="setting-control"
+              type="text"
+              maxlength="30"
+              placeholder="예: 강릉페이, A카드"
+            >
+
+          </div>
+
+          <div class="setting-field">
+
+            <label
+              class="setting-label"
+              for="discountTypeInput"
+            >
+              방식
+            </label>
+
+            <select
+              id="discountTypeInput"
+              class="setting-control"
+            >
+              <option value="percent">
+                비율 할인 (%)
+              </option>
+
+              <option value="perLiter">
+                리터당 정액 할인 (원/L)
+              </option>
+
+              <option value="fixed">
+                총액 정액 할인 (원)
+              </option>
+            </select>
+
+          </div>
+
+          <div class="setting-field">
+
+            <label
+              class="setting-label"
+              for="discountValueInput"
+              id="discountValueLabel"
+            >
+              할인율
             </label>
 
             <div class="setting-unit-wrap">
 
               <input
-                id="fixedDiscountInput"
+                id="discountValueInput"
+                class="setting-control"
+                type="number"
+                min="0"
+                step="0.1"
+                inputmode="decimal"
+              >
+
+              <span
+                id="discountValueUnit"
+                class="setting-unit"
+              >
+                %
+              </span>
+
+            </div>
+
+          </div>
+
+          <div
+            id="discountMaxField"
+            class="setting-field"
+          >
+
+            <label
+              class="setting-label"
+              for="discountMaxInput"
+            >
+              최대 할인 (선택)
+            </label>
+
+            <div class="setting-unit-wrap">
+
+              <input
+                id="discountMaxInput"
                 class="setting-control"
                 type="number"
                 min="0"
                 step="100"
                 inputmode="numeric"
+                placeholder="제한 없음"
               >
 
               <span class="setting-unit">
@@ -2522,17 +2661,108 @@
 
           </div>
 
-        </div>
+          <div class="setting-field-checkbox">
 
-        <div
-          id="discountSummary"
-          class="setting-summary"
-        >
-          현재 할인 없음
+            <label class="setting-checkbox-label">
+
+              <input
+                id="discountLocalPayCheckbox"
+                type="checkbox"
+              >
+
+              강릉페이 확인된 주유소에만 적용
+
+            </label>
+
+          </div>
+
+          <div class="setting-field">
+
+            <label
+              class="setting-label"
+              for="discountBrandSelect"
+            >
+              적용 브랜드 (선택)
+            </label>
+
+            <select
+              id="discountBrandSelect"
+              class="setting-control"
+            >
+              <option value="">
+                전체 (브랜드 무관)
+              </option>
+
+              <option value="SKE">
+                SK에너지
+              </option>
+
+              <option value="GSC">
+                GS칼텍스
+              </option>
+
+              <option value="HDO">
+                현대오일뱅크
+              </option>
+
+              <option value="SOL">
+                S-OIL
+              </option>
+
+              <option value="__custom__">
+                직접 입력
+              </option>
+            </select>
+
+          </div>
+
+          <div
+            id="discountBrandCustomField"
+            class="setting-field"
+            hidden
+          >
+
+            <label
+              class="setting-label"
+              for="discountBrandCustomInput"
+            >
+              브랜드 코드 직접 입력
+            </label>
+
+            <input
+              id="discountBrandCustomInput"
+              class="setting-control"
+              type="text"
+              maxlength="10"
+              placeholder="예: NHO"
+            >
+
+          </div>
+
+          <div class="discount-form-actions">
+
+            <button
+              id="saveDiscountButton"
+              type="button"
+              class="setting-primary-button"
+            >
+              추가
+            </button>
+
+            <button
+              id="cancelDiscountButton"
+              type="button"
+              class="setting-secondary-button"
+            >
+              취소
+            </button>
+
+          </div>
+
         </div>
 
         <p class="drawer-hint">
-          강릉페이 가맹 여부는 주유소 카드에 별도로 표시됩니다.
+          강릉페이 가맹 여부는 주유소 카드에 별도로 표시됩니다. 브랜드를 지정하지 않으면 어느 주유소에서든 적용됩니다.
         </p>
 
       </section>
@@ -2817,7 +3047,7 @@
   <script type="module">
     import {
       calculateFuelCost,
-      resolveEffectivePaymentOption,
+      pickBestPaymentOption,
     } from "./shared/calc.js";
 
     /* ======================================================
@@ -2924,39 +3154,84 @@
         "fuelEfficiencyInput"
       );
 
+    const discountList =
+      document.getElementById(
+        "discountList"
+      );
+
+    const addDiscountButton =
+      document.getElementById(
+        "addDiscountButton"
+      );
+
+    const discountForm =
+      document.getElementById(
+        "discountForm"
+      );
+
+    const discountLabelInput =
+      document.getElementById(
+        "discountLabelInput"
+      );
+
     const discountTypeInput =
       document.getElementById(
         "discountTypeInput"
       );
 
-    const discountRateInput =
+    const discountValueInput =
       document.getElementById(
-        "discountRateInput"
+        "discountValueInput"
       );
 
-    const maxDiscountInput =
+    const discountValueLabel =
       document.getElementById(
-        "maxDiscountInput"
+        "discountValueLabel"
       );
 
-    const fixedDiscountInput =
+    const discountValueUnit =
       document.getElementById(
-        "fixedDiscountInput"
+        "discountValueUnit"
       );
 
-    const percentFields =
+    const discountMaxField =
       document.getElementById(
-        "percentFields"
+        "discountMaxField"
       );
 
-    const fixedFields =
+    const discountMaxInput =
       document.getElementById(
-        "fixedFields"
+        "discountMaxInput"
       );
 
-    const discountSummary =
+    const discountLocalPayCheckbox =
       document.getElementById(
-        "discountSummary"
+        "discountLocalPayCheckbox"
+      );
+
+    const discountBrandSelect =
+      document.getElementById(
+        "discountBrandSelect"
+      );
+
+    const discountBrandCustomField =
+      document.getElementById(
+        "discountBrandCustomField"
+      );
+
+    const discountBrandCustomInput =
+      document.getElementById(
+        "discountBrandCustomInput"
+      );
+
+    const saveDiscountButton =
+      document.getElementById(
+        "saveDiscountButton"
+      );
+
+    const cancelDiscountButton =
+      document.getElementById(
+        "cancelDiscountButton"
       );
 
     const radiusOptions =
@@ -3036,18 +3311,36 @@
       radius:
         3000,
 
-      discountType:
-        "none",
-
-      discountRate:
-        10,
-
-      maxDiscount:
-        null,
-
-      fixedDiscount:
-        3000,
+      discounts:
+        [],
     };
+
+    const BRAND_LABELS = {
+      SKE: "SK에너지",
+      GSC: "GS칼텍스",
+      HDO: "현대오일뱅크",
+      SOL: "S-OIL",
+    };
+
+    function brandLabel(
+      brandCode
+    ) {
+      if (
+        !brandCode
+      ) {
+        return "";
+      }
+
+      return (
+        BRAND_LABELS[
+          brandCode
+        ] ||
+        brandCode
+      );
+    }
+
+    let discounts =
+      [];
 
     /* ======================================================
        Initialisation
@@ -3056,10 +3349,6 @@
     loadSettings();
 
     loadRecentLocations();
-
-    updateDiscountFields();
-
-    updateDiscountSummary();
 
     /* ======================================================
        Settings drawer
@@ -3136,7 +3425,7 @@
 
     productInput.addEventListener(
       "change",
-      handleSettingChange
+      handleProductChange
     );
 
     litersInput.addEventListener(
@@ -3149,46 +3438,34 @@
       handleSettingChange
     );
 
-    discountTypeInput.addEventListener(
-      "change",
-      handleSettingChange
-    );
-
-    discountRateInput.addEventListener(
-      "input",
-      handleSettingChange
-    );
-
-    maxDiscountInput.addEventListener(
-      "input",
-      handleSettingChange
-    );
-
-    fixedDiscountInput.addEventListener(
-      "input",
-      handleSettingChange
-    );
-
     function handleSettingChange() {
       saveSettings();
 
-      updateDiscountFields();
-
-      updateDiscountSummary();
-
-      /*
-       * 위치 검색이 이미 완료되었다면
-       * 오피넷을 다시 호출하지 않고
-       * 마지막 결과를 새 조건으로 즉시 계산합니다.
-       */
       if (
         hasSearched &&
-        Array.isArray(
-          lastStations
-        ) &&
+        Array.isArray(lastStations) &&
         lastStations.length > 0
       ) {
         rerenderFromCache();
+      }
+    }
+
+    async function handleProductChange() {
+      saveSettings();
+
+      /* 유종 변경은 오피넷 가격 자체가 달라지므로 재조회해야 합니다. */
+      if (selectedLocationData) {
+        try {
+          await searchStations(selectedLocationData);
+        } catch (error) {
+          console.error(error);
+
+          showSearchStatus(
+            "error",
+            error.message ||
+              "주유소 검색에 실패했습니다."
+          );
+        }
       }
     }
 
@@ -3210,25 +3487,7 @@
         radius:
           selectedRadius,
 
-        discountType:
-          discountTypeInput.value,
-
-        discountRate:
-          Number(
-            discountRateInput.value
-          ),
-
-        maxDiscount:
-          maxDiscountInput.value
-            ? Number(
-                maxDiscountInput.value
-              )
-            : null,
-
-        fixedDiscount:
-          Number(
-            fixedDiscountInput.value
-          ),
+        discounts,
       };
 
       try {
@@ -3317,52 +3576,190 @@
             )
           : DEFAULT_SETTINGS.radius;
 
-      discountTypeInput.value =
-        [
-          "none",
-          "percent",
-          "fixed",
-        ].includes(
-          merged.discountType
-        )
-          ? merged.discountType
-          : "none";
+      discounts =
+        normalizeLoadedDiscounts(
+          merged.discounts
+        );
 
-      discountRateInput.value =
-        Number.isFinite(
-          Number(
-            merged.discountRate
-          )
-        )
-          ? merged.discountRate
-          : DEFAULT_SETTINGS.discountRate;
-
+      /*
+       * 예전 버전(할인 하나만 등록하던 방식)으로 저장된 설정이면
+       * 그 값을 그대로 새 형식의 항목 하나로 옮겨옵니다.
+       */
       if (
-        merged.maxDiscount !==
-          null &&
-        Number.isFinite(
-          Number(
-            merged.maxDiscount
-          )
-        )
+        discounts.length ===
+          0 &&
+        merged.discountType &&
+        merged.discountType !==
+          "none"
       ) {
-        maxDiscountInput.value =
-          merged.maxDiscount;
-      } else {
-        maxDiscountInput.value =
-          "";
+        discounts =
+          normalizeLoadedDiscounts(
+            [
+              {
+                id: "legacy",
+                label:
+                  "기존 할인",
+                type:
+                  merged.discountType,
+                rate:
+                  merged.discountRate,
+                maxDiscount:
+                  merged.maxDiscount,
+                amount:
+                  merged.fixedDiscount,
+                requiresLocalPayMatch: false,
+                brandCode: null,
+              },
+            ]
+          );
       }
 
-      fixedDiscountInput.value =
-        Number.isFinite(
-          Number(
-            merged.fixedDiscount
-          )
-        )
-          ? merged.fixedDiscount
-          : DEFAULT_SETTINGS.fixedDiscount;
+      renderDiscountList();
 
       updateRadiusButtons();
+    }
+
+    function normalizeLoadedDiscounts(
+      list
+    ) {
+      if (
+        !Array.isArray(
+          list
+        )
+      ) {
+        return [];
+      }
+
+      return list
+        .filter(
+          (item) =>
+            item &&
+            typeof item ===
+              "object"
+        )
+        .map(
+          (item, index) => {
+            const type =
+              [
+                "percent",
+                "perLiter",
+                "fixed",
+              ].includes(
+                item.type
+              )
+                ? item.type
+                : "percent";
+
+            const id =
+              typeof item.id ===
+                "string" &&
+              item.id
+                ? item.id
+                : `d-legacy-${index}`;
+
+            const label =
+              typeof item.label ===
+                "string" &&
+              item.label.trim()
+                ? item.label
+                    .trim()
+                    .slice(0, 30)
+                : "이름 없는 할인";
+
+            const requiresLocalPayMatch =
+              item.requiresLocalPayMatch ===
+              true;
+
+            const brandCode =
+              typeof item.brandCode ===
+                "string" &&
+              item.brandCode.trim()
+                ? item.brandCode
+                    .trim()
+                    .toUpperCase()
+                    .slice(0, 10)
+                : null;
+
+            const discount =
+              {
+                id,
+                label,
+                type,
+                requiresLocalPayMatch,
+                brandCode,
+              };
+
+            if (
+              type ===
+              "percent"
+            ) {
+              discount.rate =
+                Number.isFinite(
+                  Number(
+                    item.rate
+                  )
+                )
+                  ? Number(
+                      item.rate
+                    )
+                  : 0;
+
+              discount.maxDiscount =
+                item.maxDiscount ===
+                  null ||
+                item.maxDiscount ===
+                  undefined
+                  ? null
+                  : Number(
+                      item.maxDiscount
+                    );
+            } else if (
+              type ===
+              "perLiter"
+            ) {
+              discount.rate =
+                Number.isFinite(
+                  Number(
+                    item.rate
+                  )
+                )
+                  ? Number(
+                      item.rate
+                    )
+                  : 0;
+            } else {
+              discount.amount =
+                Number.isFinite(
+                  Number(
+                    item.amount
+                  )
+                )
+                  ? Number(
+                      item.amount
+                    )
+                  : 0;
+            }
+
+            return discount;
+          }
+        )
+        .filter(
+          (discount) => {
+            const value =
+              discount.type ===
+              "fixed"
+                ? discount.amount
+                : discount.rate;
+
+            return (
+              Number.isFinite(
+                value
+              ) &&
+              value >= 0
+            );
+          }
+        )
+        .slice(0, 10);
     }
 
     /* ======================================================
@@ -3421,226 +3818,442 @@
        Discount
        ====================================================== */
 
-    function updateDiscountFields() {
-      const type =
-        discountTypeInput.value;
+    function renderDiscountList() {
+      if (
+        discounts.length ===
+        0
+      ) {
+        discountList.innerHTML =
+          `<div class="discount-empty">등록된 할인이 없습니다. 강릉페이, 카드 할인 등을 추가해보세요.</div>`;
 
-      percentFields.classList.toggle(
-        "visible",
-        type ===
-          "percent"
-      );
+        return;
+      }
 
-      fixedFields.classList.toggle(
-        "visible",
-        type ===
-          "fixed"
-      );
+      discountList.innerHTML =
+        discounts
+          .map(
+            (discount) =>
+              createDiscountItemHtml(
+                discount
+              )
+          )
+          .join(
+            ""
+          );
+
+      discountList
+        .querySelectorAll(
+          ".discount-item-remove"
+        )
+        .forEach(
+          (button) => {
+            button.addEventListener(
+              "click",
+              () => {
+                removeDiscount(
+                  button.dataset.id
+                );
+              }
+            );
+          }
+        );
     }
 
-    function updateDiscountSummary() {
+    function createDiscountItemHtml(
+      discount
+    ) {
+      const tags =
+        [];
+
+      if (
+        discount.requiresLocalPayMatch
+      ) {
+        tags.push(
+          "강릉페이 확인된 곳만"
+        );
+      }
+
+      if (
+        discount.brandCode
+      ) {
+        tags.push(
+          `${brandLabel(
+            discount.brandCode
+          )} 전용`
+        );
+      }
+
+      const tagsHtml =
+        tags
+          .map(
+            (tag) =>
+              `<span class="discount-item-tag">${escapeHtml(
+                tag
+              )}</span>`
+          )
+          .join(
+            ""
+          );
+
+      return `
+        <div class="discount-item">
+          <div class="discount-item-info">
+            <div class="discount-item-name">${escapeHtml(
+              discount.label ||
+                "이름 없음"
+            )}</div>
+            <div class="discount-item-value">${escapeHtml(
+              formatDiscountValue(
+                discount
+              )
+            )}</div>
+            ${
+              tagsHtml
+                ? `<div class="discount-item-tags">${tagsHtml}</div>`
+                : ""
+            }
+          </div>
+          <button
+            type="button"
+            class="discount-item-remove"
+            data-id="${escapeHtml(
+              discount.id
+            )}"
+            aria-label="할인 삭제"
+          >×</button>
+        </div>
+      `;
+    }
+
+    function formatDiscountValue(
+      discount
+    ) {
+      if (
+        discount.type ===
+        "percent"
+      ) {
+        return discount.maxDiscount
+          ? `비율 ${discount.rate}% (최대 ${formatWon(
+              discount.maxDiscount
+            )}원)`
+          : `비율 ${discount.rate}%`;
+      }
+
+      if (
+        discount.type ===
+        "perLiter"
+      ) {
+        return `리터당 ${formatWon(
+          discount.rate
+        )}원`;
+      }
+
+      if (
+        discount.type ===
+        "fixed"
+      ) {
+        return `총액 ${formatWon(
+          discount.amount
+        )}원`;
+      }
+
+      return "";
+    }
+
+    function openDiscountForm() {
+      discountLabelInput.value =
+        "";
+
+      discountTypeInput.value =
+        "percent";
+
+      discountValueInput.value =
+        "";
+
+      discountMaxInput.value =
+        "";
+
+      discountLocalPayCheckbox.checked =
+        false;
+
+      discountBrandSelect.value =
+        "";
+
+      discountBrandCustomInput.value =
+        "";
+
+      updateDiscountFormFields();
+
+      updateDiscountBrandCustomField();
+
+      discountForm.hidden =
+        false;
+
+      addDiscountButton.hidden =
+        true;
+    }
+
+    function closeDiscountForm() {
+      discountForm.hidden =
+        true;
+
+      addDiscountButton.hidden =
+        false;
+    }
+
+    function updateDiscountFormFields() {
       const type =
         discountTypeInput.value;
 
       if (
         type ===
-        "none"
+        "percent"
       ) {
-        discountSummary.textContent =
-          "현재 할인 없음";
+        discountValueLabel.textContent =
+          "할인율";
+
+        discountValueUnit.textContent =
+          "%";
+
+        discountMaxField.hidden =
+          false;
+      } else if (
+        type ===
+        "perLiter"
+      ) {
+        discountValueLabel.textContent =
+          "리터당 할인액";
+
+        discountValueUnit.textContent =
+          "원/L";
+
+        discountMaxField.hidden =
+          true;
+      } else {
+        discountValueLabel.textContent =
+          "정액 할인";
+
+        discountValueUnit.textContent =
+          "원";
+
+        discountMaxField.hidden =
+          true;
+      }
+    }
+
+    function updateDiscountBrandCustomField() {
+      discountBrandCustomField.hidden =
+        discountBrandSelect.value !==
+        "__custom__";
+    }
+
+    discountTypeInput.addEventListener(
+      "change",
+      updateDiscountFormFields
+    );
+
+    discountBrandSelect.addEventListener(
+      "change",
+      updateDiscountBrandCustomField
+    );
+
+    addDiscountButton.addEventListener(
+      "click",
+      openDiscountForm
+    );
+
+    cancelDiscountButton.addEventListener(
+      "click",
+      closeDiscountForm
+    );
+
+    saveDiscountButton.addEventListener(
+      "click",
+      saveDiscountFromForm
+    );
+
+    function saveDiscountFromForm() {
+      const label =
+        discountLabelInput.value.trim().slice(
+          0,
+          30
+        ) ||
+        "이름 없는 할인";
+
+      const type =
+        discountTypeInput.value;
+
+      const value =
+        Number(
+          discountValueInput.value
+        );
+
+      if (
+        !Number.isFinite(
+          value
+        ) ||
+        value < 0
+      ) {
+        showSearchStatus(
+          "error",
+          "할인 값을 올바르게 입력하세요."
+        );
 
         return;
       }
 
       if (
         type ===
-        "percent"
+          "percent" &&
+        value > 100
       ) {
-        const rate =
-          Number(
-            discountRateInput.value
-          );
-
-        const maxDiscount =
-          maxDiscountInput.value
-            ? Number(
-                maxDiscountInput.value
-              )
-            : null;
-
-        if (
-          !Number.isFinite(
-            rate
-          ) ||
-          rate < 0 ||
-          rate > 100
-        ) {
-          discountSummary.textContent =
-            "할인율은 0~100%로 입력하세요.";
-
-          return;
-        }
-
-        if (
-          maxDiscount !==
-            null &&
-          (
-            !Number.isFinite(
-              maxDiscount
-            ) ||
-            maxDiscount < 0
-          )
-        ) {
-          discountSummary.textContent =
-            "최대 할인액을 확인하세요.";
-
-          return;
-        }
-
-        discountSummary.textContent =
-          maxDiscount ===
-            null
-            ? `${rate}% 할인`
-            : `${rate}% 할인 / 최대 ${formatWon(
-                maxDiscount
-              )}원`;
+        showSearchStatus(
+          "error",
+          "할인율은 0~100% 사이로 입력하세요."
+        );
 
         return;
       }
 
-      if (
+      const maxDiscount =
         type ===
-        "fixed"
+          "percent" &&
+        discountMaxInput.value
+          ? Number(
+              discountMaxInput.value
+            )
+          : null;
+
+      if (
+        maxDiscount !==
+          null &&
+        (
+          !Number.isFinite(
+            maxDiscount
+          ) ||
+          maxDiscount < 0
+        )
       ) {
-        const amount =
-          Number(
-            fixedDiscountInput.value
-          );
+        showSearchStatus(
+          "error",
+          "최대 할인액을 올바르게 입력하세요."
+        );
+
+        return;
+      }
+
+      let brandCode =
+        discountBrandSelect.value;
+
+      if (
+        brandCode ===
+        "__custom__"
+      ) {
+        brandCode =
+          discountBrandCustomInput.value
+            .trim()
+            .toUpperCase()
+            .slice(
+              0,
+              10
+            );
 
         if (
-          !Number.isFinite(
-            amount
-          ) ||
-          amount < 0
+          !brandCode
         ) {
-          discountSummary.textContent =
-            "정액 할인액을 확인하세요.";
+          showSearchStatus(
+            "error",
+            "브랜드 코드를 입력하세요."
+          );
 
           return;
         }
-
-        discountSummary.textContent =
-          `${formatWon(
-            amount
-          )}원 정액 할인`;
       }
-    }
 
-    function getPaymentOption() {
-      const type =
-        discountTypeInput.value;
+      const discount =
+        {
+          id: `d-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 7)}`,
 
-      if (
-        type ===
-        "none"
-      ) {
-        return {
-          type:
-            "none",
+          label,
+
+          type,
+
+          requiresLocalPayMatch:
+            discountLocalPayCheckbox.checked,
+
+          brandCode:
+            brandCode ||
+            null,
         };
-      }
 
       if (
         type ===
         "percent"
       ) {
-        const rate =
-          Number(
-            discountRateInput.value
-          );
+        discount.rate =
+          value;
 
-        const maxDiscount =
-          maxDiscountInput.value
-            ? Number(
-                maxDiscountInput.value
-              )
-            : null;
-
-        if (
-          !Number.isFinite(
-            rate
-          ) ||
-          rate < 0 ||
-          rate > 100
-        ) {
-          showSearchStatus(
-            "error",
-            "할인율은 0~100% 사이로 입력하세요."
-          );
-
-          return null;
-        }
-
-        if (
-          maxDiscount !==
-            null &&
-          (
-            !Number.isFinite(
-              maxDiscount
-            ) ||
-            maxDiscount < 0
-          )
-        ) {
-          showSearchStatus(
-            "error",
-            "최대 할인액을 올바르게 입력하세요."
-          );
-
-          return null;
-        }
-
-        return {
-          type:
-            "percent",
-
-          rate,
-
-          maxDiscount,
-        };
+        discount.maxDiscount =
+          maxDiscount;
+      } else if (
+        type ===
+        "perLiter"
+      ) {
+        discount.rate =
+          value;
+      } else {
+        discount.amount =
+          value;
       }
+
+      discounts =
+        [
+          ...discounts,
+          discount,
+        ];
+
+      saveSettings();
+
+      renderDiscountList();
+
+      closeDiscountForm();
 
       if (
-        type ===
-        "fixed"
+        hasSearched &&
+        Array.isArray(
+          lastStations
+        ) &&
+        lastStations.length > 0
       ) {
-        const amount =
-          Number(
-            fixedDiscountInput.value
-          );
-
-        if (
-          !Number.isFinite(
-            amount
-          ) ||
-          amount < 0
-        ) {
-          showSearchStatus(
-            "error",
-            "정액 할인액을 올바르게 입력하세요."
-          );
-
-          return null;
-        }
-
-        return {
-          type:
-            "fixed",
-
-          amount,
-        };
+        rerenderFromCache();
       }
+    }
 
-      return null;
+    function removeDiscount(
+      id
+    ) {
+      discounts =
+        discounts.filter(
+          (discount) =>
+            discount.id !==
+            id
+        );
+
+      saveSettings();
+
+      renderDiscountList();
+
+      if (
+        hasSearched &&
+        Array.isArray(
+          lastStations
+        ) &&
+        lastStations.length > 0
+      ) {
+        rerenderFromCache();
+      }
     }
 
     /* ======================================================
@@ -4047,15 +4660,6 @@
           fuelEfficiencyInput.value
         );
 
-      const paymentOption =
-        getPaymentOption();
-
-      if (
-        !paymentOption
-      ) {
-        return;
-      }
-
       if (
         !isSupportedProduct(
           productCode
@@ -4153,7 +4757,7 @@
 
                   fuelEfficiency,
 
-                  paymentOption,
+                  discounts,
                 }),
             }
           );
@@ -4226,7 +4830,7 @@
         }
 
         resultsCount.textContent =
-          `${stations.length}곳`;
+          `${getVisibleStations(stations).length}곳${payOnly ? " · 강릉페이" : ""}`;
 
         showSearchStatus(
           "success",
@@ -4311,7 +4915,7 @@
       );
 
       resultsCount.textContent =
-        `${recalculated.length}곳`;
+        `${getVisibleStations(recalculated).length}곳${payOnly ? " · 강릉페이" : ""}`;
 
       showSearchStatus(
         "success",
@@ -4332,17 +4936,13 @@
           fuelEfficiencyInput.value
         );
 
-      const paymentOption =
-        getPaymentOptionWithoutUi();
-
       if (
         !isValidPositiveNumber(
           liters
         ) ||
         !isValidPositiveNumber(
           fuelEfficiency
-        ) ||
-        !paymentOption
+        )
       ) {
         return stations;
       }
@@ -4379,10 +4979,11 @@
             }
 
             const effectivePaymentOption =
-              resolveEffectivePaymentOption(
+              pickBestPaymentOption(
                 {
                   station,
-                  paymentOption,
+                  discounts,
+                  liters,
                 }
               );
 
@@ -4419,6 +5020,9 @@
 
               ...result,
 
+              appliedPaymentOption:
+                effectivePaymentOption,
+
               calculationAvailable:
                 true,
             };
@@ -4434,98 +5038,6 @@
             a.effectivePricePerLiter -
             b.effectivePricePerLiter
         );
-    }
-
-    function getPaymentOptionWithoutUi() {
-      const type =
-        discountTypeInput.value;
-
-      if (
-        type ===
-        "none"
-      ) {
-        return {
-          type:
-            "none",
-        };
-      }
-
-      if (
-        type ===
-        "percent"
-      ) {
-        const rate =
-          Number(
-            discountRateInput.value
-          );
-
-        const maxDiscount =
-          maxDiscountInput.value
-            ? Number(
-                maxDiscountInput.value
-              )
-            : null;
-
-        if (
-          !Number.isFinite(
-            rate
-          ) ||
-          rate < 0 ||
-          rate > 100
-        ) {
-          return null;
-        }
-
-        if (
-          maxDiscount !==
-            null &&
-          (
-            !Number.isFinite(
-              maxDiscount
-            ) ||
-            maxDiscount < 0
-          )
-        ) {
-          return null;
-        }
-
-        return {
-          type:
-            "percent",
-
-          rate,
-
-          maxDiscount,
-        };
-      }
-
-      if (
-        type ===
-        "fixed"
-      ) {
-        const amount =
-          Number(
-            fixedDiscountInput.value
-          );
-
-        if (
-          !Number.isFinite(
-            amount
-          ) ||
-          amount < 0
-        ) {
-          return null;
-        }
-
-        return {
-          type:
-            "fixed",
-
-          amount,
-        };
-      }
-
-      return null;
     }
 
     /* ======================================================
@@ -4834,7 +5346,7 @@
               <div class="cost-item">
                 <span class="cost-label">할인 조건</span>
                 <span class="cost-value">${escapeHtml(
-                  getDiscountDescription()
+                  describeAppliedDiscount(station)
                 )}</span>
               </div>
             </div>
@@ -5441,53 +5953,28 @@
        Discount description
        ====================================================== */
 
-    function getDiscountDescription() {
-      const type =
-        discountTypeInput.value;
+    function describeAppliedDiscount(
+      station
+    ) {
+      const applied =
+        station.appliedPaymentOption;
 
       if (
-        type ===
-        "none"
+        !applied ||
+        applied.type ===
+          "none"
       ) {
-        return "할인 없음";
+        return "할인 조건";
       }
 
-      if (
-        type ===
-        "percent"
-      ) {
-        const rate =
-          Number(
-            discountRateInput.value
-          );
+      const valueText =
+        formatDiscountValue(
+          applied
+        );
 
-        const maxDiscount =
-          maxDiscountInput.value
-            ? Number(
-                maxDiscountInput.value
-              )
-            : null;
-
-        return maxDiscount ===
-          null
-          ? `${rate}% 할인`
-          : `${rate}% / 최대 ${formatWon(
-              maxDiscount
-            )}원`;
-      }
-
-      if (
-        type ===
-        "fixed"
-      ) {
-        return `${formatWon(
-          Number(
-            fixedDiscountInput.value
-          )
-        )}원 할인`;
-      }
-
-      return "할인 조건";
+      return applied.label
+        ? `${applied.label} · ${valueText}`
+        : valueText;
     }
 
     /* ======================================================

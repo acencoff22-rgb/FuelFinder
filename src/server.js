@@ -78,6 +78,7 @@ const supportedPaymentTypes = [
   "none",
   "percent",
   "fixed",
+  "perLiter",
 ];
 
 /*
@@ -101,6 +102,11 @@ const GEOCODE_CACHE_TTL_MS =
 
 const GEOCODE_MIN_INTERVAL_MS =
   1100;
+
+// 동일 검색의 반복 호출로 오피넷 쿼터를 불필요하게 소모하지 않도록 60초 캐시
+const nearbySearchCache = new Map();
+const NEARBY_CACHE_TTL_MS = 60 * 1000;
+const NEARBY_CACHE_MAX = 100;
 
 const server =
   http.createServer(
@@ -504,6 +510,11 @@ async function handleNearbyStations(
       body.paymentOption
     );
 
+  const discounts =
+    normalizeDiscounts(
+      body.discounts
+    );
+
   validateLocation(
     latitude,
     longitude
@@ -521,6 +532,23 @@ async function handleNearbyStations(
     liters,
     fuelEfficiency
   );
+
+  const nearbyCacheKey = JSON.stringify({
+    latitude: Number(latitude.toFixed(5)),
+    longitude: Number(longitude.toFixed(5)),
+    radius,
+    productCode,
+    liters,
+    fuelEfficiency,
+    paymentOption,
+    discounts,
+  });
+
+  const nearbyCached = nearbySearchCache.get(nearbyCacheKey);
+  if (nearbyCached && Date.now() - nearbyCached.timestamp < NEARBY_CACHE_TTL_MS) {
+    sendJson(response, 200, { ...nearbyCached.data, cached: true });
+    return;
+  }
 
   const katec =
     wgs84ToKatec({
@@ -550,41 +578,58 @@ async function handleNearbyStations(
     )}`
   );
 
-  console.log(
-    `할인 방식: ${paymentOption.type}`
-  );
-
   if (
-    paymentOption.type ===
-    "percent"
+    discounts.length >
+    0
   ) {
     console.log(
-      `할인율: ${paymentOption.rate}%`
+      `등록된 할인: ${discounts.length}개 (${discounts
+        .map(
+          (d) =>
+            d.label ||
+            d.type
+        )
+        .join(
+          ", "
+        )})`
+    );
+  } else {
+    console.log(
+      `할인 방식: ${paymentOption.type}`
     );
 
     if (
-      paymentOption.requiresLocalPayMatch
+      paymentOption.type ===
+      "percent"
     ) {
       console.log(
-        "강릉페이 가맹점 매칭 확인 후 할인 적용"
+        `할인율: ${paymentOption.rate}%`
       );
+
+      if (
+        paymentOption.requiresLocalPayMatch
+      ) {
+        console.log(
+          "강릉페이 가맹점 매칭 확인 후 할인 적용"
+        );
+      }
     }
-  }
-
-  if (
-    paymentOption.type ===
-    "fixed"
-  ) {
-    console.log(
-      `정액 할인: ${paymentOption.amount}원`
-    );
 
     if (
-      paymentOption.requiresLocalPayMatch
+      paymentOption.type ===
+      "fixed"
     ) {
       console.log(
-        "강릉페이 가맹점 매칭 확인 후 할인 적용"
+        `정액 할인: ${paymentOption.amount}원`
       );
+
+      if (
+        paymentOption.requiresLocalPayMatch
+      ) {
+        console.log(
+          "강릉페이 가맹점 매칭 확인 후 할인 적용"
+        );
+      }
     }
   }
 
@@ -754,6 +799,8 @@ async function handleNearbyStations(
         fuelEfficiency,
 
         paymentOption,
+
+        discounts,
       }
     );
 
@@ -765,13 +812,10 @@ async function handleNearbyStations(
           ?.eligible === true
     ).length;
 
-  sendJson(
-    response,
-    200,
-    {
-      success: true,
+  const responseData = {
+    success: true,
 
-      userLocation: {
+    userLocation: {
         latitude,
 
         longitude,
@@ -796,6 +840,8 @@ async function handleNearbyStations(
 
       paymentOption,
 
+      discounts,
+
       gangneungPay: {
         officialGasStationCount:
           gangneungPayStations.length,
@@ -807,7 +853,8 @@ async function handleNearbyStations(
 
         discountPolicyStatus:
           getDiscountPolicyStatus(
-            paymentOption
+            paymentOption,
+            discounts
           ),
       },
 
@@ -816,13 +863,40 @@ async function handleNearbyStations(
 
       stations:
         calculatedStations,
-    }
-  );
+    };
+
+  nearbySearchCache.set(nearbyCacheKey, {
+    timestamp: Date.now(),
+    data: responseData,
+  });
+
+  if (nearbySearchCache.size > NEARBY_CACHE_MAX) {
+    const oldestKey = nearbySearchCache.keys().next().value;
+    if (oldestKey) nearbySearchCache.delete(oldestKey);
+  }
+
+  sendJson(response, 200, responseData);
 }
 
 function getDiscountPolicyStatus(
-  paymentOption
+  paymentOption,
+  discounts
 ) {
+  if (
+    Array.isArray(
+      discounts
+    ) &&
+    discounts.length >
+      0
+  ) {
+    return discounts.some(
+      (discount) =>
+        discount.requiresLocalPayMatch
+    )
+      ? "local-pay-match-required"
+      : "configured";
+  }
+
   if (
     !paymentOption ||
     paymentOption.type ===
@@ -886,6 +960,31 @@ function normalizePaymentOption(
     value.requiresLocalPayMatch ===
     true;
 
+  /**
+   * 여러 할인을 등록할 때(예: "강릉페이", "A카드")
+   * 화면에 표시할 이름과, 특정 정유사 브랜드에서만
+   * 적용되는 카드인지 여부입니다. 단일 paymentOption
+   * 방식(하위 호환)에서는 보통 비어 있습니다.
+   */
+  const label =
+    typeof value.label ===
+      "string" &&
+    value.label.trim()
+      ? value.label
+          .trim()
+          .slice(0, 30)
+      : null;
+
+  const brandCode =
+    typeof value.brandCode ===
+      "string" &&
+    value.brandCode.trim()
+      ? value.brandCode
+          .trim()
+          .toUpperCase()
+          .slice(0, 10)
+      : null;
+
   if (
     type === "percent"
   ) {
@@ -941,6 +1040,10 @@ function normalizePaymentOption(
       maxDiscount,
 
       requiresLocalPayMatch,
+
+      label,
+
+      brandCode,
     };
   }
 
@@ -969,12 +1072,86 @@ function normalizePaymentOption(
       amount,
 
       requiresLocalPayMatch,
+
+      label,
+
+      brandCode,
+    };
+  }
+
+  if (
+    type === "perLiter"
+  ) {
+    const rate =
+      Number(
+        value.rate
+      );
+
+    if (
+      !Number.isFinite(
+        rate
+      ) ||
+      rate < 0
+    ) {
+      throw new Error(
+        "리터당 할인액이 올바르지 않습니다."
+      );
+    }
+
+    return {
+      type: "perLiter",
+
+      rate,
+
+      requiresLocalPayMatch,
+
+      label,
+
+      brandCode,
     };
   }
 
   throw new Error(
     "할인 옵션을 확인할 수 없습니다."
   );
+}
+
+const MAX_DISCOUNTS = 10;
+
+/**
+ * 여러 할인 등록(discounts) 배열을 검증합니다.
+ * 항목별 검증은 normalizePaymentOption을 그대로 재사용하고,
+ * type이 "none"인 항목(빈 값)은 조용히 걸러냅니다.
+ */
+function normalizeDiscounts(
+  value
+) {
+  if (
+    !Array.isArray(
+      value
+    )
+  ) {
+    return [];
+  }
+
+  if (
+    value.length >
+    MAX_DISCOUNTS
+  ) {
+    throw new Error(
+      `할인은 최대 ${MAX_DISCOUNTS}개까지 등록할 수 있습니다.`
+    );
+  }
+
+  return value
+    .map(
+      normalizePaymentOption
+    )
+    .filter(
+      (discount) =>
+        discount.type !==
+        "none"
+    );
 }
 
 function validateLocation(
