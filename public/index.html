@@ -2191,6 +2191,13 @@
       color: var(--text);
     }
 
+    .result-insight-divider {
+      height: 1px;
+      margin: 7px 0;
+      background: var(--line);
+    }
+
+
     .station {
       position: relative;
       overflow: hidden;
@@ -2286,6 +2293,45 @@
 
     .station-detail-body {
       padding-top: 9px;
+    }
+
+    .meta-chip.price-date.fresh {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .meta-chip.price-date.recent {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .meta-chip.price-date.stale {
+      background: #fff1f2;
+      color: #be123c;
+    }
+
+    .meta-chip.price-date.unknown {
+      background: var(--surface-muted);
+      color: var(--text-soft);
+    }
+
+    .price-freshness-note {
+      margin-top: 9px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .price-freshness-note.stale {
+      background: #fff1f2;
+      color: #be123c;
+    }
+
+    .price-freshness-note.unknown {
+      background: var(--surface-muted);
+      color: var(--text-soft);
     }
 
     .decision-note {
@@ -2709,6 +2755,22 @@
                 S-OIL
               </option>
 
+              <option value="RTE">
+                자영알뜰
+              </option>
+
+              <option value="RTX">
+                고속도로알뜰
+              </option>
+
+              <option value="NHO">
+                농협알뜰
+              </option>
+
+              <option value="ETC">
+                자가상표
+              </option>
+
               <option value="__custom__">
                 직접 입력
               </option>
@@ -3025,6 +3087,15 @@
           >
             강릉페이만 보기
           </button>
+
+          <button
+            id="freshOnlyToggle"
+            class="pay-only-toggle fresh-only-toggle active"
+            type="button"
+            aria-pressed="true"
+          >
+            2일 이상 지난 가격 제외
+          </button>
         </div>
 
         <div id="resultInsight" class="result-insight"></div>
@@ -3259,6 +3330,11 @@
         "payOnlyToggle"
       );
 
+    const freshOnlyToggle =
+      document.getElementById(
+        "freshOnlyToggle"
+      );
+
     const resultInsight =
       document.getElementById(
         "resultInsight"
@@ -3294,6 +3370,9 @@
 
     let payOnly = false;
 
+    // 가격 기준일을 확인할 수 있는 주유소 중 2일 이상 지난 가격은 기본적으로 제외합니다.
+    let freshOnly = true;
+
     /* ======================================================
        Defaults
        ====================================================== */
@@ -3320,6 +3399,12 @@
       GSC: "GS칼텍스",
       HDO: "현대오일뱅크",
       SOL: "S-OIL",
+      RTE: "자영알뜰",
+      RTX: "고속도로알뜰",
+      NHO: "농협알뜰",
+      ETC: "자가상표",
+      E1G: "E1",
+      SKG: "SK가스",
     };
 
     function brandLabel(
@@ -4640,6 +4725,31 @@
       );
     }
 
+    freshOnlyToggle.addEventListener(
+      "click",
+      () => {
+        freshOnly = !freshOnly;
+
+        freshOnlyToggle.classList.toggle(
+          "active",
+          freshOnly
+        );
+
+        freshOnlyToggle.setAttribute(
+          "aria-pressed",
+          String(freshOnly)
+        );
+
+        if (hasSearched) {
+          renderStations(lastStations);
+          updateResultSummary(
+            lastStations,
+            selectedRadius
+          );
+        }
+      }
+    );
+
     /* ======================================================
        Station search
        ====================================================== */
@@ -5108,6 +5218,30 @@
           ? `${visibleStations.length}곳${payOnly ? " · 강릉페이" : ""}`
           : "0곳";
 
+      const insightMessages = [];
+      const priceUpdateSummary =
+        getPriceUpdateSummary(list);
+
+      if (priceUpdateSummary.staleCount > 0 || priceUpdateSummary.unknownCount > 0) {
+        const parts = [];
+
+        if (priceUpdateSummary.staleCount > 0) {
+          parts.push(
+            `2일 이상 지난 가격 ${priceUpdateSummary.staleCount}곳`
+          );
+        }
+
+        if (priceUpdateSummary.unknownCount > 0) {
+          parts.push(
+            `업데이트일 확인 안 됨 ${priceUpdateSummary.unknownCount}곳`
+          );
+        }
+
+        insightMessages.push(
+          `<strong>가격 최신성:</strong> ${parts.join(" · ")} ${freshOnly ? "· 오래된 가격은 현재 목록에서 제외했습니다." : "· 오래된 가격도 표시 중입니다."}`
+        );
+      }
+
       if (list.length === 0) {
         stationList.innerHTML = `
           <div class="empty-state">
@@ -5127,7 +5261,8 @@
             <div class="empty-icon">⛽</div>
             <p class="empty-title">조건에 맞는 주유소가 없습니다.</p>
             <p class="empty-description">
-              강릉페이 필터를 해제하면 전체 결과를 볼 수 있습니다.
+              현재 필터 조건에서 표시할 주유소가 없습니다.
+              가격 최신성 필터나 강릉페이 필터를 해제해 보세요.
             </p>
           </div>
         `;
@@ -5197,14 +5332,23 @@
             Math.round(priceBestEffective - bestEffective)
           );
 
-          resultInsight.innerHTML =
+          insightMessages.push(
             `<strong>주유가격 최저:</strong> ${escapeHtml(
               priceBest.name || "주유소"
             )} · 하지만 이동비를 포함하면 실질비용은 ${formatWon(
               extra
-            )}원/L 더 높습니다.`;
-          resultInsight.classList.add("visible");
+            )}원/L 더 높습니다.`
+          );
         }
+      }
+
+      if (insightMessages.length > 0) {
+        resultInsight.innerHTML = insightMessages
+          .map((message) => `<div>${message}</div>`)
+          .join(
+            `<div class="result-insight-divider"></div>`
+          );
+        resultInsight.classList.add("visible");
       }
 
       visibleStations.forEach(
@@ -5238,14 +5382,21 @@
             )
           : [];
 
-      const filtered =
-        payOnly
-          ? list.filter((station) => {
-              const status =
-                station.gangneungPay?.status;
-              return status === "available";
-            })
-          : list;
+      let filtered = list;
+
+      if (payOnly) {
+        filtered = filtered.filter((station) => {
+          const status =
+            station.gangneungPay?.status;
+          return status === "available";
+        });
+      }
+
+      if (freshOnly) {
+        filtered = filtered.filter((station) =>
+          station.priceUpdate?.status !== "stale"
+        );
+      }
 
       return [...filtered].sort((a, b) => {
         if (currentSort === "price") {
@@ -5370,6 +5521,7 @@
                   : ""
               }
               ${createPayBadge(station)}
+              ${createPriceUpdateBadge(station)}
             </div>
           </div>
         </div>
@@ -5409,6 +5561,8 @@
             }</span>
           </div>
         </div>
+
+        ${createPriceFreshnessWarning(station)}
 
         ${decisionHtml}
 
@@ -5453,6 +5607,113 @@
     /* ======================================================
        Gangneung Pay
        ====================================================== */
+
+    function getPriceUpdateSummary(stations) {
+      const list =
+        Array.isArray(stations)
+          ? stations
+          : [];
+
+      const dated =
+        list.filter(
+          (station) =>
+            station?.priceUpdate?.updatedAt
+        );
+
+      return {
+        checkedCount: dated.length,
+        staleCount: dated.filter(
+          (station) =>
+            station.priceUpdate.status === "stale"
+        ).length,
+        unknownCount: Math.max(
+          0,
+          list.length - dated.length
+        ),
+      };
+    }
+
+    function formatPriceUpdateDate(
+      priceUpdate
+    ) {
+      if (!priceUpdate?.updatedAt) {
+        return "가격일 확인 안됨";
+      }
+
+      const date =
+        new Date(priceUpdate.updatedAt);
+
+      if (!Number.isFinite(date.getTime())) {
+        return "가격일 확인 안됨";
+      }
+
+      const month = String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+      const day = String(
+        date.getDate()
+      ).padStart(2, "0");
+      const hours = String(
+        date.getHours()
+      ).padStart(2, "0");
+      const minutes = String(
+        date.getMinutes()
+      ).padStart(2, "0");
+
+      return `${month}/${day} ${hours}:${minutes}`;
+    }
+
+    function createPriceUpdateBadge(station) {
+      const update =
+        station?.priceUpdate;
+
+      if (!update?.updatedAt) {
+        return `<span class="meta-chip price-date unknown">가격일 확인 안됨</span>`;
+      }
+
+      const label =
+        `가격 ${formatPriceUpdateDate(update)}`;
+
+      const className =
+        update.status === "stale"
+          ? "stale"
+          : update.status === "recent"
+            ? "recent"
+            : "fresh";
+
+      return `<span class="meta-chip price-date ${className}">${label}</span>`;
+    }
+
+    function createPriceFreshnessWarning(station) {
+      const update =
+        station?.priceUpdate;
+
+      if (!update?.updatedAt) {
+        return `
+          <div class="price-freshness-note unknown">
+            가격 업데이트일을 확인하지 못했습니다. 실제 판매가격과 차이가 있을 수 있습니다.
+          </div>
+        `;
+      }
+
+      if (update.status !== "stale") {
+        return "";
+      }
+
+      const days =
+        Number(update.ageDays);
+
+      const dayText =
+        Number.isFinite(days)
+          ? `${days}일 전`
+          : "오래전";
+
+      return `
+        <div class="price-freshness-note stale">
+          가격 기준일이 ${dayText}입니다. 현장 판매가격과 다를 수 있어 방문 전 확인을 권장합니다.
+        </div>
+      `;
+    }
 
     function createPayBadge(
       station

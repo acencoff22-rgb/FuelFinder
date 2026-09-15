@@ -129,7 +129,7 @@ export function getCachedStationDetail(
   }
 
   const cachedAt = Date.parse(entry.cachedAt || "");
-  const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
+  const maxAgeMs = 24 * 60 * 60 * 1000;
 
   if (
     !Number.isFinite(cachedAt) ||

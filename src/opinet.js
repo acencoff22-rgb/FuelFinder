@@ -241,6 +241,89 @@ export async function getStationDetail(
   return data;
 }
 
+export function extractStationPriceInfo(
+  detail,
+  productCode = "B027"
+) {
+  const oilPrices =
+    detail?.OIL_PRICE;
+
+  const list =
+    Array.isArray(oilPrices)
+      ? oilPrices
+      : oilPrices && typeof oilPrices === "object"
+        ? [oilPrices]
+        : [];
+
+  if (list.length === 0) {
+    return null;
+  }
+
+  const matched =
+    list.find(
+      (item) =>
+        String(item?.PRODCD || "") ===
+        String(productCode)
+    ) || list[0];
+
+  const tradeDate =
+    String(matched?.TRADE_DT || "").trim();
+
+  const tradeTime =
+    String(matched?.TRADE_TM || "").trim();
+
+  if (!/^\d{8}$/.test(tradeDate)) {
+    return null;
+  }
+
+  const year = Number(tradeDate.slice(0, 4));
+  const month = Number(tradeDate.slice(4, 6));
+  const day = Number(tradeDate.slice(6, 8));
+
+  const hour =
+    /^\d{6}$/.test(tradeTime)
+      ? Number(tradeTime.slice(0, 2))
+      : 0;
+
+  const minute =
+    /^\d{6}$/.test(tradeTime)
+      ? Number(tradeTime.slice(2, 4))
+      : 0;
+
+  const second =
+    /^\d{6}$/.test(tradeTime)
+      ? Number(tradeTime.slice(4, 6))
+      : 0;
+
+  // 오피넷 거래시각은 한국시간(KST) 기준이므로
+  // Render 서버의 시간대와 무관하게 UTC로 정확히 변환합니다.
+  const updatedAt =
+    new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        day,
+        hour - 9,
+        minute,
+        second
+      )
+    );
+
+  if (!Number.isFinite(updatedAt.getTime())) {
+    return null;
+  }
+
+  return {
+    price: Number.isFinite(Number(matched?.PRICE))
+      ? Number(matched.PRICE)
+      : null,
+    productCode: String(matched?.PRODCD || productCode),
+    tradeDate,
+    tradeTime,
+    updatedAt: updatedAt.toISOString(),
+  };
+}
+
 export function extractStationDetail(
   data
 ) {

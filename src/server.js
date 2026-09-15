@@ -11,6 +11,7 @@ import {
   getNearbyStations,
   getStationDetail,
   extractStationDetail,
+  extractStationPriceInfo,
 } from "./opinet.js";
 
 import {
@@ -107,6 +108,11 @@ const GEOCODE_MIN_INTERVAL_MS =
 const nearbySearchCache = new Map();
 const NEARBY_CACHE_TTL_MS = 60 * 1000;
 const NEARBY_CACHE_MAX = 100;
+
+// 가격 기준일은 상세조회에서만 확인할 수 있습니다.
+// 오피넷 일반 API의 일일 호출 한도를 고려해 가격순 상위 후보를 우선 확인합니다.
+const PRICE_DATE_DETAIL_LIMIT = 6;
+const PRICE_STALE_AFTER_DAYS = 2;
 
 const server =
   http.createServer(
@@ -679,30 +685,42 @@ async function handleNearbyStations(
       })
     );
 
-  const detailTargets =
+  const localPayDetailTargets =
     preliminary.filter(
-      ({
-        result,
-      }) =>
-        result.matchStatus ===
-          "matched" ||
-        result.matchStatus ===
-          "ambiguous" ||
-        result.reviewRequired ===
-          true
+      ({ result }) =>
+        result.matchStatus === "matched" ||
+        result.matchStatus === "ambiguous" ||
+        result.reviewRequired === true
     );
+
+  // 가격 기준일 표시를 위해 현재 가격이 낮은 후보도 일부 상세조회합니다.
+  // 오피넷 일반 API 호출 한도를 고려하여 무제한으로 상세조회하지 않습니다.
+  const priceDateTargets = stations
+    .slice(0, PRICE_DATE_DETAIL_LIMIT)
+    .map((station) => ({ station }));
+
+  const detailTargetMap = new Map();
+
+  for (const item of [
+    ...localPayDetailTargets,
+    ...priceDateTargets,
+  ]) {
+    if (item?.station?.id) {
+      detailTargetMap.set(
+        item.station.id,
+        item.station
+      );
+    }
+  }
+
+  const detailTargets =
+    [...detailTargetMap.values()];
 
   const detailedStations =
     new Map();
 
-  for (
-    const {
-      station,
-    } of detailTargets
-  ) {
-    if (
-      !station.id
-    ) {
+  for (const station of detailTargets) {
+    if (!station.id) {
       continue;
     }
 
@@ -718,6 +736,12 @@ async function handleNearbyStations(
         );
 
       if (detail) {
+        const priceInfo =
+          extractStationPriceInfo(
+            detail,
+            productCode
+          );
+
         detailedStations.set(
           station.id,
           {
@@ -741,12 +765,17 @@ async function handleNearbyStations(
               detail.TEL ||
               station.phone ||
               "",
+
+            priceUpdate:
+              priceInfo
+                ? createPriceUpdateInfo(
+                    priceInfo
+                  )
+                : null,
           }
         );
       }
-    } catch (
-      error
-    ) {
+    } catch (error) {
       console.warn(
         `[오피넷 상세조회 실패] ${station.id}: ${error.message}`
       );
@@ -858,6 +887,11 @@ async function handleNearbyStations(
           ),
       },
 
+      priceUpdateSummary:
+        createPriceUpdateSummary(
+          calculatedStations
+        ),
+
       stationCount:
         calculatedStations.length,
 
@@ -876,6 +910,70 @@ async function handleNearbyStations(
   }
 
   sendJson(response, 200, responseData);
+}
+
+function createPriceUpdateInfo(priceInfo) {
+  const updatedAt =
+    new Date(priceInfo.updatedAt);
+
+  if (!Number.isFinite(updatedAt.getTime())) {
+    return null;
+  }
+
+  const ageMs =
+    Math.max(
+      0,
+      Date.now() - updatedAt.getTime()
+    );
+
+  const ageDays =
+    Math.floor(
+      ageMs /
+      (24 * 60 * 60 * 1000)
+    );
+
+  return {
+    productCode: priceInfo.productCode,
+    tradeDate: priceInfo.tradeDate,
+    tradeTime: priceInfo.tradeTime,
+    updatedAt: priceInfo.updatedAt,
+    ageDays,
+    status:
+      ageDays >= PRICE_STALE_AFTER_DAYS
+        ? "stale"
+        : ageDays >= 1
+          ? "recent"
+          : "fresh",
+  };
+}
+
+function createPriceUpdateSummary(stations) {
+  const list =
+    Array.isArray(stations)
+      ? stations
+      : [];
+
+  const withDate =
+    list.filter(
+      (station) =>
+        station?.priceUpdate?.updatedAt
+    );
+
+  const staleCount =
+    withDate.filter(
+      (station) =>
+        station.priceUpdate.status === "stale"
+    ).length;
+
+  return {
+    checkedCount: withDate.length,
+    unknownCount: Math.max(
+      0,
+      list.length - withDate.length
+    ),
+    staleCount,
+    staleAfterDays: PRICE_STALE_AFTER_DAYS,
+  };
 }
 
 function getDiscountPolicyStatus(
