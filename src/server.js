@@ -55,6 +55,15 @@ const host =
   process.env.HOST ||
   "0.0.0.0";
 
+const frontendOrigins =
+  String(
+    process.env.FRONTEND_ORIGINS ||
+      "https://fuelfinder-web.onrender.com,http://localhost:3000,http://127.0.0.1:3000"
+  )
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
 const mimeTypes = {
   ".html":
     "text/html; charset=utf-8",
@@ -121,6 +130,17 @@ const server =
       response
     ) => {
       try {
+        applyCorsHeaders(
+          request,
+          response
+        );
+
+        if (request.method === "OPTIONS") {
+          response.writeHead(204);
+          response.end();
+          return;
+        }
+
         if (
           request.method === "POST" &&
           request.url ===
@@ -225,6 +245,56 @@ const server =
       }
     }
   );
+
+function applyCorsHeaders(
+  request,
+  response
+) {
+  const origin =
+    String(
+      request.headers.origin ||
+        ""
+    ).trim();
+
+  if (origin) {
+    const requestHost =
+      String(
+        request.headers.host ||
+          ""
+      ).trim();
+
+    const sameOrigin =
+      requestHost &&
+      ((origin === `http://${requestHost}`) ||
+        (origin === `https://${requestHost}`));
+
+    const allowed =
+      sameOrigin ||
+      frontendOrigins.includes(origin);
+
+    if (allowed) {
+      response.setHeader(
+        "Access-Control-Allow-Origin",
+        origin
+      );
+
+      response.setHeader(
+        "Vary",
+        "Origin"
+      );
+    }
+  }
+
+  response.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS"
+  );
+
+  response.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Accept"
+  );
+}
 
 function handlePublicConfig(
   _request,

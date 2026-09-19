@@ -10,3 +10,14 @@ services:
     envVars:
       - key: OPINET_CERTKEY
         sync: false
+      - key: KAKAO_JAVASCRIPT_KEY
+        sync: false
+      - key: FRONTEND_ORIGINS
+        value: https://fuelfinder-web.onrender.com
+
+  - type: web
+    name: fuelfinder-web
+    runtime: static
+    buildCommand: echo "FuelFinder static frontend ready"
+    staticPublishPath: ./public
+    autoDeployTrigger: commit

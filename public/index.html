@@ -15,6 +15,8 @@
 
   <title>FuelFinder</title>
 
+  <script src="./config.js"></script>
+
   <script
     src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"
     crossorigin="anonymous"
@@ -1906,6 +1908,67 @@
     }
 
     /* ======================================================
+       Mobile-only access
+       ====================================================== */
+
+    .mobile-only-guard {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg);
+    }
+
+    body.desktop-blocked .mobile-only-guard {
+      display: flex;
+    }
+
+    body.desktop-blocked .app-shell {
+      display: none;
+    }
+
+    .mobile-only-card {
+      width: min(420px, 100%);
+      padding: 26px 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+
+    .mobile-only-icon {
+      width: 54px;
+      height: 54px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      border-radius: 16px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 950;
+    }
+
+    .mobile-only-title {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+
+    .mobile-only-description {
+      margin: 9px 0 0;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ======================================================
        Responsive
        ====================================================== */
 
@@ -2428,6 +2491,22 @@
     id="drawerOverlay"
     class="drawer-overlay"
   ></div>
+
+  <div
+    id="mobileOnlyGuard"
+    class="mobile-only-guard"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="mobile-only-card">
+      <div class="mobile-only-icon">↗</div>
+      <h1 class="mobile-only-title">휴대폰에서 이용해주세요</h1>
+      <p class="mobile-only-description">
+        FuelFinder의 길찾기와 도착 위치 기능은 모바일 지도 앱을 기준으로 제공됩니다.<br>
+        Android 또는 iPhone에서 열어주세요.
+      </p>
+    </div>
+  </div>
 
   <!-- ======================================================
        Settings drawer
@@ -3402,6 +3481,29 @@
     let kakaoNaviReady = false;
     let kakaoNaviError = "";
 
+    const API_BASE_URL =
+      String(
+        window.FUELFINDER_CONFIG?.apiBaseUrl ||
+          ""
+      ).trim().replace(/\/+$/, "");
+
+    function apiUrl(pathname) {
+      const path =
+        String(pathname || "");
+
+      if (!API_BASE_URL) {
+        return path;
+      }
+
+      if (/^https?:\/\//i.test(path)) {
+        return path;
+      }
+
+      return `${API_BASE_URL}${
+        path.startsWith("/") ? path : `/${path}`
+      }`;
+    }
+
     /* ======================================================
        Defaults
        ====================================================== */
@@ -3458,12 +3560,16 @@
 
     loadRecentLocations();
 
-    initializeKakaoNavi();
+    if (isMobileEnvironment()) {
+      initializeKakaoNavi();
 
-    stationList.addEventListener(
-      "click",
-      handleStationMapAction
-    );
+      stationList.addEventListener(
+        "click",
+        handleStationMapAction
+      );
+    } else {
+      document.body.classList.add("desktop-blocked");
+    }
 
     /* ======================================================
        Settings drawer
@@ -4528,13 +4634,13 @@
     ) {
       /*
        * 브라우저에서 외부 지오코딩 서비스를 직접 호출하지 않습니다.
-       * Render 서버가 주소 검색을 중계하여 CORS와 공개 API 접근 문제를 줄입니다.
+       * FuelFinder API 서버가 주소 검색을 중계하여 CORS와 공개 API 접근 문제를 줄입니다.
        */
       const response =
         await fetch(
-          `/api/geocode?q=${encodeURIComponent(
+          apiUrl(`/api/geocode?q=${encodeURIComponent(
             query
-          )}`,
+          )}`),
           {
             headers: {
               Accept:
@@ -4870,7 +4976,7 @@
       try {
         const response =
           await fetch(
-            "/api/nearby-stations",
+            apiUrl("/api/nearby-stations"),
             {
               method:
                 "POST",
@@ -6047,7 +6153,7 @@
       try {
         const response =
           await fetch(
-            "/api/config",
+            apiUrl("/api/config"),
             {
               cache: "no-store",
             }
@@ -6178,34 +6284,36 @@
       }
     }
 
+    function isMobileEnvironment() {
+      const userAgent =
+        navigator.userAgent ||
+        "";
+      const iPadDesktopMode =
+        navigator.platform === "MacIntel" &&
+        Number(navigator.maxTouchPoints || 0) > 1;
+
+      return (
+        /Android|iPhone|iPad|iPod/i.test(userAgent) ||
+        iPadDesktopMode
+      );
+    }
+
     function openNaverRoute(
       latitude,
       longitude,
       stationName
     ) {
-      const name =
-        encodeURIComponent(
-          stationName ||
-          "주유소"
-        );
-      const appName =
-        encodeURIComponent(
-          window.location.href
-        );
+      const name = encodeURIComponent(stationName || "주유소");
+      const appName = encodeURIComponent(window.location.origin);
       const appPath =
         `route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`;
 
-      const userAgent =
-        navigator.userAgent ||
-        "";
-      const isAndroid =
-        /Android/i.test(
-          userAgent
-        );
+      const userAgent = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(userAgent);
       const isIos =
-        /iPhone|iPad|iPod/i.test(
-          userAgent
-        );
+        /iPhone|iPad|iPod/i.test(userAgent) ||
+        (navigator.platform === "MacIntel" &&
+          Number(navigator.maxTouchPoints || 0) > 1);
 
       if (isAndroid) {
         window.location.href =
@@ -6214,23 +6322,8 @@
       }
 
       if (isIos) {
-        window.location.href =
-          `nmap://${appPath}`;
-        return;
+        window.location.href = `nmap://${appPath}`;
       }
-
-      const webDestination =
-        `${longitude},${latitude},${encodeURIComponent(
-          stationName ||
-            "주유소"
-        )}`;
-      const webRouteUrl =
-        `https://way-m.map.naver.com/end-quick-path/-/${webDestination}/-/car/0`;
-
-      // PC에서는 nmap:// 앱 스킴을 사용할 수 없으므로
-      // 네이버 지도 웹 자동차 길찾기로 직접 이동합니다.
-      window.location.href =
-        webRouteUrl;
     }
 
     function startKakaoNavi(
@@ -6245,7 +6338,7 @@
       ) {
         window.alert(
           kakaoNaviError ||
-            "카카오내비를 사용할 수 없습니다. Render의 KAKAO_JAVASCRIPT_KEY 설정을 확인하세요."
+            "카카오내비를 사용할 수 없습니다. API 서버의 KAKAO_JAVASCRIPT_KEY 설정을 확인하세요."
         );
         return;
       }
@@ -6275,24 +6368,16 @@
       longitude,
       stationName
     ) {
-      const appName =
-        encodeURIComponent(
-          window.location.href
-        );
+      const appName = encodeURIComponent(window.location.origin);
       const appPath =
         `map?lat=${latitude}&lng=${longitude}&zoom=18&appname=${appName}`;
 
-      const userAgent =
-        navigator.userAgent ||
-        "";
-      const isAndroid =
-        /Android/i.test(
-          userAgent
-        );
+      const userAgent = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(userAgent);
       const isIos =
-        /iPhone|iPad|iPod/i.test(
-          userAgent
-        );
+        /iPhone|iPad|iPod/i.test(userAgent) ||
+        (navigator.platform === "MacIntel" &&
+          Number(navigator.maxTouchPoints || 0) > 1);
 
       if (isAndroid) {
         window.location.href =
@@ -6301,16 +6386,8 @@
       }
 
       if (isIos) {
-        window.location.href =
-          `nmap://${appPath}`;
-        return;
+        window.location.href = `nmap://${appPath}`;
       }
-
-      window.open(
-        `https://map.naver.com/p?c=${longitude},${latitude},18,0,0,0,dh`,
-        "_blank",
-        "noopener,noreferrer"
-      );
     }
 
     function openKakaoLocation(

@@ -40,20 +40,25 @@ OPINET_CERTKEY=...
 
 - `OPINET_CERTKEY`: 오피넷 API 조회에 필수입니다. 이게 없으면 서버가 주유소 검색 자체를 못 합니다.
 
-주소 검색은 서버에서 OpenStreetMap Nominatim을 중계하며 별도의 주소 검색 API 키를 사용하지 않습니다. 공개 지오코더의 요청 제한을 고려해 서버 메모리 캐시와 요청 간격 제한을 적용했습니다.
+주소 검색은 API 서버에서 OpenStreetMap Nominatim을 중계하며 별도의 주소 검색 API 키를 사용하지 않습니다. 공개 지오코더의 요청 제한을 고려해 서버 메모리 캐시와 요청 간격 제한을 적용했습니다.
 - `LOCALPAY_SERVICE_KEY`: 운영 서버(`src/server.js`)는 사용하지 않습니다. `src/legacy/`의 예전 스크립트(한국조폐공사 실시간 API 연동 시도)를 직접 돌려볼 때만 필요합니다. 로컬에서 그 스크립트를 실행할 계획이 없다면 설정하지 않아도 됩니다.
 
 `.env`는 GitHub에 올리지 않습니다.
 
-## Render
+## Render 배포 구조
 
-이 저장소는 Render Web Service 기준으로 구성되어 있습니다. `render.yaml`을 사용할 수 있습니다.
+FuelFinder는 화면과 API를 분리해 배포합니다.
+
+- `fuelfinder-web`: Render Static Site. 정적 화면만 제공하므로 Free Web Service의 sleep 로딩 화면을 사용자가 보지 않습니다.
+- `fuelfinder`: Render Web Service. 오피넷, 주소 검색, 카카오 설정 조회 등 API만 담당합니다.
+
+`render.yaml`은 두 서비스를 한 번에 정의합니다. 정적 화면은 `public/`을 그대로 배포하고, `public/config.js`에서 API 서버 주소를 지정합니다.
 
 - Build Command: `npm ci`
 - Start Command: `npm start`
 - Health Check Path: `/health`
 
-Render 환경변수에는 `OPINET_CERTKEY`만 등록하면 됩니다. Render Web Service는 `PORT` 환경변수를 제공하며 서버는 이를 사용합니다.
+API Web Service 환경변수에는 `OPINET_CERTKEY`, `KAKAO_JAVASCRIPT_KEY`, `FRONTEND_ORIGINS`를 등록합니다. Render Web Service는 `PORT` 환경변수를 제공하며 서버는 이를 사용합니다.
 
 ## 캐시
 
@@ -100,3 +105,8 @@ Render 환경변수에는 `OPINET_CERTKEY`만 등록하면 됩니다. Render Web
 카카오내비 연동에는 카카오디벨로퍼스에서 발급한 JavaScript 키와 FuelFinder 도메인의 JavaScript SDK 도메인 등록이 필요합니다. 배포에서는 Render 환경변수 `KAKAO_JAVASCRIPT_KEY`로 키를 설정합니다. 카카오 로그인 리다이렉트 URI는 사용하지 않습니다.
 
 카카오 JavaScript SDK는 2.8.3을 사용합니다.
+
+## 모바일 전용 운영
+
+FuelFinder는 모바일 사용을 기준으로 운영합니다. 네이버지도 길찾기·도착 위치와 카카오내비·카카오 도착 위치는 모바일 지도 앱 연결을 전제로 하며, 데스크톱 브라우저에서는 서비스 화면 대신 모바일 전용 안내를 표시합니다. iPadOS의 데스크톱 모드처럼 보이는 환경도 터치 입력이 확인되면 모바일로 취급합니다.
+
