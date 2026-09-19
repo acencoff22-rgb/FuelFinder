@@ -301,27 +301,38 @@ function applyCorsHeaders(
     const configuredWildcard =
       frontendOrigins.includes("*");
 
-    const renderStaticOrigin =
-      /^https:\/\/fuelfinder[a-z0-9-]*\.onrender\.com$/i.test(origin);
+    // FuelFinder 프론트엔드는 Render Static Site에서 별도로 제공될 수 있습니다.
+    // 기존에는 사이트 이름이 "fuelfinder..."인 경우만 허용해서,
+    // 실제 Static Site 주소가 조금만 달라도 브라우저가 CORS 응답을 차단할 수 있었습니다.
+    // 인증 쿠키를 사용하는 API가 아니므로 Render의 HTTPS 도메인은 허용하되,
+    // 명시적인 FRONTEND_ORIGINS가 있으면 그 목록도 함께 존중합니다.
+    const renderOrigin =
+      /^https:\/\/[^/]+\.onrender\.com$/i.test(origin);
 
     const allowed =
       sameOrigin ||
       configuredWildcard ||
       frontendOrigins.includes(origin) ||
-      renderStaticOrigin;
+      renderOrigin;
 
-    if (allowed) {
+    if (configuredWildcard || renderOrigin) {
       response.setHeader(
         "Access-Control-Allow-Origin",
         configuredWildcard ? "*" : origin
       );
-
-      if (!configuredWildcard) {
-        response.setHeader(
-          "Vary",
-          "Origin"
-        );
-      }
+      response.setHeader(
+        "Vary",
+        "Origin"
+      );
+    } else if (allowed) {
+      response.setHeader(
+        "Access-Control-Allow-Origin",
+        origin
+      );
+      response.setHeader(
+        "Vary",
+        "Origin"
+      );
     }
   }
 
@@ -333,6 +344,11 @@ function applyCorsHeaders(
   response.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Accept"
+  );
+
+  response.setHeader(
+    "Access-Control-Max-Age",
+    "600"
   );
 }
 

@@ -6061,6 +6061,32 @@
        Station search
        ====================================================== */
 
+    async function fetchApiWithRetry(
+      input,
+      options = {},
+      retryCount = 1
+    ) {
+      let lastError;
+
+      for (let attempt = 0; attempt <= retryCount; attempt += 1) {
+        try {
+          return await fetch(input, options);
+        } catch (error) {
+          lastError = error;
+
+          if (attempt >= retryCount) {
+            throw error;
+          }
+
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, 1200)
+          );
+        }
+      }
+
+      throw lastError || new Error("서버 요청에 실패했습니다.");
+    }
+
     async function searchStations(
       location
     ) {
@@ -6163,7 +6189,7 @@
 
       try {
         const response =
-          await fetch(
+          await fetchApiWithRetry(
             apiUrl("/api/nearby-stations"),
             {
               method:
@@ -6337,7 +6363,7 @@
             ? "서버 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요."
             : error?.name === "TypeError" &&
               /fetch|failed/i.test(String(error.message || ""))
-            ? "서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요."
+            ? "서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요. (Static Site의 API 연결 또는 CORS 설정을 확인하세요.)"
             : `검색 실패: ${error.message}`
         );
 

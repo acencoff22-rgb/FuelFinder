@@ -90,3 +90,10 @@ Render가 다른 URL을 부여하면 실제 URL을 사용합니다.
 ### 추가 환경변수
 
 Render API Web Service에 `KAKAO_REST_API_KEY`를 등록하세요. 카카오디벨로퍼스 FuelFinder 앱의 REST API 키를 사용합니다. 이 키는 브라우저가 아니라 서버 환경변수에만 넣습니다.
+
+
+### v26 API 연결 주의
+- Static Site에서 API Web Service로 보내는 요청은 CORS가 필요합니다.
+- API 서버는 `https://*.onrender.com` 형태의 Static Site origin을 허용합니다.
+- 외부 도메인을 사용하면 `FRONTEND_ORIGINS`에 정확한 origin을 추가하세요.
+- `KAKAO_REST_API_KEY`와 `KAKAO_JAVASCRIPT_KEY`는 서로 다른 용도이며, REST 키는 Web Service에만 둡니다.
