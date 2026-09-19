@@ -126,7 +126,7 @@ const NEARBY_CACHE_MAX = 100;
 // 가격 기준일은 상세조회에서만 확인할 수 있습니다.
 // 오피넷 일반 API의 일일 호출 한도를 고려해 가격순 상위 후보를 우선 확인합니다.
 const PRICE_DATE_DETAIL_LIMIT = 6;
-const PRICE_STALE_AFTER_DAYS = 2;
+const PRICE_STALE_AFTER_DAYS = 3;
 
 const server =
   http.createServer(
