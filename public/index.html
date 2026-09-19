@@ -4575,10 +4575,29 @@
        Initialisation
        ====================================================== */
 
-    loadSettings();
-    updateRadiusButtons();
+    /* 초기화 단계의 비핵심 오류 때문에 설정 버튼과 기본 UI가 죽지 않도록 각각 독립적으로 처리합니다. */
+    try {
+      loadSettings();
+    } catch (error) {
+      console.error("설정 초기화 실패:", error);
+      try {
+        updateFilterToggleButtons();
+      } catch (toggleError) {
+        console.error("필터 상태 초기화 실패:", toggleError);
+      }
+    }
 
-    loadRecentLocations();
+    try {
+      updateRadiusButtons();
+    } catch (error) {
+      console.error("반경 UI 초기화 실패:", error);
+    }
+
+    try {
+      loadRecentLocations();
+    } catch (error) {
+      console.error("최근 위치 초기화 실패:", error);
+    }
 
     if (isMobileEnvironment()) {
       stationList.addEventListener(
@@ -5688,8 +5707,8 @@
         selectedLocationData = {
           latitude: result.latitude,
           longitude: result.longitude,
-          label: result.label || query,
-          detail: result.detail || (result.label && result.label !== query ? query : ""),
+          label: query,
+          detail: result.label && result.label !== query ? result.label : "",
         };
 
         saveRecentLocation(selectedLocationData);
@@ -5793,8 +5812,9 @@
       return {
         latitude,
         longitude,
-        label: item.label || query,
-        detail: item.detail || "",
+        label:
+          item.label ||
+          query,
       };
     }
 
@@ -6005,6 +6025,1533 @@
       showSearchStatus(
         "error",
         "현재 위치를 확인하지 못했습니다. 설정에서 다른 위치를 검색할 수 있습니다."
+      );
+    }
+
+    function updateFilterToggleButtons() {
+      if (payOnlyToggle) {
+        payOnlyToggle.classList.toggle("active", payOnly);
+        payOnlyToggle.setAttribute("aria-pressed", String(payOnly));
+      }
+
+      if (freshOnlyToggle) {
+        freshOnlyToggle.classList.toggle("active", freshOnly);
+        freshOnlyToggle.setAttribute("aria-pressed", String(freshOnly));
+      }
+    }
+
+    freshOnlyToggle.addEventListener(
+      "click",
+      () => {
+        freshOnly = !freshOnly;
+        saveSettings();
+        updateFilterToggleButtons();
+
+        if (hasSearched) {
+          renderStations(lastStations);
+          updateResultSummary(
+            lastStations,
+            selectedRadius
+          );
+        }
+      }
+    );
+
+    /* ======================================================
+       Station search
+       ====================================================== */
+
+    async function searchStations(
+      location
+    ) {
+      const productCode =
+        productInput.value;
+
+      const liters =
+        Number(
+          litersInput.value
+        );
+
+      const fuelEfficiency =
+        Number(
+          fuelEfficiencyInput.value
+        );
+
+      if (
+        !isSupportedProduct(
+          productCode
+        )
+      ) {
+        throw new Error(
+          "지원하지 않는 유종입니다."
+        );
+      }
+
+      if (
+        !isValidPositiveNumber(
+          liters
+        )
+      ) {
+        litersInput.focus();
+
+        throw new Error(
+          "주유량을 올바르게 입력하세요."
+        );
+      }
+
+      if (
+        !isValidPositiveNumber(
+          fuelEfficiency
+        )
+      ) {
+        fuelEfficiencyInput.focus();
+
+        throw new Error(
+          "차량 연비를 올바르게 입력하세요."
+        );
+      }
+
+      const requestId =
+        ++searchRequestId;
+
+      hasSearched =
+        false;
+
+      lastStations =
+        [];
+
+      stationList.innerHTML =
+        "";
+
+      resultsSection.classList.add("active");
+
+      resultsCount.textContent =
+        "검색 중";
+
+      showSearchStatus(
+        "loading",
+        `
+          <div class="loading-row">
+            <span class="spinner"></span>
+            <span>
+              오피넷 가격과 강릉페이 정보를 확인하는 중입니다.
+            </span>
+          </div>
+        `
+      );
+
+      saveSettings();
+
+      /*
+       * Render 무료 서버는 잠들어 있으면 첫 응답에 30~60초가 걸립니다.
+       * 6초가 넘으면 이유를 알려주고, 75초가 넘으면 무한 대기 대신 실패로 처리합니다.
+       */
+      const fetchController = new AbortController();
+      const slowHintTimer = setTimeout(() => {
+        if (requestId === searchRequestId) {
+          showSearchStatus(
+            "loading",
+            `<div class="loading-row"><span class="spinner"></span><span>서버가 깨어나는 중입니다. 처음 한 번은 최대 1분 정도 걸릴 수 있어요.</span></div>`
+          );
+        }
+      }, 6000);
+      const abortTimer = setTimeout(() => fetchController.abort(), 75000);
+      const clearSearchTimers = () => {
+        clearTimeout(slowHintTimer);
+        clearTimeout(abortTimer);
+      };
+
+      try {
+        const response =
+          await fetch(
+            apiUrl("/api/nearby-stations"),
+            {
+              method:
+                "POST",
+
+              signal:
+                fetchController.signal,
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  latitude:
+                    location.latitude,
+
+                  longitude:
+                    location.longitude,
+
+                  radius:
+                    selectedRadius,
+
+                  productCode,
+
+                  liters,
+
+                  fuelEfficiency,
+
+                  discounts,
+
+                  payOnly,
+                }),
+            }
+          );
+
+        clearSearchTimers();
+
+        let data;
+
+        try {
+          data =
+            await response.json();
+        } catch {
+          throw new Error(
+            `서버 응답을 읽을 수 없습니다. HTTP ${response.status}`
+          );
+        }
+
+        if (
+          requestId !==
+          searchRequestId
+        ) {
+          return;
+        }
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.error ||
+              `서버 요청 실패: HTTP ${response.status}`
+          );
+        }
+
+        const stations =
+          Array.isArray(
+            data.stations
+          )
+            ? data.stations
+            : [];
+
+        lastStations =
+          deepClone(
+            stations
+          );
+
+        hasSearched =
+          true;
+
+        renderStations(
+          stations
+        );
+
+        updateResultSummary(
+          stations,
+          selectedRadius
+        );
+
+        if (
+          stations.length ===
+          0
+        ) {
+          resultsCount.textContent =
+            "0곳";
+
+          showSearchStatus(
+            "error",
+            "현재 위치 주변에서 확인 가능한 주유소가 없습니다."
+          );
+
+          return;
+        }
+
+        const visibleCount =
+          getVisibleStations(stations).length;
+
+        updateResultSummary(stations, selectedRadius);
+
+        if (visibleCount === 0) {
+          showSearchStatus(
+            "error",
+            `${stations.length}곳을 확인했지만 현재 설정된 필터 조건에서는 표시할 주유소가 없습니다. 설정에서 표시 필터를 확인하세요.`
+          );
+        } else {
+          /*
+           * 결과는 있지만 완전하지 않을 수 있는 경우 조용히 넘기지 않고 알립니다.
+           * (서버가 searchCoverage / staleDataAgeMinutes로 알려줍니다.)
+           */
+          const notices = [];
+
+          if (data.searchCoverage?.partial) {
+            notices.push(
+              `10km 검색 중 ${data.searchCoverage.failedCenterCount}개 구역 조회에 실패해 일부 주유소가 빠졌을 수 있습니다.`
+            );
+          }
+
+          if (Number.isFinite(Number(data.staleDataAgeMinutes))) {
+            notices.push(
+              `오피넷 조회에 문제가 있어 ${data.staleDataAgeMinutes}분 전에 조회한 가격을 표시합니다.`
+            );
+          }
+
+          if (notices.length > 0) {
+            showSearchStatus("warning", notices.join(" "));
+          } else {
+            searchStatus.className = "search-status";
+            searchStatus.textContent = "";
+          }
+        }
+      } catch (
+        error
+      ) {
+        console.error(
+          error
+        );
+
+        clearSearchTimers();
+
+        if (
+          requestId !==
+          searchRequestId
+        ) {
+          return;
+        }
+
+        lastStations =
+          [];
+
+        hasSearched =
+          false;
+
+        resultsCount.textContent =
+          "검색 실패";
+
+        showSearchStatus(
+          "error",
+          error?.name === "AbortError"
+            ? "서버 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요."
+            : error?.name === "TypeError" &&
+              /fetch|failed/i.test(String(error.message || ""))
+            ? "서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요."
+            : `검색 실패: ${error.message}`
+        );
+
+        stationList.innerHTML =
+          `
+            <div class="empty-state">
+
+              <div class="empty-icon">
+                ⚠
+              </div>
+
+              <p class="empty-title">
+                주유소 정보를 가져오지 못했습니다.
+              </p>
+
+              <p class="empty-description">
+                잠시 후 다시 검색하거나 다른 위치를 입력해 주세요.
+              </p>
+
+            </div>
+          `;
+      }
+    }
+
+    /* ======================================================
+       Cached recalculation
+       ====================================================== */
+
+    /*
+     * 저장된 원본 값(가격·거리·강릉페이 매칭)으로 현재 설정을 다시 계산해 그립니다.
+     * 계산 결과를 lastStations에 되돌려 저장하므로
+     * 이후 정렬·필터를 바꿔도 새 설정이 유지됩니다.
+     */
+    function refreshResults() {
+      if (!Array.isArray(lastStations) || lastStations.length === 0) {
+        return;
+      }
+
+      lastStations = recalculateStations(lastStations);
+
+      renderStations(lastStations);
+      updateResultSummary(lastStations, selectedRadius);
+    }
+
+    function rerenderFromCache() {
+      if (!Array.isArray(lastStations) || lastStations.length === 0) {
+        return;
+      }
+
+      refreshResults();
+
+    }
+
+    function recalculateStations(
+      stations
+    ) {
+      const liters =
+        Number(
+          litersInput.value
+        );
+
+      const fuelEfficiency =
+        Number(
+          fuelEfficiencyInput.value
+        );
+
+      if (
+        !isValidPositiveNumber(
+          liters
+        ) ||
+        !isValidPositiveNumber(
+          fuelEfficiency
+        )
+      ) {
+        return stations;
+      }
+
+      return stations
+        .map(
+          (station) => {
+            const pricePerLiter =
+              Number(
+                station.pricePerLiter
+              );
+
+            const distanceKm =
+              Number(
+                station.distanceKm
+              );
+
+            if (
+              !Number.isFinite(
+                pricePerLiter
+              ) ||
+              pricePerLiter <=
+                0 ||
+              !Number.isFinite(
+                distanceKm
+              ) ||
+              distanceKm < 0
+            ) {
+              return {
+                ...station,
+                calculationAvailable:
+                  false,
+              };
+            }
+
+            const effectivePaymentOption =
+              pickBestPaymentOption(
+                {
+                  station,
+                  discounts,
+                  liters,
+                }
+              );
+
+            let result;
+
+            try {
+              result =
+                calculateFuelCost(
+                  {
+                    pricePerLiter,
+                    liters,
+                    distanceKm,
+                    fuelEfficiency,
+                    paymentOption:
+                      effectivePaymentOption,
+                  }
+                );
+            } catch (
+              error
+            ) {
+              console.error(
+                error
+              );
+
+              return {
+                ...station,
+                calculationAvailable:
+                  false,
+              };
+            }
+
+            return {
+              ...station,
+
+              ...result,
+
+              appliedPaymentOption:
+                effectivePaymentOption,
+
+              calculationAvailable:
+                true,
+            };
+          }
+        )
+        .filter(
+          (station) =>
+            station.calculationAvailable !==
+            false
+        )
+        .sort(
+          (a, b) =>
+            a.effectivePricePerLiter -
+            b.effectivePricePerLiter
+        );
+    }
+
+    /* ======================================================
+       Compact result header
+       ====================================================== */
+
+    function updateResultSummary(stations, radius) {
+      const list = Array.isArray(stations) ? stations : [];
+      const visible = getVisibleStations(list);
+
+      if (!resultsCount) {
+        return;
+      }
+
+      if (!hasSearched) {
+        resultsCount.textContent = "검색 중";
+        return;
+      }
+
+      resultsCount.textContent = `${visible.length}곳 · ${formatRadius(radius)}${payOnly ? " · 강릉페이" : ""}`;
+    }
+
+    /* ======================================================
+       Render stations
+       ====================================================== */
+
+    function renderStations(
+      stations
+    ) {
+      const list =
+        Array.isArray(stations)
+          ? stations
+          : [];
+
+      const visibleStations =
+        getVisibleStations(list);
+
+      stationList.innerHTML = "";
+      resultsSection.classList.add("active");
+
+      resultsCount.textContent =
+        list.length > 0
+          ? `${visibleStations.length}곳 · ${formatRadius(selectedRadius)}${payOnly ? " · 강릉페이" : ""}`
+          : "0곳";
+
+      if (list.length === 0) {
+        stationList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⛽</div>
+            <p class="empty-title">표시할 주유소가 없습니다.</p>
+            <p class="empty-description">
+              오피넷에서 확인된 주유소가 없거나 계산 가능한 데이터가 없습니다.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      if (visibleStations.length === 0) {
+        stationList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⛽</div>
+            <p class="empty-title">조건에 맞는 주유소가 없습니다.</p>
+            <p class="empty-description">
+              현재 필터 조건에서 표시할 주유소가 없습니다.
+              가격 최신성 필터나 강릉페이 필터를 해제해 보세요.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      /*
+       * 정렬 기준(실질가격/주유가격/거리)과 무관하게
+       * "진짜 최저 실질가격"을 찾습니다.
+       * 예전에는 정렬된 목록의 첫 항목을 그대로 썼기 때문에
+       * 거리순·주유가격순으로 바꾸면 기준점이 달라지는 문제가 있었습니다.
+       */
+      const bestEffectiveStation =
+        visibleStations.reduce(
+          (best, station) => {
+            const value =
+              Number(
+                station.effectivePricePerLiter
+              );
+
+            if (
+              !Number.isFinite(
+                value
+              )
+            ) {
+              return best;
+            }
+
+            if (
+              !best ||
+              value <
+                Number(
+                  best.effectivePricePerLiter
+                )
+            ) {
+              return station;
+            }
+
+            return best;
+          },
+          null
+        );
+
+      const priceBestStation = [...visibleStations].sort(
+        (a, b) => Number(a.pricePerLiter) - Number(b.pricePerLiter)
+      )[0] || null;
+
+      visibleStations.forEach(
+        (station, index) => {
+          const item =
+            document.createElement("article");
+
+          item.className = "station";
+
+          item.dataset.stationIndex =
+            String(index);
+          item.setAttribute("role", "button");
+          item.setAttribute("tabindex", "0");
+          item.setAttribute(
+            "aria-label",
+            `${station.name || "주유소"}. 탭하면 길찾기 앱을 선택할 수 있습니다.`
+          );
+
+          item.innerHTML =
+            createStationHtml(
+              station,
+              bestEffectiveStation,
+              priceBestStation
+            );
+
+          stationList.appendChild(item);
+        }
+      );
+    }
+
+
+    function getVisibleStations(stations) {
+      const list =
+        Array.isArray(stations)
+          ? stations.filter(
+              (station) =>
+                station?.calculationAvailable !== false
+            )
+          : [];
+
+      let filtered = list;
+
+      if (payOnly) {
+        filtered = filtered.filter((station) => {
+          const status =
+            station.gangneungPay?.status;
+          return status === "available";
+        });
+      }
+
+      if (freshOnly) {
+        filtered = filtered.filter((station) =>
+          station.priceUpdate?.status !== "stale"
+        );
+      }
+
+      return [...filtered].sort((a, b) => {
+        if (currentSort === "price") {
+          return (
+            Number(a.pricePerLiter) -
+            Number(b.pricePerLiter)
+          );
+        }
+
+        if (currentSort === "distance") {
+          return (
+            Number(a.distanceKm) -
+            Number(b.distanceKm)
+          );
+        }
+
+        return (
+          Number(a.effectivePricePerLiter) -
+          Number(b.effectivePricePerLiter)
+        );
+      });
+    }
+
+    function createStationHtml(
+      station,
+      bestEffectiveStation,
+      priceBestStation
+    ) {
+      const distanceKm = Number(station.distanceKm);
+      const pricePerLiter = Number(station.pricePerLiter);
+      const fuelCost = Number(station.fuelCost);
+      const travelCost = Number(station.travelCost);
+      const discountAmount = Number(station.discountAmount);
+      const totalCost = Number(station.totalCost);
+      const effectivePrice = Number(station.effectivePricePerLiter);
+
+      const distanceText = Number.isFinite(distanceKm)
+        ? `${distanceKm.toFixed(1)}km`
+        : "거리 정보 없음";
+
+      const bestEffectiveBadge = station === bestEffectiveStation
+        ? `<span class="station-award effective-award">실질비용 최저</span>`
+        : "";
+
+      const priceBestBadge = station === priceBestStation
+        ? `<span class="station-award price-award">주유가격 최저</span>`
+        : "";
+
+      const hasCoordinates = hasMapCoordinatesForStation(station);
+      const discountHtml = discountAmount > 0
+        ? `<div class="detail-row"><span>할인</span><strong>-${formatWon(discountAmount)}원</strong></div>\n           <div class="detail-row detail-subtle"><span>적용 할인</span><span>${escapeHtml(describeAppliedDiscount(station))}</span></div>`
+        : `<div class="detail-row"><span>할인</span><strong>0원</strong></div>`;
+
+      return `
+        <div class="station-header">
+          <div class="station-header-main">
+            <div class="station-name-row">
+              <div class="station-name">${escapeHtml(station.name || "주유소")}</div>
+              <div class="station-awards">${bestEffectiveBadge}${priceBestBadge}</div>
+            </div>
+            <div class="station-meta">
+              <span class="meta-chip">${escapeHtml(distanceText)}</span>
+              ${Number.isFinite(pricePerLiter) ? `<span class="meta-chip">주유 ${formatWon(pricePerLiter)}원/L</span>` : ""}
+              ${createPayBadge(station)}
+              ${createPriceUpdateBadge(station)}
+            </div>
+          </div>
+          <button
+            class="station-route-button"
+            type="button"
+            data-station-navigation="true"
+            aria-label="${escapeHtml(station.name || "주유소")} 길찾기"
+            ${hasCoordinates ? "" : "disabled"}
+          >
+            ${hasCoordinates ? "길찾기" : "위치 없음"}
+          </button>
+        </div>
+
+        <div class="station-main-price-row">
+          <div class="effective-price-block">
+            <span class="effective-label">실질가격</span>
+            <div class="effective-price-line">
+              <span class="effective-price">${formatWon(Math.round(effectivePrice))}</span>
+              <span class="effective-unit">원/L</span>
+            </div>
+          </div>
+          <div class="station-primary-meta">
+            <div>${Number.isFinite(pricePerLiter) ? `표시 ${formatWon(pricePerLiter)}원/L` : "가격 정보 없음"}</div>
+          </div>
+        </div>
+
+        ${createPriceFreshnessWarning(station)}
+
+        <details class="station-detail">
+          <summary>상세 계산</summary>
+          <div class="station-detail-body">
+            <div class="detail-row total-row"><span>총 부담액</span><strong>${formatWon(totalCost)}원</strong></div>
+            <div class="detail-row"><span>주유비</span><strong>${formatWon(fuelCost)}원</strong></div>
+            <div class="detail-row"><span>왕복 이동비</span><strong>${formatWon(travelCost)}원</strong></div>
+            ${discountHtml}
+            ${station.address ? `<div class="station-address">${escapeHtml(station.address)}</div>` : ""}
+            ${createGangneungPayHtml(station)}
+          </div>
+        </details>
+      `;
+    }
+
+    function hasMapCoordinatesForStation(station) {
+      return Number.isFinite(Number(station?.latitude)) && Number.isFinite(Number(station?.longitude));
+    }
+
+    /* ======================================================
+       Gangneung Pay
+       ====================================================== */
+
+    function getPriceUpdateSummary(stations) {
+      const list =
+        Array.isArray(stations)
+          ? stations
+          : [];
+
+      const dated =
+        list.filter(
+          (station) =>
+            station?.priceUpdate?.updatedAt
+        );
+
+      return {
+        checkedCount: dated.length,
+        staleCount: dated.filter(
+          (station) =>
+            station.priceUpdate.status === "stale"
+        ).length,
+        unknownCount: Math.max(
+          0,
+          list.length - dated.length
+        ),
+      };
+    }
+
+    function formatPriceUpdateDate(
+      priceUpdate
+    ) {
+      if (!priceUpdate?.updatedAt) {
+        return "가격일 확인 안됨";
+      }
+
+      const date =
+        new Date(priceUpdate.updatedAt);
+
+      if (!Number.isFinite(date.getTime())) {
+        return "가격일 확인 안됨";
+      }
+
+      const month = String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+      const day = String(
+        date.getDate()
+      ).padStart(2, "0");
+      const hours = String(
+        date.getHours()
+      ).padStart(2, "0");
+      const minutes = String(
+        date.getMinutes()
+      ).padStart(2, "0");
+
+      return `${month}/${day} ${hours}:${minutes}`;
+    }
+
+    function createPriceUpdateBadge(station) {
+      const update =
+        station?.priceUpdate;
+
+      if (!update?.updatedAt) {
+        return `<span class="meta-chip price-date unknown">가격일 확인 안됨</span>`;
+      }
+
+      const label =
+        `가격 ${formatPriceUpdateDate(update)}`;
+
+      const className =
+        update.status === "stale"
+          ? "stale"
+          : update.status === "recent"
+            ? "recent"
+            : "fresh";
+
+      return `<span class="meta-chip price-date ${className}">${label}</span>`;
+    }
+
+    function createPriceFreshnessWarning(station) {
+      const update =
+        station?.priceUpdate;
+
+      if (!update?.updatedAt) {
+        return `
+          <div class="price-freshness-note unknown">
+            가격 업데이트일을 확인하지 못했습니다. 실제 판매가격과 차이가 있을 수 있습니다.
+          </div>
+        `;
+      }
+
+      if (update.status !== "stale") {
+        return "";
+      }
+
+      const days =
+        Number(update.ageDays);
+
+      const dayText =
+        Number.isFinite(days)
+          ? `${days}일 전`
+          : "오래전";
+
+      return `
+        <div class="price-freshness-note stale">
+          가격 기준일이 ${dayText}입니다. 현장 판매가격과 다를 수 있어 방문 전 확인을 권장합니다.
+        </div>
+      `;
+    }
+
+    function createPayBadge(
+      station
+    ) {
+      const pay =
+        station.gangneungPay;
+
+      if (
+        !pay
+      ) {
+        return "";
+      }
+
+      if (
+        pay.status ===
+        "available"
+      ) {
+        return `
+          <span class="meta-chip pay">
+            강릉페이 가능
+          </span>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "needs_confirmation"
+      ) {
+        return `
+          <span class="meta-chip confirm">
+            강릉페이 확인 필요
+          </span>
+        `;
+      }
+
+      return `
+        <span class="meta-chip">
+          강릉페이 미확인
+        </span>
+      `;
+    }
+
+    function createGangneungPayHtml(
+      station
+    ) {
+      const pay =
+        station.gangneungPay;
+
+      if (
+        !pay
+      ) {
+        return "";
+      }
+
+      if (
+        pay.status ===
+        "available"
+      ) {
+        const merchant =
+          pay.merchant
+            ?.name ||
+          "";
+
+        return `
+          <div class="gangneung-pay available">
+
+            <div class="gangneung-pay-title">
+              강릉페이 가맹점
+            </div>
+
+            <div class="gangneung-pay-description">
+              ${
+                merchant
+                  ? `공식 명단 매칭 · ${escapeHtml(
+                      merchant
+                    )}`
+                  : "공식 가맹 명단과 매칭되었습니다."
+              }
+            </div>
+
+          </div>
+        `;
+      }
+
+      if (
+        pay.status ===
+        "needs_confirmation"
+      ) {
+        return `
+          <div class="gangneung-pay confirm">
+
+            <div class="gangneung-pay-title">
+              강릉페이
+            </div>
+
+            <div class="gangneung-pay-description">
+              ${escapeHtml(
+                pay.reason ||
+                  "공식 명단과 추가 확인이 필요합니다."
+              )}
+            </div>
+
+          </div>
+        `;
+      }
+
+      return `
+        <div class="gangneung-pay">
+
+          <div class="gangneung-pay-title">
+            강릉페이
+          </div>
+
+          <div class="gangneung-pay-description">
+            공식 가맹 명단에서 확인되지 않았습니다.
+          </div>
+
+        </div>
+      `;
+    }
+
+    /* ======================================================
+       Result controls
+       ====================================================== */
+
+    resultSort.addEventListener(
+      "change",
+      () => {
+        currentSort = resultSort.value;
+        saveSettings();
+        renderStations(lastStations);
+        updateResultSummary(lastStations, selectedRadius);
+      }
+    );
+
+    payOnlyToggle.addEventListener(
+      "click",
+      async () => {
+        payOnly = !payOnly;
+        saveSettings();
+        updateFilterToggleButtons();
+
+        if (!selectedLocationData || !hasSearched) {
+          renderStations(lastStations);
+          updateResultSummary(lastStations, selectedRadius);
+          return;
+        }
+
+        if (payOnly) {
+          try {
+            await searchStations(selectedLocationData);
+          } catch (error) {
+            console.error(error);
+            showSearchStatus(
+              "error",
+              error.message || "강릉페이 조건을 적용하지 못했습니다."
+            );
+          }
+        } else {
+          renderStations(lastStations);
+          updateResultSummary(lastStations, selectedRadius);
+        }
+      }
+    );
+
+    function saveRecentLocation(location) {
+      if (
+        !location ||
+        !Number.isFinite(Number(location.latitude)) ||
+        !Number.isFinite(Number(location.longitude)) ||
+        !location.label
+      ) {
+        return;
+      }
+
+      let list = [];
+      try {
+        list = JSON.parse(
+          localStorage.getItem(RECENT_LOCATIONS_KEY) || "[]"
+        );
+      } catch {
+        list = [];
+      }
+
+      const normalized = {
+        label: String(location.label).trim(),
+        detail: String(location.detail || "").trim(),
+        latitude: Number(location.latitude),
+        longitude: Number(location.longitude),
+      };
+
+      list = [
+        normalized,
+        ...list.filter(
+          (item) =>
+            Math.abs(Number(item.latitude) - normalized.latitude) > 0.00001 ||
+            Math.abs(Number(item.longitude) - normalized.longitude) > 0.00001
+        ),
+      ].slice(0, MAX_RECENT_LOCATIONS);
+
+      try {
+        localStorage.setItem(
+          RECENT_LOCATIONS_KEY,
+          JSON.stringify(list)
+        );
+      } catch (error) {
+        console.warn("최근 위치 저장 실패:", error);
+      }
+
+      renderRecentLocations(list);
+    }
+
+    function loadRecentLocations() {
+      let list = [];
+      try {
+        list = JSON.parse(
+          localStorage.getItem(RECENT_LOCATIONS_KEY) || "[]"
+        );
+      } catch {
+        list = [];
+      }
+      renderRecentLocations(
+        Array.isArray(list) ? list.slice(0, MAX_RECENT_LOCATIONS) : []
+      );
+    }
+
+    function renderRecentLocations(list) {
+      recentLocationList.innerHTML = "";
+
+      if (!Array.isArray(list) || list.length === 0) {
+        recentLocations.classList.remove("visible");
+        return;
+      }
+
+      list.forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "recent-chip";
+        button.textContent = item.label || "최근 위치";
+        button.title = item.label || "최근 위치";
+        button.addEventListener("click", () => {
+          const latitude = Number(item.latitude);
+          const longitude = Number(item.longitude);
+          if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+            return;
+          }
+
+          ++searchRequestId;
+          selectedLocationData = {
+            latitude,
+            longitude,
+            label: item.label || "최근 위치",
+            detail: item.detail || "",
+          };
+          addressInput.value = "";
+          showSelectedLocation(selectedLocationData.label, selectedLocationData.detail);
+          setLocationStatus(
+            "success",
+            `검색 위치: ${selectedLocationData.detail || selectedLocationData.label}`
+          );
+          if (resultLocationSummary) {
+            resultLocationSummary.textContent =
+              `검색 위치: ${selectedLocationData.detail || selectedLocationData.label}`;
+          }
+          searchStations(selectedLocationData).catch((error) => {
+            console.error(error);
+            showSearchStatus("error", error.message || "주유소 검색에 실패했습니다.");
+          });
+        });
+        recentLocationList.appendChild(button);
+      });
+
+      recentLocations.classList.add("visible");
+    }
+
+    /* ======================================================
+       Maps
+       ====================================================== */
+
+    async function initializeKakaoNavi() {
+      if (kakaoNaviInitPromise) {
+        return kakaoNaviInitPromise;
+      }
+
+      kakaoNaviInitPromise = (async () => {
+        if (
+          typeof window.Kakao === "undefined"
+        ) {
+        kakaoNaviError =
+          "카카오 JavaScript SDK를 불러오지 못했습니다.";
+        return;
+      }
+
+      try {
+        const response =
+          await fetch(
+            apiUrl("/api/config"),
+            {
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            `설정 정보를 불러오지 못했습니다. HTTP ${response.status}`
+          );
+        }
+
+        const config =
+          await response.json();
+        const key =
+          String(
+            config?.kakaoJavaScriptKey ||
+            ""
+          ).trim();
+
+        if (!key) {
+          kakaoNaviError =
+            "Render에 KAKAO_JAVASCRIPT_KEY를 설정해야 합니다.";
+          return;
+        }
+
+        if (!Kakao.isInitialized()) {
+          Kakao.init(key);
+        }
+
+        kakaoNaviReady =
+          Kakao.isInitialized();
+
+        if (!kakaoNaviReady) {
+          kakaoNaviError =
+            "카카오 JavaScript SDK 초기화에 실패했습니다.";
+        }
+
+        if (hasSearched && lastStations.length > 0) {
+          refreshResults();
+        }
+        } catch (error) {
+          console.error(
+            "Kakao Navi initialization failed",
+            error
+          );
+
+          kakaoNaviError =
+            error instanceof Error
+              ? error.message
+              : "카카오내비 초기화에 실패했습니다.";
+        }
+      })();
+
+      return kakaoNaviInitPromise;
+    }
+
+    function handleStationListClick(event) {
+      const routeButton = event.target.closest("[data-station-navigation]");
+      if (routeButton) {
+        event.preventDefault();
+        const stationElement = routeButton.closest(".station");
+        if (!stationElement) return;
+        const visibleStations = getVisibleStations(lastStations);
+        const index = Number(stationElement.dataset.stationIndex);
+        const station = visibleStations[index];
+        if (station) openNavigationModal(station);
+        return;
+      }
+
+      const interactive = event.target.closest(
+        "a, summary, input, select, textarea, details"
+      );
+
+      if (interactive) {
+        return;
+      }
+
+      const stationElement = event.target.closest(".station");
+      if (!stationElement) {
+        return;
+      }
+
+      const visibleStations = getVisibleStations(lastStations);
+      const index = Number(stationElement.dataset.stationIndex);
+      const station = visibleStations[index];
+
+      if (!station) {
+        return;
+      }
+
+      openNavigationModal(station);
+    }
+
+    function handleStationListKeydown(event) {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+
+      const interactive = event.target.closest(
+        "button, a, summary, input, select, textarea, details"
+      );
+
+      if (interactive) {
+        return;
+      }
+
+      const stationElement = event.target.closest(".station");
+      if (!stationElement) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const visibleStations = getVisibleStations(lastStations);
+      const index = Number(stationElement.dataset.stationIndex);
+      const station = visibleStations[index];
+
+      if (station) {
+        openNavigationModal(station);
+      }
+    }
+
+    function openNavigationModal(station) {
+      const latitude = Number(station?.latitude);
+      const longitude = Number(station?.longitude);
+      const name = station?.name || "주유소";
+
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        window.alert("이 주유소는 지도 좌표를 확인할 수 없어 길찾기를 사용할 수 없습니다.");
+        return;
+      }
+
+      navigationTarget = {
+        latitude,
+        longitude,
+        name,
+      };
+
+      navigationModalTitle.textContent = name;
+      navigationModalMeta.textContent = [
+        Number.isFinite(Number(station.distanceKm))
+          ? `거리 ${Number(station.distanceKm).toFixed(2)}km`
+          : "거리 정보 없음",
+        Number.isFinite(Number(station.pricePerLiter))
+          ? `주유 ${formatWon(Number(station.pricePerLiter))}원/L`
+          : "",
+      ].filter(Boolean).join(" · ");
+
+      navigationNaverButton.disabled = false;
+      /* 모바일에는 hover 툴팁이 없으므로 비활성화하지 않고, 누르면 startKakaoNavi가 이유를 알려줍니다. */
+      navigationKakaoButton.disabled = false;
+      navigationKakaoButton.title = kakaoNaviReady
+        ? ""
+        : kakaoNaviError || "카카오내비 설정이 필요합니다.";
+
+      navigationModal.hidden = false;
+      navigationModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("navigation-modal-open");
+
+      window.setTimeout(() => {
+        navigationNaverButton.focus();
+      }, 0);
+    }
+
+    function closeNavigationModal() {
+      if (navigationModal.hidden) {
+        return;
+      }
+
+      navigationModal.hidden = true;
+      navigationModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("navigation-modal-open");
+      navigationTarget = null;
+    }
+
+    function isMobileEnvironment() {
+      const userAgent =
+        navigator.userAgent ||
+        "";
+      const iPadDesktopMode =
+        navigator.platform === "MacIntel" &&
+        Number(navigator.maxTouchPoints || 0) > 1;
+
+      return (
+        /Android|iPhone|iPad|iPod/i.test(userAgent) ||
+        iPadDesktopMode
+      );
+    }
+
+    function openNaverRoute(
+      latitude,
+      longitude,
+      stationName
+    ) {
+      const name = encodeURIComponent(stationName || "주유소");
+      const appName = encodeURIComponent(window.location.origin);
+      const appPath =
+        `route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`;
+
+      const userAgent = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(userAgent);
+      const isIos =
+        /iPhone|iPad|iPod/i.test(userAgent) ||
+        (navigator.platform === "MacIntel" &&
+          Number(navigator.maxTouchPoints || 0) > 1);
+
+      if (isAndroid) {
+        window.location.href =
+          `intent://${appPath}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+        return;
+      }
+
+      if (isIos) {
+        window.location.href = `nmap://${appPath}`;
+      }
+    }
+
+    async function startKakaoNavi(
+      latitude,
+      longitude,
+      stationName
+    ) {
+      try {
+        await initializeKakaoNavi();
+
+        if (
+          typeof window.Kakao === "undefined" ||
+          !Kakao.isInitialized() ||
+          !kakaoNaviReady
+        ) {
+          window.alert(
+            kakaoNaviError ||
+              "카카오내비를 사용할 수 없습니다. API 서버의 KAKAO_JAVASCRIPT_KEY 설정을 확인하세요."
+          );
+          return;
+        }
+
+        Kakao.Navi.start({
+          name:
+            stationName ||
+            "주유소",
+          x: longitude,
+          y: latitude,
+          coordType: "wgs84",
+        });
+      } catch (error) {
+        console.error(
+          "Kakao Navi start failed",
+          error
+        );
+        window.alert(
+          error?.message ||
+          "카카오내비 실행에 실패했습니다. 휴대폰의 카카오내비 설치 상태와 브라우저 환경을 확인하세요."
+        );
+      }
+    }
+
+    /* ======================================================
+       Search status
+       ====================================================== */
+
+    function showSearchStatus(
+      type,
+      message
+    ) {
+      searchStatus.className =
+        "search-status visible";
+
+      if (
+        type
+      ) {
+        searchStatus.classList.add(
+          type
+        );
+      }
+
+      /* 로딩 표시(스피너)만 HTML이고, 나머지는 서버·외부에서 온 문자열일 수 있어 텍스트로 넣습니다. */
+      if (type === "loading") {
+        searchStatus.innerHTML = message;
+      } else {
+        searchStatus.textContent = message;
+      }
+    }
+
+    function setLocationStatus(
+      type,
+      message
+    ) {
+      locationStatus.className =
+        "location-status visible";
+
+      if (
+        type
+      ) {
+        locationStatus.classList.add(
+          type
+        );
+      }
+
+      locationStatus.innerHTML =
+        `
+          <span class="location-status-dot"></span>
+          <span>${escapeHtml(
+            message
+          )}</span>
+        `;
+    }
+
+    function showSelectedLocation(
+      label,
+      detail
+    ) {
+      selectedLocationText.textContent =
+        label || "";
+
+      if (resultLocationSummary && label) {
+        const mainLabel = String(label).startsWith("현재 위치 · ")
+          ? String(label).slice("현재 위치 · ".length)
+          : String(label);
+        resultLocationSummary.textContent =
+          String(label).startsWith("현재 위치")
+            ? `현재 위치: ${mainLabel || "주소 확인"}`
+            : `검색 위치: ${mainLabel}`;
+      }
+
+      selectedLocationDetail.textContent =
+        detail || "";
+
+      selectedLocationDetail.hidden =
+        !detail;
+
+      selectedLocation.classList.add(
+        "visible"
+      );
+    }
+
+    /* ======================================================
+       Validation
+       ====================================================== */
+
+    function isSupportedProduct(
+      productCode
+    ) {
+      return [
+        "B027",
+        "B034",
+        "D047",
+      ].includes(
+        productCode
+      );
+    }
+
+    function isValidPositiveNumber(
+      value
+    ) {
+      return (
+        typeof value ===
+          "number" &&
+        Number.isFinite(
+          value
+        ) &&
+        value > 0
       );
     }
 
