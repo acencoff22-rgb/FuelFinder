@@ -1288,6 +1288,20 @@
        Map
        ====================================================== */
 
+    .map-route-note {
+      margin-top:
+        9px;
+
+      color:
+        var(--text-soft);
+
+      font-size:
+        9px;
+
+      line-height:
+        1.4;
+    }
+
     .map-buttons {
       display:
         grid;
@@ -5429,9 +5443,9 @@
           : `${index + 1}위`;
 
       const naverUrl =
-        createNaverMapUrl(station);
+        createNaverRouteUrl(station);
       const kakaoUrl =
-        createKakaoMapUrl(station);
+        createKakaoRouteUrl(station);
 
       let decisionHtml = "";
       if (
@@ -5555,21 +5569,23 @@
           </div>
         </details>
 
+        <div class="map-route-note">
+          오피넷 좌표를 목적지로 바로 설정합니다.
+        </div>
+
         <div class="map-buttons">
           ${
             naverUrl
               ? `<a
                   class="map-button primary"
                   href="${naverUrl}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-map-type="naver"
+                  data-map-type="naver-route"
                   data-latitude="${Number(station.latitude)}"
                   data-longitude="${Number(station.longitude)}"
-                  data-station-name="${escapeHtml(station.name || "주유소")}"
-                  onclick="return openNaverMapLink(event, this)"
-                >네이버 지도 위치</a>`
-              : `<button class="map-button" type="button" disabled>네이버 지도 위치 없음</button>`
+                  data-station-name="${escapeHtml(station.name || "주유소")}" 
+                  onclick="return openNaverRouteLink(event, this)"
+                >네이버 길찾기</a>`
+              : `<button class="map-button" type="button" disabled>네이버 길찾기 없음</button>`
           }
           ${
             kakaoUrl
@@ -5578,8 +5594,8 @@
                   href="${kakaoUrl}"
                   target="_blank"
                   rel="noopener noreferrer"
-                >카카오맵 위치</a>`
-              : `<button class="map-button" type="button" disabled>카카오맵 위치 없음</button>`
+                >카카오맵 길찾기</a>`
+              : `<button class="map-button" type="button" disabled>카카오맵 길찾기 없음</button>`
           }
         </div>
       `;
@@ -5946,62 +5962,7 @@
        Maps
        ====================================================== */
 
-    function wgs84ToWebMercator(
-      latitude,
-      longitude
-    ) {
-      const earthRadius = 6378137;
-      const maxLatitude = 85.05112878;
-      const clampedLatitude = Math.max(
-        -maxLatitude,
-        Math.min(maxLatitude, latitude)
-      );
-      const x =
-        earthRadius *
-        (longitude * Math.PI / 180);
-      const y =
-        earthRadius *
-        Math.log(
-          Math.tan(
-            Math.PI / 4 +
-            (clampedLatitude * Math.PI / 180) / 2
-          )
-        );
-
-      return { x, y };
-    }
-
-    function createNaverMapUrl(
-      station
-    ) {
-      const latitude = Number(station.latitude);
-      const longitude = Number(station.longitude);
-
-      if (
-        !Number.isFinite(latitude) ||
-        !Number.isFinite(longitude)
-      ) {
-        return null;
-      }
-
-      const name =
-        station.name ||
-        "주유소";
-      const query = encodeURIComponent(name);
-      const mercator = wgs84ToWebMercator(
-        latitude,
-        longitude
-      );
-
-      const center =
-        `${mercator.x},${mercator.y},18,0,0,0,dh`;
-
-      return (
-        `https://map.naver.com/p/search/${query}?c=${center}`
-      );
-    }
-
-    function createNaverCoordinateAppUrl(
+    function createNaverRouteUrl(
       station
     ) {
       const latitude = Number(station.latitude);
@@ -6015,18 +5976,19 @@
       }
 
       const name = encodeURIComponent(
-        station.name || "주유소"
+        station.name ||
+        "주유소"
       );
       const appName = encodeURIComponent(
         window.location.href
       );
 
       return (
-        `nmap://place?lat=${latitude}&lng=${longitude}&name=${name}&appname=${appName}`
+        `nmap://route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`
       );
     }
 
-    function openNaverMapLink(
+    function openNaverRouteLink(
       event,
       anchor
     ) {
@@ -6054,7 +6016,9 @@
         stationName
       );
       const appPath =
-        `place?lat=${latitude}&lng=${longitude}&name=${encodedName}&appname=${appName}`;
+        `route/car?dlat=${latitude}&dlng=${longitude}&dname=${encodedName}&appname=${appName}`;
+      const appUrl =
+        `nmap://${appPath}`;
 
       const userAgent =
         navigator.userAgent ||
@@ -6075,22 +6039,15 @@
 
       if (isIos) {
         event.preventDefault();
-        const fallbackUrl =
-          createNaverMapUrl({
-            latitude,
-            longitude,
-            name: stationName,
-          });
         const startedAt = Date.now();
 
         window.location.href =
-          `nmap://${appPath}`;
+          appUrl;
 
         window.setTimeout(() => {
           if (Date.now() - startedAt < 2200) {
-            if (fallbackUrl) {
-              window.location.href = fallbackUrl;
-            }
+            window.location.href =
+              `https://map.naver.com/p/search/${encodeURIComponent(stationName)}`;
           }
         }, 1500);
 
@@ -6100,7 +6057,7 @@
       return true;
     }
 
-    function createKakaoMapUrl(
+    function createKakaoRouteUrl(
       station
     ) {
       const latitude =
@@ -6124,14 +6081,13 @@
         return null;
       }
 
-      const name =
-        encodeURIComponent(
-          station.name ||
-            "주유소"
-        );
+      const name = encodeURIComponent(
+        station.name ||
+        "주유소"
+      );
 
       return (
-        `https://map.kakao.com/link/map/${name},${latitude},${longitude}`
+        `https://map.kakao.com/link/to/${name},${latitude},${longitude}`
       );
     }
 
