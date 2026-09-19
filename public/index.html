@@ -15,6 +15,11 @@
 
   <title>FuelFinder</title>
 
+  <script
+    src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"
+    crossorigin="anonymous"
+  ></script>
+
   <style>
     :root {
       --bg: #f3f5f7;
@@ -1361,6 +1366,33 @@
 
       color:
         #ffffff;
+    }
+
+    .map-button.subtle {
+      background:
+        var(--surface-soft);
+
+      border-color:
+        var(--line);
+
+      color:
+        var(--text-soft);
+    }
+
+    .map-button.kakao {
+      background:
+        #fee500;
+
+      border-color:
+        #e5ce00;
+
+      color:
+        #111827;
+    }
+
+    .map-button:disabled {
+      pointer-events:
+        none;
     }
 
     /* ======================================================
@@ -3367,6 +3399,9 @@
     // 가격 기준일을 확인할 수 있는 주유소 중 2일 이상 지난 가격은 기본적으로 제외합니다.
     let freshOnly = true;
 
+    let kakaoNaviReady = false;
+    let kakaoNaviError = "";
+
     /* ======================================================
        Defaults
        ====================================================== */
@@ -3422,6 +3457,13 @@
     loadSettings();
 
     loadRecentLocations();
+
+    initializeKakaoNavi();
+
+    stationList.addEventListener(
+      "click",
+      handleStationMapAction
+    );
 
     /* ======================================================
        Settings drawer
@@ -5573,31 +5615,59 @@
           오피넷 좌표를 목적지로 바로 설정합니다.
         </div>
 
-        <div class="map-buttons">
+        <div
+          class="map-buttons"
+          data-station-latitude="${Number(station.latitude)}"
+          data-station-longitude="${Number(station.longitude)}"
+          data-station-name="${escapeHtml(station.name || "주유소")}"
+        >
           ${
             naverUrl
-              ? `<a
+              ? `<button
                   class="map-button primary"
-                  href="${naverUrl}"
-                  data-map-type="naver-route"
-                  data-latitude="${Number(station.latitude)}"
-                  data-longitude="${Number(station.longitude)}"
-                  data-station-name="${escapeHtml(station.name || "주유소")}" 
-                  onclick="return openNaverRouteLink(event, this)"
-                >네이버 길찾기</a>`
+                  type="button"
+                  data-map-action="naver-route"
+                >네이버 길찾기</button>`
               : `<button class="map-button" type="button" disabled>네이버 길찾기 없음</button>`
           }
           ${
+            kakaoUrl && kakaoNaviReady
+              ? `<button
+                  class="map-button kakao"
+                  type="button"
+                  data-map-action="kakao-navi"
+                >카카오내비</button>`
+              : `<button
+                  class="map-button kakao"
+                  type="button"
+                  data-map-action="kakao-navi"
+                  disabled
+                  title="${escapeHtml(
+                    kakaoNaviError ||
+                      "카카오내비 설정이 필요합니다."
+                  )}"
+                >카카오내비${kakaoNaviReady ? "" : "(설정 필요)"}</button>`
+          }
+          ${
+            naverUrl
+              ? `<button
+                  class="map-button subtle"
+                  type="button"
+                  data-map-action="naver-location"
+                >네이버 도착 위치</button>`
+              : `<button class="map-button subtle" type="button" disabled>네이버 위치 없음</button>`
+          }
+          ${
             kakaoUrl
-              ? `<a
-                  class="map-button"
-                  href="${kakaoUrl}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >카카오맵 길찾기</a>`
-              : `<button class="map-button" type="button" disabled>카카오맵 길찾기 없음</button>`
+              ? `<button
+                  class="map-button subtle"
+                  type="button"
+                  data-map-action="kakao-location"
+                >카카오 도착 위치</button>`
+              : `<button class="map-button subtle" type="button" disabled>카카오 위치 없음</button>`
           }
         </div>
+
       `;
     }
 
@@ -5962,132 +6032,356 @@
        Maps
        ====================================================== */
 
-    function createNaverRouteUrl(
-      station
-    ) {
-      const latitude = Number(station.latitude);
-      const longitude = Number(station.longitude);
-
+    async function initializeKakaoNavi() {
       if (
-        !Number.isFinite(latitude) ||
-        !Number.isFinite(longitude)
+        typeof window.Kakao === "undefined"
       ) {
-        return null;
+        kakaoNaviError =
+          "카카오 JavaScript SDK를 불러오지 못했습니다.";
+        return;
       }
 
-      const name = encodeURIComponent(
-        station.name ||
-        "주유소"
-      );
-      const appName = encodeURIComponent(
-        window.location.href
-      );
+      try {
+        const response =
+          await fetch(
+            "/api/config",
+            {
+              cache: "no-store",
+            }
+          );
 
-      return (
-        `nmap://route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`
-      );
+        if (!response.ok) {
+          throw new Error(
+            `설정 정보를 불러오지 못했습니다. HTTP ${response.status}`
+          );
+        }
+
+        const config =
+          await response.json();
+        const key =
+          String(
+            config?.kakaoJavaScriptKey ||
+            ""
+          ).trim();
+
+        if (!key) {
+          kakaoNaviError =
+            "Render에 KAKAO_JAVASCRIPT_KEY를 설정해야 합니다.";
+          return;
+        }
+
+        if (!Kakao.isInitialized()) {
+          Kakao.init(key);
+        }
+
+        kakaoNaviReady =
+          Kakao.isInitialized();
+
+        if (!kakaoNaviReady) {
+          kakaoNaviError =
+            "카카오 JavaScript SDK 초기화에 실패했습니다.";
+        }
+
+        if (hasSearched && lastStations.length > 0) {
+          renderResults();
+        }
+      } catch (error) {
+        console.error(
+          "Kakao Navi initialization failed",
+          error
+        );
+
+        kakaoNaviError =
+          error instanceof Error
+            ? error.message
+            : "카카오내비 초기화에 실패했습니다.";
+      }
     }
 
-    function openNaverRouteLink(
-      event,
-      anchor
+    function handleStationMapAction(
+      event
     ) {
-      const latitude = Number(
-        anchor?.dataset?.latitude
-      );
-      const longitude = Number(
-        anchor?.dataset?.longitude
-      );
+      const button =
+        event.target.closest(
+          "[data-map-action]"
+        );
+
+      if (!button) {
+        return;
+      }
+
+      const container =
+        button.closest(
+          "[data-station-latitude][data-station-longitude]"
+        );
+
+      if (!container) {
+        return;
+      }
+
+      const latitude =
+        Number(
+          container.dataset.stationLatitude
+        );
+      const longitude =
+        Number(
+          container.dataset.stationLongitude
+        );
       const stationName =
-        anchor?.dataset?.stationName ||
+        container.dataset.stationName ||
         "주유소";
 
       if (
         !Number.isFinite(latitude) ||
         !Number.isFinite(longitude)
       ) {
-        return true;
+        return;
       }
 
-      const appName = encodeURIComponent(
-        window.location.href
-      );
-      const encodedName = encodeURIComponent(
-        stationName
-      );
-      const appPath =
-        `route/car?dlat=${latitude}&dlng=${longitude}&dname=${encodedName}&appname=${appName}`;
-      const appUrl =
-        `nmap://${appPath}`;
+      switch (
+        button.dataset.mapAction
+      ) {
+        case "naver-route":
+          openNaverRoute(
+            latitude,
+            longitude,
+            stationName
+          );
+          break;
 
-      const userAgent =
-        navigator.userAgent ||
-        "";
-      const isAndroid = /Android/i.test(
-        userAgent
-      );
-      const isIos = /iPhone|iPad|iPod/i.test(
-        userAgent
-      );
+        case "kakao-navi":
+          startKakaoNavi(
+            latitude,
+            longitude,
+            stationName
+          );
+          break;
 
-      if (isAndroid) {
-        event.preventDefault();
-        window.location.href =
-          `intent://${appPath}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
-        return false;
+        case "naver-location":
+          openNaverLocation(
+            latitude,
+            longitude,
+            stationName
+          );
+          break;
+
+        case "kakao-location":
+          openKakaoLocation(
+            latitude,
+            longitude,
+            stationName
+          );
+          break;
       }
-
-      if (isIos) {
-        event.preventDefault();
-        const startedAt = Date.now();
-
-        window.location.href =
-          appUrl;
-
-        window.setTimeout(() => {
-          if (Date.now() - startedAt < 2200) {
-            window.location.href =
-              `https://map.naver.com/p/search/${encodeURIComponent(stationName)}`;
-          }
-        }, 1500);
-
-        return false;
-      }
-
-      return true;
     }
 
-    function createKakaoRouteUrl(
+    function createNaverRouteUrl(
       station
     ) {
       const latitude =
-        Number(
-          station.latitude
-        );
-
+        Number(station.latitude);
       const longitude =
-        Number(
-          station.longitude
-        );
+        Number(station.longitude);
 
       if (
-        !Number.isFinite(
-          latitude
-        ) ||
-        !Number.isFinite(
-          longitude
-        )
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
       ) {
         return null;
       }
 
-      const name = encodeURIComponent(
-        station.name ||
-        "주유소"
-      );
+      const name =
+        encodeURIComponent(
+          station.name ||
+          "주유소"
+        );
+      const appName =
+        encodeURIComponent(
+          window.location.href
+        );
 
       return (
-        `https://map.kakao.com/link/to/${name},${latitude},${longitude}`
+        `nmap://route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`
+      );
+    }
+
+    function openNaverRoute(
+      latitude,
+      longitude,
+      stationName
+    ) {
+      const name =
+        encodeURIComponent(
+          stationName ||
+          "주유소"
+        );
+      const appName =
+        encodeURIComponent(
+          window.location.href
+        );
+      const appPath =
+        `route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`;
+
+      const userAgent =
+        navigator.userAgent ||
+        "";
+      const isAndroid =
+        /Android/i.test(
+          userAgent
+        );
+      const isIos =
+        /iPhone|iPad|iPod/i.test(
+          userAgent
+        );
+
+      if (isAndroid) {
+        window.location.href =
+          `intent://${appPath}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+        return;
+      }
+
+      if (isIos) {
+        window.location.href =
+          `nmap://${appPath}`;
+        return;
+      }
+
+      window.open(
+        `https://map.naver.com/p/search/${name}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+
+    function startKakaoNavi(
+      latitude,
+      longitude,
+      stationName
+    ) {
+      if (
+        typeof window.Kakao === "undefined" ||
+        !Kakao.isInitialized() ||
+        !kakaoNaviReady
+      ) {
+        window.alert(
+          kakaoNaviError ||
+            "카카오내비를 사용할 수 없습니다. Render의 KAKAO_JAVASCRIPT_KEY 설정을 확인하세요."
+        );
+        return;
+      }
+
+      try {
+        Kakao.Navi.start({
+          name:
+            stationName ||
+            "주유소",
+          x: longitude,
+          y: latitude,
+          coordType: "wgs84",
+        });
+      } catch (error) {
+        console.error(
+          "Kakao Navi start failed",
+          error
+        );
+        window.alert(
+          "카카오내비 실행에 실패했습니다. 휴대폰의 카카오내비 설치 상태와 브라우저 환경을 확인하세요."
+        );
+      }
+    }
+
+    function openNaverLocation(
+      latitude,
+      longitude,
+      stationName
+    ) {
+      const appName =
+        encodeURIComponent(
+          window.location.href
+        );
+      const appPath =
+        `map?lat=${latitude}&lng=${longitude}&zoom=18&appname=${appName}`;
+
+      const userAgent =
+        navigator.userAgent ||
+        "";
+      const isAndroid =
+        /Android/i.test(
+          userAgent
+        );
+      const isIos =
+        /iPhone|iPad|iPod/i.test(
+          userAgent
+        );
+
+      if (isAndroid) {
+        window.location.href =
+          `intent://${appPath}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+        return;
+      }
+
+      if (isIos) {
+        window.location.href =
+          `nmap://${appPath}`;
+        return;
+      }
+
+      window.open(
+        `https://map.naver.com/p?c=${longitude},${latitude},18,0,0,0,dh`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+
+    function openKakaoLocation(
+      latitude,
+      longitude,
+      stationName
+    ) {
+      const name =
+        encodeURIComponent(
+          stationName ||
+          "주유소"
+        );
+      const appScheme =
+        `kakaomap://look?p=${latitude},${longitude}`;
+
+      const userAgent =
+        navigator.userAgent ||
+        "";
+      const isAndroid =
+        /Android/i.test(
+          userAgent
+        );
+      const isIos =
+        /iPhone|iPad|iPod/i.test(
+          userAgent
+        );
+
+      if (isAndroid || isIos) {
+        const startedAt =
+          Date.now();
+
+        window.location.href =
+          appScheme;
+
+        window.setTimeout(() => {
+          if (
+            Date.now() -
+              startedAt <
+              2200
+          ) {
+            window.location.href =
+              `https://map.kakao.com/link/map/${name},${latitude},${longitude}`;
+          }
+        }, 1500);
+        return;
+      }
+
+      window.open(
+        `https://map.kakao.com/link/map/${name},${latitude},${longitude}`,
+        "_blank",
+        "noopener,noreferrer"
       );
     }
 

@@ -148,6 +148,18 @@ const server =
 
         if (
           request.method === "GET" &&
+          request.url === "/api/config"
+        ) {
+          handlePublicConfig(
+            request,
+            response
+          );
+
+          return;
+        }
+
+        if (
+          request.method === "GET" &&
           request.url === "/health"
         ) {
           sendJson(
@@ -213,6 +225,24 @@ const server =
       }
     }
   );
+
+function handlePublicConfig(
+  _request,
+  response
+) {
+  sendJson(
+    response,
+    200,
+    {
+      success: true,
+      kakaoJavaScriptKey:
+        String(
+          process.env.KAKAO_JAVASCRIPT_KEY ||
+          ""
+        ).trim(),
+    }
+  );
+}
 
 async function handleGeocode(
   request,
