@@ -55,6 +55,11 @@ const host =
   process.env.HOST ||
   "0.0.0.0";
 
+const OPINET_MAX_RADIUS_METERS = 5000;
+const APP_MAX_RADIUS_METERS = 10000;
+const EXTENDED_SEARCH_CENTER_OFFSET_METERS = 8500;
+const EXTENDED_SEARCH_CENTER_COUNT = 6;
+
 const frontendOrigins =
   String(
     process.env.FRONTEND_ORIGINS ||
@@ -740,7 +745,7 @@ async function handleNearbyStations(
   }
 
   const data =
-    await getNearbyStations({
+    await getNearbyStationsWithinRadius({
       x: katec.x,
       y: katec.y,
       radius,
@@ -1389,12 +1394,144 @@ function validateRadius(
       radius
     ) ||
     radius <= 0 ||
-    radius > 5000
+    radius > APP_MAX_RADIUS_METERS
   ) {
     throw new Error(
-      "검색 반경은 0보다 크고 5000m 이하여야 합니다."
+      "검색 반경은 0보다 크고 10000m 이하여야 합니다."
     );
   }
+}
+
+/**
+ * 오피넷 반경 검색 API는 단일 요청당 최대 5km까지만 지원합니다.
+ * 10km 선택 시 기준점 + 6개 주변 기준점을 각각 5km로 조회한 뒤
+ * 주유소 ID를 합치고, 원래 기준점과의 실제 거리가 10km 이내인 결과만 남깁니다.
+ */
+async function getNearbyStationsWithinRadius({
+  x,
+  y,
+  radius,
+  productCode,
+  sort = 1,
+}) {
+  if (radius <= OPINET_MAX_RADIUS_METERS) {
+    return getNearbyStations({
+      x,
+      y,
+      radius,
+      productCode,
+      sort,
+    });
+  }
+
+  const centerQueries = [
+    { x, y },
+  ];
+
+  for (let index = 0; index < EXTENDED_SEARCH_CENTER_COUNT; index += 1) {
+    const angle =
+      (index * 2 * Math.PI) /
+      EXTENDED_SEARCH_CENTER_COUNT;
+
+    centerQueries.push({
+      x:
+        x +
+        Math.cos(angle) *
+          EXTENDED_SEARCH_CENTER_OFFSET_METERS,
+      y:
+        y +
+        Math.sin(angle) *
+          EXTENDED_SEARCH_CENTER_OFFSET_METERS,
+    });
+  }
+
+  const responses =
+    await Promise.all(
+      centerQueries.map(
+        ({ x: centerX, y: centerY }) =>
+          getNearbyStations({
+            x: centerX,
+            y: centerY,
+            radius: OPINET_MAX_RADIUS_METERS,
+            productCode,
+            sort,
+          })
+      )
+    );
+
+  const stationsById = new Map();
+
+  for (const response of responses) {
+    const oilList =
+      Array.isArray(
+        response?.RESULT?.OIL
+      )
+        ? response.RESULT.OIL
+        : [];
+
+    for (const oil of oilList) {
+      const id =
+        String(
+          oil?.UNI_ID ??
+          ""
+        ).trim();
+
+      if (!id) {
+        continue;
+      }
+
+      const stationX = Number(
+        oil?.GIS_X_COOR
+      );
+      const stationY = Number(
+        oil?.GIS_Y_COOR
+      );
+
+      if (
+        !Number.isFinite(stationX) ||
+        !Number.isFinite(stationY)
+      ) {
+        continue;
+      }
+
+      const distanceMeters = Math.sqrt(
+        Math.pow(stationX - x, 2) +
+        Math.pow(stationY - y, 2)
+      );
+
+      if (distanceMeters > radius) {
+        continue;
+      }
+
+      const normalizedOil = {
+        ...oil,
+        DISTANCE:
+          distanceMeters,
+      };
+
+      const existing =
+        stationsById.get(id);
+
+      if (
+        !existing ||
+        Number(normalizedOil.PRICE) <
+          Number(existing.PRICE)
+      ) {
+        stationsById.set(
+          id,
+          normalizedOil
+        );
+      }
+    }
+  }
+
+  return {
+    RESULT: {
+      OIL: [
+        ...stationsById.values(),
+      ],
+    },
+  };
 }
 
 function validateProductCode(
