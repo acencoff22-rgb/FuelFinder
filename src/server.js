@@ -273,20 +273,30 @@ function applyCorsHeaders(
       ((origin === `http://${requestHost}`) ||
         (origin === `https://${requestHost}`));
 
+    const configuredWildcard =
+      frontendOrigins.includes("*");
+
+    const renderStaticOrigin =
+      /^https:\/\/[^/]+\.onrender\.com$/i.test(origin);
+
     const allowed =
       sameOrigin ||
-      frontendOrigins.includes(origin);
+      configuredWildcard ||
+      frontendOrigins.includes(origin) ||
+      renderStaticOrigin;
 
     if (allowed) {
       response.setHeader(
         "Access-Control-Allow-Origin",
-        origin
+        configuredWildcard ? "*" : origin
       );
 
-      response.setHeader(
-        "Vary",
-        "Origin"
-      );
+      if (!configuredWildcard) {
+        response.setHeader(
+          "Vary",
+          "Origin"
+        );
+      }
     }
   }
 

@@ -6167,6 +6167,9 @@
           "error",
           error?.name === "AbortError"
             ? "서버 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요."
+            : error?.name === "TypeError" &&
+              /fetch|failed/i.test(String(error.message || ""))
+            ? "서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요."
             : `검색 실패: ${error.message}`
         );
 
