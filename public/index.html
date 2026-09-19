@@ -5484,10 +5484,13 @@
             : `${index + 1}위`
           : `${index + 1}위`;
 
-      const naverUrl =
-        createNaverRouteUrl(station);
-      const kakaoUrl =
-        createKakaoRouteUrl(station);
+      const latitude =
+        Number(station.latitude);
+      const longitude =
+        Number(station.longitude);
+      const hasMapCoordinates =
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude);
 
       let decisionHtml = "";
       if (
@@ -5622,7 +5625,7 @@
           data-station-name="${escapeHtml(station.name || "주유소")}"
         >
           ${
-            naverUrl
+            hasMapCoordinates
               ? `<button
                   class="map-button primary"
                   type="button"
@@ -5631,7 +5634,7 @@
               : `<button class="map-button" type="button" disabled>네이버 길찾기 없음</button>`
           }
           ${
-            kakaoUrl && kakaoNaviReady
+            hasMapCoordinates && kakaoNaviReady
               ? `<button
                   class="map-button kakao"
                   type="button"
@@ -5649,7 +5652,7 @@
                 >카카오내비${kakaoNaviReady ? "" : "(설정 필요)"}</button>`
           }
           ${
-            naverUrl
+            hasMapCoordinates
               ? `<button
                   class="map-button subtle"
                   type="button"
@@ -5658,7 +5661,7 @@
               : `<button class="map-button subtle" type="button" disabled>네이버 위치 없음</button>`
           }
           ${
-            kakaoUrl
+            hasMapCoordinates
               ? `<button
                   class="map-button subtle"
                   type="button"
@@ -6175,36 +6178,6 @@
       }
     }
 
-    function createNaverRouteUrl(
-      station
-    ) {
-      const latitude =
-        Number(station.latitude);
-      const longitude =
-        Number(station.longitude);
-
-      if (
-        !Number.isFinite(latitude) ||
-        !Number.isFinite(longitude)
-      ) {
-        return null;
-      }
-
-      const name =
-        encodeURIComponent(
-          station.name ||
-          "주유소"
-        );
-      const appName =
-        encodeURIComponent(
-          window.location.href
-        );
-
-      return (
-        `nmap://route/car?dlat=${latitude}&dlng=${longitude}&dname=${name}&appname=${appName}`
-      );
-    }
-
     function openNaverRoute(
       latitude,
       longitude,
@@ -6246,11 +6219,18 @@
         return;
       }
 
-      window.open(
-        `https://map.naver.com/p/search/${name}`,
-        "_blank",
-        "noopener,noreferrer"
-      );
+      const webDestination =
+        `${longitude},${latitude},${encodeURIComponent(
+          stationName ||
+            "주유소"
+        )}`;
+      const webRouteUrl =
+        `https://way-m.map.naver.com/end-quick-path/-/${webDestination}/-/car/0`;
+
+      // PC에서는 nmap:// 앱 스킴을 사용할 수 없으므로
+      // 네이버 지도 웹 자동차 길찾기로 직접 이동합니다.
+      window.location.href =
+        webRouteUrl;
     }
 
     function startKakaoNavi(
