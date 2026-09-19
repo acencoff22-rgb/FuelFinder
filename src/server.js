@@ -123,6 +123,14 @@ const nearbySearchCache = new Map();
 const NEARBY_CACHE_TTL_MS = 60 * 1000;
 const NEARBY_CACHE_MAX = 100;
 
+// 오피넷 자체 조회는 사용자 차량 설정과 무관하므로 별도 캐시합니다.
+// 주유량/연비/할인을 바꿔도 같은 위치·반경·유종이면 오피넷을 다시 호출하지 않습니다.
+const opinetNearbyCache = new Map();
+const OPINET_NEARBY_CACHE_TTL_MS = 10 * 60 * 1000;
+const OPINET_NEARBY_CACHE_MAX = 200;
+// 오피넷이 실패했을 때 최대 3시간 전 조회 결과까지는 대신 보여줍니다.
+const OPINET_STALE_FALLBACK_MS = 3 * 60 * 60 * 1000;
+
 // 가격 기준일은 상세조회에서만 확인할 수 있습니다.
 // 오피넷 일반 API의 일일 호출 한도를 고려해 가격순 상위 후보를 우선 확인합니다.
 const PRICE_DATE_DETAIL_LIMIT = 6;
@@ -246,16 +254,21 @@ const server =
         if (
           !response.headersSent
         ) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "알 수 없는 서버 오류가 발생했습니다.";
+
+          const upstreamError =
+            errorMessage.includes("오피넷") ||
+            errorMessage.includes("Kakao REST API");
+
           sendJson(
             response,
-            500,
+            upstreamError ? 502 : 500,
             {
               success: false,
-
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "알 수 없는 서버 오류가 발생했습니다.",
+              error: errorMessage,
             }
           );
         }
@@ -289,7 +302,7 @@ function applyCorsHeaders(
       frontendOrigins.includes("*");
 
     const renderStaticOrigin =
-      /^https:\/\/[^/]+\.onrender\.com$/i.test(origin);
+      /^https:\/\/fuelfinder[a-z0-9-]*\.onrender\.com$/i.test(origin);
 
     const allowed =
       sameOrigin ||
@@ -326,6 +339,7 @@ function applyCorsHeaders(
 async function fetchKakaoRestJson(pathname, params) {
   const key = String(process.env.KAKAO_REST_API_KEY || "").trim();
   if (!key) {
+    console.warn("[카카오 REST API] KAKAO_REST_API_KEY가 없어 OpenStreetMap을 사용합니다.");
     return null;
   }
 
@@ -344,11 +358,44 @@ async function fetchKakaoRestJson(pathname, params) {
     signal: AbortSignal.timeout(8000),
   });
 
-  if (!response.ok) {
-    throw new Error(`Kakao REST API HTTP ${response.status}`);
+  const responseText = await response.text();
+  let responseData = null;
+
+  try {
+    responseData = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    responseData = null;
   }
 
-  return response.json();
+  if (!response.ok) {
+    const errorCode =
+      responseData && responseData.code !== undefined
+        ? Number(responseData.code)
+        : null;
+    const rawMessage =
+      responseData && responseData.msg
+        ? String(responseData.msg)
+        : "";
+
+    let hint = "";
+    if (response.status === 401 || errorCode === -401) {
+      hint = " REST API 키가 유효한지 확인하세요.";
+    } else if (response.status === 403 && errorCode === -3) {
+      hint = " 카카오디벨로퍼스 앱의 사용 가능 API에서 Local API 허용 여부를 확인하세요.";
+    } else if (response.status === 403) {
+      hint = " 카카오디벨로퍼스에서 해당 API 사용 권한을 확인하세요.";
+    }
+
+    const detail = [
+      `HTTP ${response.status}`,
+      errorCode !== null && Number.isFinite(errorCode) ? `code=${errorCode}` : "",
+      rawMessage ? `message=${rawMessage}` : "",
+    ].filter(Boolean).join(" ");
+
+    throw new Error(`Kakao REST API ${detail}.${hint}`);
+  }
+
+  return responseData;
 }
 
 function normalizeKakaoAddressResult(document, fallbackLabel = "주소") {
@@ -568,7 +615,8 @@ async function handleGeocode(request, response) {
     return;
   }
 
-  const cacheKey = `forward:${query.toLowerCase()}`;
+  const normalizedQuery = query.replace(/\s+/g, " ").trim();
+  const cacheKey = `forward:${normalizedQuery.toLowerCase()}`;
   const cached = geocodeCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < GEOCODE_CACHE_TTL_MS) {
     sendJson(response, 200, {
@@ -585,7 +633,7 @@ async function handleGeocode(request, response) {
     let provider = "";
 
     try {
-      results = await geocodeWithKakao(query);
+      results = await geocodeWithKakao(normalizedQuery);
       if (results.length > 0) {
         provider = "kakao";
       }
@@ -600,7 +648,7 @@ async function handleGeocode(request, response) {
       }
 
       const url = new URL("https://nominatim.openstreetmap.org/search");
-      url.searchParams.set("q", query);
+      url.searchParams.set("q", normalizedQuery);
       url.searchParams.set("format", "jsonv2");
       url.searchParams.set("limit", "5");
       url.searchParams.set("countrycodes", "kr");
@@ -720,6 +768,9 @@ async function parseNearbyRequest(request) {
       body.discounts
     );
 
+  const payOnly =
+    body.payOnly === true;
+
   validateLocation(
     latitude,
     longitude
@@ -747,6 +798,7 @@ async function parseNearbyRequest(request) {
     fuelEfficiency,
     paymentOption,
     discounts,
+    payOnly,
   };
 }
 
@@ -765,6 +817,7 @@ async function handleNearbyStations(
   let fuelEfficiency;
   let paymentOption;
   let discounts;
+  let payOnly;
 
   try {
     ({
@@ -776,6 +829,7 @@ async function handleNearbyStations(
       fuelEfficiency,
       paymentOption,
       discounts,
+      payOnly,
     } = await parseNearbyRequest(request));
   } catch (error) {
     sendJson(response, 400, {
@@ -798,6 +852,7 @@ async function handleNearbyStations(
     fuelEfficiency,
     paymentOption,
     discounts,
+    payOnly,
   });
 
   const nearbyCached = nearbySearchCache.get(nearbyCacheKey);
@@ -889,14 +944,56 @@ async function handleNearbyStations(
     }
   }
 
-  const data =
-    await getNearbyStationsWithinRadius({
-      x: katec.x,
-      y: katec.y,
-      radius,
-      productCode,
-      sort: 1,
-    });
+  const opinetCacheKey = JSON.stringify({
+    x: Math.round(katec.x / 25),
+    y: Math.round(katec.y / 25),
+    radius,
+    productCode,
+  });
+
+  const cachedOpinet = opinetNearbyCache.get(opinetCacheKey);
+  let data;
+  let staleAgeMinutes = null;
+
+  if (cachedOpinet && Date.now() - cachedOpinet.timestamp < OPINET_NEARBY_CACHE_TTL_MS) {
+    data = cachedOpinet.data;
+    console.log("[오피넷 주변검색 캐시 사용]");
+  } else {
+    try {
+      data = await getNearbyStationsWithinRadius({
+        x: katec.x,
+        y: katec.y,
+        radius,
+        productCode,
+        sort: 1,
+      });
+    } catch (error) {
+      /*
+       * 오피넷 장애·호출 한도 초과일 때 아무것도 못 보여주는 대신,
+       * 같은 위치의 오래된 조회 결과가 있으면 그것을 표시하고 화면에 알립니다.
+       */
+      if (cachedOpinet && Date.now() - cachedOpinet.timestamp < OPINET_STALE_FALLBACK_MS) {
+        data = cachedOpinet.data;
+        staleAgeMinutes = Math.max(1, Math.round((Date.now() - cachedOpinet.timestamp) / 60000));
+        console.warn(`[오피넷 조회 실패 → ${staleAgeMinutes}분 전 캐시 사용] ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+
+    /* 일부 구역 조회가 실패한 결과는 캐시하지 않아, 다음 요청에서 다시 완전한 결과를 시도합니다. */
+    if (staleAgeMinutes === null && !data.extendedSearch?.partial) {
+      opinetNearbyCache.set(opinetCacheKey, {
+        timestamp: Date.now(),
+        data,
+      });
+
+      if (opinetNearbyCache.size > OPINET_NEARBY_CACHE_MAX) {
+        const oldestKey = opinetNearbyCache.keys().next().value;
+        if (oldestKey) opinetNearbyCache.delete(oldestKey);
+      }
+    }
+  }
 
   const stations =
     mapOpinetStations(
@@ -935,13 +1032,23 @@ async function handleNearbyStations(
       })
     );
 
-  const localPayDetailTargets =
-    preliminary.filter(
-      ({ result }) =>
-        result.matchStatus === "matched" ||
-        result.matchStatus === "ambiguous" ||
-        result.reviewRequired === true
-    );
+  // 이름/주소만으로 강하게 확정된 가맹점은 추가 상세조회가 필요 없습니다.
+  // 상세조회는 애매하거나 검토가 필요한 후보만 수행해 오피넷 쿼터를 아낍니다.
+  const shouldVerifyLocalPay =
+    payOnly ||
+    discounts.some(
+      (discount) =>
+        discount.requiresLocalPayMatch === true
+    ) ||
+    paymentOption.requiresLocalPayMatch === true;
+
+  const localPayDetailTargets = shouldVerifyLocalPay
+    ? preliminary.filter(
+        ({ result }) =>
+          result.matchStatus === "ambiguous" ||
+          result.reviewRequired === true
+      )
+    : [];
 
   // 가격 기준일 표시를 위해 현재 가격이 낮은 후보도 일부 상세조회합니다.
   // 오피넷 일반 API 호출 한도를 고려하여 무제한으로 상세조회하지 않습니다.
@@ -1039,7 +1146,7 @@ async function handleNearbyStations(
   }
 
   console.log(
-    `상세조회 대상: ${detailTargets.length}개`
+    `상세조회 대상: ${detailTargets.length}개 (강릉페이 상세확인 ${shouldVerifyLocalPay ? "사용" : "생략"})`
   );
 
   /**
@@ -1153,18 +1260,22 @@ async function handleNearbyStations(
 
       searchCoverage: data.extendedSearch || null,
 
+      staleDataAgeMinutes: staleAgeMinutes,
+
       stations:
         calculatedStations,
     };
 
-  nearbySearchCache.set(nearbyCacheKey, {
-    timestamp: Date.now(),
-    data: responseData,
-  });
+  if (staleAgeMinutes === null && !data.extendedSearch?.partial) {
+    nearbySearchCache.set(nearbyCacheKey, {
+      timestamp: Date.now(),
+      data: responseData,
+    });
 
-  if (nearbySearchCache.size > NEARBY_CACHE_MAX) {
-    const oldestKey = nearbySearchCache.keys().next().value;
-    if (oldestKey) nearbySearchCache.delete(oldestKey);
+    if (nearbySearchCache.size > NEARBY_CACHE_MAX) {
+      const oldestKey = nearbySearchCache.keys().next().value;
+      if (oldestKey) nearbySearchCache.delete(oldestKey);
+    }
   }
 
   sendJson(response, 200, responseData);

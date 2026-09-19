@@ -39,6 +39,7 @@ Render가 다른 URL을 부여하면 실제 URL을 사용합니다.
 
 - `OPINET_CERTKEY`: 기존 값 유지
 - `KAKAO_JAVASCRIPT_KEY`: 기존 값 유지
+- `KAKAO_REST_API_KEY`: 카카오디벨로퍼스 FuelFinder 앱의 REST API 키
 - `FRONTEND_ORIGINS`: 새 Static Site URL
 
 예:
@@ -75,7 +76,7 @@ Render가 다른 URL을 부여하면 실제 URL을 사용합니다.
 
 휴대폰에서 새 Static Site에 접속하면 화면은 즉시 표시됩니다.
 
-주유소 검색을 누르면 브라우저가 기존 API 서버를 호출합니다. API가 잠들어 있어도 사용자는 Render의 기본 로딩 화면이 아니라 FuelFinder 자체의 `주유소 정보를 불러오는 중입니다.` 상태를 보게 됩니다.
+앱이 처음 열리면 현재 위치를 확인하고 기존 API 서버에 주변 주유소 검색을 요청합니다. 다른 위치가 필요할 때만 설정에서 주소·장소를 검색합니다. API가 잠들어 있어도 사용자는 Render의 기본 로딩 화면이 아니라 FuelFinder 자체의 `주유소 정보를 불러오는 중입니다.` 상태를 보게 됩니다.
 
 ## 참고
 

@@ -12,6 +12,57 @@ const OPINET_BASE_URL =
 const OPINET_TIMEOUT_MS =
   15000;
 
+/*
+ * 오피넷 일반 API는 하루 호출 한도(약 300회)가 있습니다.
+ * 서버 메모리에서 한국 시간 기준 하루 호출 수를 세고,
+ * 한도에 가까워지면 더 호출하지 않고 안내 메시지를 반환합니다.
+ * (Render가 재시작하면 카운터가 0으로 돌아가므로 최선의 안전장치입니다.)
+ */
+const OPINET_DAILY_LIMIT =
+  Number(process.env.OPINET_DAILY_LIMIT) > 0
+    ? Number(process.env.OPINET_DAILY_LIMIT)
+    : 280;
+
+let opinetUsageDay = "";
+let opinetUsageCount = 0;
+
+function getKoreaDateKey() {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+}
+
+function countOpinetCall(endpoint) {
+  const today = getKoreaDateKey();
+
+  if (opinetUsageDay !== today) {
+    opinetUsageDay = today;
+    opinetUsageCount = 0;
+  }
+
+  if (opinetUsageCount >= OPINET_DAILY_LIMIT) {
+    const error = new Error(
+      "오피넷 하루 호출 한도에 도달했습니다. 내일 다시 이용해 주세요."
+    );
+    error.noRetry = true;
+    throw error;
+  }
+
+  opinetUsageCount += 1;
+
+  console.log(
+    `[오피넷 호출] ${endpoint} (${opinetUsageCount}/${OPINET_DAILY_LIMIT})`
+  );
+}
+
+export function getOpinetUsage() {
+  return {
+    day: opinetUsageDay,
+    count: opinetUsageCount,
+    limit: OPINET_DAILY_LIMIT,
+  };
+}
+
 async function requestOpinet(
   endpoint,
   params = {}
@@ -24,6 +75,8 @@ async function requestOpinet(
       "OPINET_CERTKEY가 .env에 설정되어 있지 않습니다."
     );
   }
+
+  countOpinetCall(endpoint);
 
   const searchParams =
     new URLSearchParams({
@@ -64,6 +117,34 @@ async function requestOpinet(
 
     const data =
       await response.json();
+
+    const result = data?.RESULT;
+    if (result && typeof result === "object") {
+      const code = String(result.CODE ?? result.code ?? "").trim();
+      const message = String(
+        result.MSG ??
+          result.msg ??
+          result.MESSAGE ??
+          result.message ??
+          ""
+      ).trim();
+
+      if (code || message) {
+        const errorText = [
+          `code=${code || "unknown"}`,
+          message ? `message=${message}` : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        /* 키 오류·한도 초과 같은 API 응답 오류는 재시도해도 같은 결과이므로 재시도하지 않습니다. */
+        const apiError = new Error(
+          `오피넷 ${endpoint} API 응답 오류: ${errorText}`
+        );
+        apiError.noRetry = true;
+        throw apiError;
+      }
+    }
 
     return data;
   } catch (
@@ -149,25 +230,47 @@ export async function getNearbyStations({
     );
   }
 
-  return requestOpinet(
-    "aroundAll.do",
-    {
-      x:
-        String(x),
+  const maxAttempts = 2;
+  let lastError = null;
 
-      y:
-        String(y),
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const data = await requestOpinet(
+        "aroundAll.do",
+        {
+          x: String(x),
+          y: String(y),
+          radius: String(radius),
+          prodcd: productCode,
+          sort: String(sort),
+        }
+      );
 
-      radius:
-        String(radius),
+      const oil = data?.RESULT?.OIL;
+      if (!Array.isArray(oil)) {
+        const resultSummary = JSON.stringify(data?.RESULT ?? {}).slice(0, 1200);
+        throw new Error(
+          `오피넷 주변검색 응답에 OIL 목록이 없습니다: ${resultSummary}`
+        );
+      }
 
-      prodcd:
-        productCode,
+      return data;
+    } catch (error) {
+      lastError = error;
 
-      sort:
-        String(sort),
+      if (error?.noRetry) {
+        break;
+      }
+
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
     }
-  );
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("오피넷 주변 주유소 검색에 실패했습니다.");
 }
 
 export async function getStationDetail(
