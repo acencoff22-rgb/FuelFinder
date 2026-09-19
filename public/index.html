@@ -3415,6 +3415,73 @@
       }
     }
 
+
+
+    /* ======================================================
+       v18 UI cleanup
+       ====================================================== */
+    .main-content { padding-top: 18px; }
+    .results-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding: 0 2px; }
+    .results-heading-main { min-width: 0; }
+    .results-title-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+    .results-title { margin: 0; font-size: 22px !important; line-height: 1.2; letter-spacing: -0.03em; }
+    .results-count-inline { color: #687180; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .results-heading-control { flex: 0 0 auto; }
+    .result-sort { min-width: 118px; min-height: 42px; padding: 0 11px; border-radius: 11px; font-size: 14px; font-weight: 700; }
+    .results-subtitle, .result-summary, .result-tools, .result-insight { display: none !important; }
+
+    .station { padding: 18px !important; border-radius: 18px !important; }
+    .station-header { align-items: flex-start; gap: 12px; }
+    .station-header-main { min-width: 0; flex: 1 1 auto; }
+    .station-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .station-name { font-size: 19px !important; line-height: 1.25; letter-spacing: -0.03em; }
+    .station-awards { display: flex; flex-wrap: wrap; gap: 5px; flex: 0 0 auto; }
+    .station-award { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 7px; border-radius: 7px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .effective-award { background: #182331; color: #fff; }
+    .price-award { background: #edf1f5; color: #3c4653; border: 1px solid #dce2e8; }
+    .station-route-button { flex: 0 0 auto; min-width: 64px; min-height: 36px; padding: 0 11px; border: 0; border-radius: 10px; background: #182331; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; }
+    .station-route-button:disabled { background: #d9dde2; color: #7b838d; cursor: default; }
+    .station-meta { margin-top: 7px; gap: 5px; }
+    .meta-chip { min-height: 27px; padding: 4px 8px; font-size: 12px !important; line-height: 1.15; }
+    .station-main-price-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #edf0f3; }
+    .effective-price-block { min-width: 0; }
+    .effective-label { display: block; margin-bottom: 3px; font-size: 13px !important; font-weight: 800; color: #5e6875; }
+    .effective-price { font-size: clamp(40px, 11vw, 52px) !important; line-height: .95; letter-spacing: -0.06em; }
+    .effective-unit { margin-left: 4px; font-size: 16px !important; font-weight: 800; color: #5b6570; }
+    .station-primary-meta { display: grid; gap: 5px; min-width: 112px; padding-bottom: 2px; text-align: right; color: #6b7480; font-size: 13px; line-height: 1.35; white-space: nowrap; }
+    .price-freshness-note { margin-top: 11px; font-size: 13px !important; line-height: 1.45; }
+    .station-detail { margin-top: 13px; border-top: 1px solid #edf0f3; }
+    .station-detail summary { font-size: 14px !important; font-weight: 800; padding: 13px 0 !important; }
+    .station-detail-body { display: grid; gap: 8px; padding: 0 0 4px; }
+    .detail-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14px; color: #4f5965; }
+    .detail-row strong { color: #202832; font-size: 15px; }
+    .detail-subtle { font-size: 12px; color: #7c8590; }
+    .detail-subtle span:last-child { text-align: right; }
+    .total-row { padding-bottom: 6px; border-bottom: 1px dashed #e1e5e9; }
+    .total-row strong { font-size: 16px; }
+    .station-address { margin-top: 4px; padding-top: 9px; border-top: 1px solid #f0f2f4; font-size: 13px; line-height: 1.5; color: #6a7380; }
+
+    .setting-location-group .location-input-row { margin-top: 10px; }
+    .setting-location-group .location-status { margin-top: 9px; }
+    .setting-location-group .location-provider-note, .setting-location-group .selected-location { margin-top: 9px; }
+    .setting-location-group .recent-locations { margin-top: 12px; }
+    .setting-filter-fields { margin-top: 18px; }
+    .settings-toggle-row { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border: 0; border-bottom: 1px solid #edf0f2; background: transparent; color: #2b343e; font: inherit; text-align: left; cursor: pointer; }
+    .settings-toggle-switch { flex: 0 0 auto; width: 38px; height: 22px; border-radius: 999px; background: #ccd2d8; position: relative; }
+    .settings-toggle-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.16); transition: transform .16s ease; }
+    .settings-toggle-row.active .settings-toggle-switch { background: #182331; }
+    .settings-toggle-row.active .settings-toggle-switch::after { transform: translateX(16px); }
+
+    @media (max-width: 390px) {
+      .station { padding: 16px !important; }
+      .results-heading { gap: 8px; }
+      .results-title { font-size: 21px !important; }
+      .results-count-inline { font-size: 12px; }
+      .result-sort { min-width: 108px; min-height: 40px; font-size: 13px; }
+      .station-name { font-size: 18px !important; }
+      .station-main-price-row { grid-template-columns: minmax(0, 1fr); align-items: start; }
+      .station-primary-meta { grid-template-columns: repeat(2, auto); justify-content: start; text-align: left; min-width: 0; }
+    }
   </style>
 </head>
 
@@ -3479,6 +3546,98 @@
     </div>
 
     <div class="drawer-body">
+
+      <section class="setting-group setting-location-group">
+
+        <h3 class="setting-group-title">
+        검색 위치
+      </h3>
+
+      <p class="setting-group-description">
+        기본값은 현재 위치입니다. 다른 위치를 사용할 때만 이곳에서 검색하세요.
+      </p>
+
+        <div class="location-input-row">
+
+          <input
+            id="addressInput"
+            class="address-input"
+            type="text"
+            autocomplete="street-address"
+            placeholder="예: 강릉역, 서울역, 숙소 주소"
+          >
+
+          <button
+            id="addressSearchButton"
+            class="address-search-button"
+            type="button"
+          >
+            검색
+          </button>
+
+        </div>
+
+        <div class="location-secondary-actions">
+
+          <button
+            id="currentLocationButton"
+            class="current-location-button"
+            type="button"
+          >
+            ◎ 현재 위치 사용
+          </button>
+
+        </div>
+
+
+        <div
+          id="locationStatus"
+          class="location-status"
+        >
+
+          <span class="location-status-dot"></span>
+
+          <span>
+            주소를 검색하거나 현재 위치를 사용할 수 있습니다.
+          </span>
+
+        </div>
+
+        <p class="location-provider-note">
+          주소·장소 검색은 OpenStreetMap 기반으로 제공됩니다.
+        </p>
+
+        <div
+          id="recentLocations"
+          class="recent-locations"
+        >
+          <span class="recent-label">최근 검색 위치</span>
+          <div id="recentLocationList" class="recent-list"></div>
+        </div>
+
+        <div
+          id="selectedLocation"
+          class="selected-location"
+        >
+
+          <span class="selected-location-label">
+            검색 기준 위치
+          </span>
+
+          <div
+            id="selectedLocationText"
+            class="selected-location-text"
+          ></div>
+
+          <div
+            id="selectedLocationDetail"
+            class="selected-location-detail"
+            hidden
+          ></div>
+
+        </div>
+
+      </section>
 
       <!-- 차량 -->
 
@@ -3599,9 +3758,37 @@
           </div>
 
           <p class="setting-inline-help">
-            현재 위치나 선택한 출발 위치에서 이 반경 안의 주유소를 비교합니다.
+            현재 위치나 선택한 검색 위치에서 이 반경 안의 주유소를 비교합니다.
           </p>
 
+        </div>
+
+        <div class="setting-field setting-filter-fields">
+          <label class="setting-label">표시 필터</label>
+
+          <button
+            id="payOnlyToggle"
+            class="settings-toggle-row"
+            type="button"
+            aria-pressed="false"
+          >
+            <span>강릉페이 가맹 확인된 주유소만 보기</span>
+            <span class="settings-toggle-switch" aria-hidden="true"></span>
+          </button>
+
+          <button
+            id="freshOnlyToggle"
+            class="settings-toggle-row active"
+            type="button"
+            aria-pressed="true"
+          >
+            <span>3일 이상 지난 가격 제외</span>
+            <span class="settings-toggle-switch" aria-hidden="true"></span>
+          </button>
+
+          <p class="setting-inline-help">
+            가격 업데이트일을 확인할 수 없는 주유소는 제외하지 않습니다.
+          </p>
         </div>
 
       </section>
@@ -3911,114 +4098,6 @@
     <main class="main-content">
 
       <!-- ==================================================
-           Location
-           ================================================== -->
-
-      <section class="location-section">
-
-        <div class="section-heading">
-
-          <div>
-
-            <h2 class="section-title">
-              출발 위치
-            </h2>
-
-            <p class="section-description">
-              주소나 장소를 입력하면 바로 검색합니다.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div class="location-input-row">
-
-          <input
-            id="addressInput"
-            class="address-input"
-            type="text"
-            autocomplete="street-address"
-            placeholder="예: 강릉역, 서울역, 숙소 주소"
-          >
-
-          <button
-            id="addressSearchButton"
-            class="address-search-button"
-            type="button"
-          >
-            검색
-          </button>
-
-        </div>
-
-        <div class="location-secondary-actions">
-
-          <button
-            id="currentLocationButton"
-            class="current-location-button"
-            type="button"
-          >
-            ◎ 현재 위치 사용
-          </button>
-
-        </div>
-
-        <div class="search-settings-hint" aria-live="polite">
-          <span>검색 반경 <strong id="mainRadiusLabel">3km</strong></span>
-          <span>설정에서 변경</span>
-        </div>
-
-        <div
-          id="locationStatus"
-          class="location-status"
-        >
-
-          <span class="location-status-dot"></span>
-
-          <span>
-            주소를 검색하거나 현재 위치를 사용할 수 있습니다.
-          </span>
-
-        </div>
-
-        <p class="location-provider-note">
-          주소·장소 검색은 OpenStreetMap 기반으로 제공됩니다.
-        </p>
-
-        <div
-          id="recentLocations"
-          class="recent-locations"
-        >
-          <span class="recent-label">최근 검색 위치</span>
-          <div id="recentLocationList" class="recent-list"></div>
-        </div>
-
-        <div
-          id="selectedLocation"
-          class="selected-location"
-        >
-
-          <span class="selected-location-label">
-            검색 기준 위치
-          </span>
-
-          <div
-            id="selectedLocationText"
-            class="selected-location-text"
-          ></div>
-
-          <div
-            id="selectedLocationDetail"
-            class="selected-location-detail"
-            hidden
-          ></div>
-
-        </div>
-
-      </section>
-
-      <!-- ==================================================
            Search status
            ================================================== -->
 
@@ -4034,113 +4113,21 @@
       <section class="results-section">
 
         <div class="results-heading">
-
-          <div>
-
-            <h2 class="results-title">
-              주변 주유소
-            </h2>
-
-            <p
-              id="resultsSubtitle"
-              class="results-subtitle"
-            >
-              실질비용이 낮은 순서
-            </p>
-
+          <div class="results-heading-main">
+            <div class="results-title-row">
+              <h2 class="results-title">주변 주유소</h2>
+              <span id="resultsCount" class="results-count-inline">검색 전</span>
+            </div>
           </div>
 
-          <span
-            id="resultsCount"
-            class="results-count"
-          >
-            아직 검색 전
-          </span>
-
-        </div>
-
-        <div
-          id="resultSummary"
-          class="result-summary"
-        >
-
-          <div class="summary-card">
-
-            <span class="summary-label">
-              표시 주유소
-            </span>
-
-            <span
-              id="summaryStationCount"
-              class="summary-value"
-            >
-              0
-            </span>
-
-          </div>
-
-          <div class="summary-card">
-
-            <span class="summary-label">
-              강릉페이
-            </span>
-
-            <span
-              id="summaryPayCount"
-              class="summary-value"
-            >
-              0
-            </span>
-
-          </div>
-
-          <div class="summary-card">
-
-            <span class="summary-label">
-              반경
-            </span>
-
-            <span
-              id="summaryRadius"
-              class="summary-value"
-            >
-              3km
-            </span>
-
-          </div>
-
-        </div>
-
-        <div class="result-tools">
-          <div class="result-sort-wrap">
-            <span class="result-tool-label">정렬</span>
+          <div class="results-heading-control">
             <select id="resultSort" class="result-sort" aria-label="주유소 정렬">
               <option value="effective">실질비용순</option>
               <option value="price">주유가격순</option>
               <option value="distance">거리순</option>
             </select>
           </div>
-
-          <button
-            id="payOnlyToggle"
-            class="pay-only-toggle"
-            type="button"
-            aria-pressed="false"
-          >
-            강릉페이만 보기
-          </button>
-
-          <button
-            id="freshOnlyToggle"
-            class="pay-only-toggle fresh-only-toggle active"
-            type="button"
-            aria-pressed="true"
-          >
-            3일 이상 지난 가격 제외
-          </button>
         </div>
-
-        <div id="resultInsight" class="result-insight"></div>
 
         <div
           id="stationList"
@@ -4198,7 +4185,6 @@
           </span>
         </button>
       </div>
-      <p class="navigation-modal-help">주유소 카드를 다시 탭하면 언제든 길찾기를 열 수 있습니다.</p>
     </div>
   </div>
 
@@ -4259,26 +4245,6 @@
     const resultsCount =
       document.getElementById(
         "resultsCount"
-      );
-
-    const resultSummary =
-      document.getElementById(
-        "resultSummary"
-      );
-
-    const summaryStationCount =
-      document.getElementById(
-        "summaryStationCount"
-      );
-
-    const summaryPayCount =
-      document.getElementById(
-        "summaryPayCount"
-      );
-
-    const summaryRadius =
-      document.getElementById(
-        "summaryRadius"
       );
 
     const settingsButton =
@@ -4405,11 +4371,6 @@
         ".radius-option"
       );
 
-    const mainRadiusLabel =
-      document.getElementById(
-        "mainRadiusLabel"
-      );
-
     const navigationModal =
       document.getElementById(
         "navigationModal"
@@ -4460,11 +4421,6 @@
         ".results-section"
       );
 
-    const resultsSubtitle =
-      document.getElementById(
-        "resultsSubtitle"
-      );
-
     const payOnlyToggle =
       document.getElementById(
         "payOnlyToggle"
@@ -4473,11 +4429,6 @@
     const freshOnlyToggle =
       document.getElementById(
         "freshOnlyToggle"
-      );
-
-    const resultInsight =
-      document.getElementById(
-        "resultInsight"
       );
 
     /* ======================================================
@@ -4594,7 +4545,6 @@
        ====================================================== */
 
     loadSettings();
-    updateResultsSubtitle();
     updateRadiusButtons();
 
     loadRecentLocations();
@@ -5141,14 +5091,6 @@
         formatRadius(
           selectedRadius
         );
-
-      summaryRadius.textContent =
-        formattedRadius;
-
-      if (mainRadiusLabel) {
-        mainRadiusLabel.textContent =
-          formattedRadius;
-      }
     }
 
     /* ======================================================
@@ -6037,10 +5979,6 @@
       stationList.innerHTML =
         "";
 
-      resultSummary.classList.remove(
-        "visible"
-      );
-
       resultsSection.classList.add("active");
 
       resultsCount.textContent =
@@ -6189,24 +6127,16 @@
         const visibleCount =
           getVisibleStations(stations).length;
 
-        resultsCount.textContent =
-          `${visibleCount}곳${payOnly ? " · 강릉페이" : ""}`;
+        updateResultSummary(stations, selectedRadius);
 
         if (visibleCount === 0) {
           showSearchStatus(
-            "success",
-            `${stations.length}곳을 확인했지만 현재 필터 조건에서는 표시할 주유소가 없습니다.`
-          );
-        } else if (visibleCount < stations.length) {
-          showSearchStatus(
-            "success",
-            `${stations.length}곳을 확인했고 ${visibleCount}곳을 표시합니다.`
+            "error",
+            `${stations.length}곳을 확인했지만 현재 설정된 필터 조건에서는 표시할 주유소가 없습니다. 설정에서 표시 필터를 확인하세요.`
           );
         } else {
-          showSearchStatus(
-            "success",
-            `${visibleCount}개의 주유소를 계산했습니다.`
-          );
+          searchStatus.className = "search-status";
+          searchStatus.textContent = "";
         }
       } catch (
         error
@@ -6288,7 +6218,6 @@
 
       refreshResults();
 
-      showSearchStatus("success", "설정을 반영해 다시 계산했습니다.");
     }
 
     function recalculateStations(
@@ -6409,51 +6338,23 @@
     }
 
     /* ======================================================
-       Results summary
+       Compact result header
        ====================================================== */
 
-    function updateResultSummary(
-      stations,
-      radius
-    ) {
-      const list =
-        Array.isArray(
-          stations
-        )
-          ? stations
-          : [];
+    function updateResultSummary(stations, radius) {
+      const list = Array.isArray(stations) ? stations : [];
+      const visible = getVisibleStations(list);
 
-      const visible =
-        getVisibleStations(list);
+      if (!resultsCount) {
+        return;
+      }
 
-      const payCount =
-        visible.filter(
-          (station) =>
-            station.gangneungPay
-              ?.status ===
-            "available"
-        ).length;
+      if (!hasSearched) {
+        resultsCount.textContent = "검색 중";
+        return;
+      }
 
-      summaryStationCount.textContent =
-        formatNumber(
-          visible.length
-        );
-
-      summaryPayCount.textContent =
-        formatNumber(
-          payCount
-        );
-
-      summaryRadius.textContent =
-        formatRadius(
-          radius
-        );
-
-      resultSummary.classList.toggle(
-        "visible",
-        list.length >
-          0
-      );
+      resultsCount.textContent = `${visible.length}곳 · ${formatRadius(radius)}${payOnly ? " · 강릉페이" : ""}`;
     }
 
     /* ======================================================
@@ -6472,37 +6373,12 @@
         getVisibleStations(list);
 
       stationList.innerHTML = "";
-      resultInsight.classList.remove("visible");
       resultsSection.classList.add("active");
 
       resultsCount.textContent =
         list.length > 0
-          ? `${visibleStations.length}곳${payOnly ? " · 강릉페이" : ""}`
+          ? `${visibleStations.length}곳 · ${formatRadius(selectedRadius)}${payOnly ? " · 강릉페이" : ""}`
           : "0곳";
-
-      const insightMessages = [];
-      const priceUpdateSummary =
-        getPriceUpdateSummary(list);
-
-      if (priceUpdateSummary.staleCount > 0 || priceUpdateSummary.unknownCount > 0) {
-        const parts = [];
-
-        if (priceUpdateSummary.staleCount > 0) {
-          parts.push(
-            `3일 이상 지난 가격 ${priceUpdateSummary.staleCount}곳`
-          );
-        }
-
-        if (priceUpdateSummary.unknownCount > 0) {
-          parts.push(
-            `업데이트일 확인 안 됨 ${priceUpdateSummary.unknownCount}곳`
-          );
-        }
-
-        insightMessages.push(
-          `<strong>가격 최신성:</strong> ${parts.join(" · ")} ${freshOnly ? "· 오래된 가격은 현재 목록에서 제외했습니다." : "· 오래된 가격도 표시 중입니다."}`
-        );
-      }
 
       if (list.length === 0) {
         stationList.innerHTML = `
@@ -6568,61 +6444,9 @@
           null
         );
 
-      const bestEffective =
-        bestEffectiveStation
-          ? Number(
-              bestEffectiveStation.effectivePricePerLiter
-            )
-          : NaN;
-
-      if (Number.isFinite(bestEffective)) {
-        const bestTotalCost = Number(bestEffectiveStation.totalCost);
-        const bestTotalText = Number.isFinite(bestTotalCost)
-          ? ` · 예상 총 부담 ${formatWon(Math.round(bestTotalCost))}원`
-          : "";
-
-        insightMessages.unshift(
-          `<strong>실질비용 최저:</strong> ${escapeHtml(
-            bestEffectiveStation.name || "주유소"
-          )} · ${formatWon(Math.round(bestEffective))}원/L${bestTotalText}`
-        );
-
-        const priceBest = [...visibleStations]
-          .sort((a, b) =>
-            Number(a.pricePerLiter) - Number(b.pricePerLiter)
-          )[0];
-
-        const priceBestEffective =
-          Number(priceBest?.effectivePricePerLiter);
-
-        if (
-          priceBest &&
-          Number.isFinite(priceBestEffective) &&
-          priceBest !== bestEffectiveStation
-        ) {
-          const extra = Math.max(
-            0,
-            Math.round(priceBestEffective - bestEffective)
-          );
-
-          insightMessages.push(
-            `<strong>주유가격 최저:</strong> ${escapeHtml(
-              priceBest.name || "주유소"
-            )} · 하지만 이동비를 포함하면 실질비용은 ${formatWon(
-              extra
-            )}원/L 더 높습니다.`
-          );
-        }
-      }
-
-      if (insightMessages.length > 0) {
-        resultInsight.innerHTML = insightMessages
-          .map((message) => `<div>${message}</div>`)
-          .join(
-            `<div class="result-insight-divider"></div>`
-          );
-        resultInsight.classList.add("visible");
-      }
+      const priceBestStation = [...visibleStations].sort(
+        (a, b) => Number(a.pricePerLiter) - Number(b.pricePerLiter)
+      )[0] || null;
 
       visibleStations.forEach(
         (station, index) => {
@@ -6646,9 +6470,8 @@
           item.innerHTML =
             createStationHtml(
               station,
-              index,
-              bestEffective,
-              bestEffectiveStation
+              bestEffectiveStation,
+              priceBestStation
             );
 
           stationList.appendChild(item);
@@ -6656,21 +6479,6 @@
       );
     }
 
-    function updateResultsSubtitle() {
-      if (!resultsSubtitle) {
-        return;
-      }
-
-      const labels = {
-        effective: "실질비용이 낮은 순서",
-        price: "표시 주유가격이 낮은 순서",
-        distance: "가까운 순서",
-      };
-
-      resultsSubtitle.textContent =
-        labels[currentSort] ||
-        labels.effective;
-    }
 
     function getVisibleStations(stations) {
       const list =
@@ -6721,193 +6529,90 @@
 
     function createStationHtml(
       station,
-      index,
-      bestEffective,
-      bestEffectiveStation
+      bestEffectiveStation,
+      priceBestStation
     ) {
-      const distanceKm =
-        Number(station.distanceKm);
-      const pricePerLiter =
-        Number(station.pricePerLiter);
-      const fuelCost =
-        Number(station.fuelCost);
-      const travelCost =
-        Number(station.travelCost);
-      const discountAmount =
-        Number(station.discountAmount);
-      const discountedFuelCost =
-        Number(station.discountedFuelCost);
-      const totalCost =
-        Number(station.totalCost);
-      const effectivePrice =
-        Number(station.effectivePricePerLiter);
+      const distanceKm = Number(station.distanceKm);
+      const pricePerLiter = Number(station.pricePerLiter);
+      const fuelCost = Number(station.fuelCost);
+      const travelCost = Number(station.travelCost);
+      const discountAmount = Number(station.discountAmount);
+      const totalCost = Number(station.totalCost);
+      const effectivePrice = Number(station.effectivePricePerLiter);
 
-      const distanceText =
-        Number.isFinite(distanceKm)
-          ? `${distanceKm.toFixed(2)}km`
-          : "거리 정보 없음";
+      const distanceText = Number.isFinite(distanceKm)
+        ? `${distanceKm.toFixed(1)}km`
+        : "거리 정보 없음";
 
-      /* 정렬 기준이 실질비용순일 때만 "N위"로 표기합니다. 거리순/가격순에서 "2위"는 오해를 부릅니다. */
-      const rankText =
-        station === bestEffectiveStation
-          ? "실질비용 최저"
-          : currentSort === "effective"
-            ? `${index + 1}위`
-            : `${index + 1}번째`;
+      const bestEffectiveBadge = station === bestEffectiveStation
+        ? `<span class="station-award effective-award">실질비용 최저</span>`
+        : "";
 
-      const latitude =
-        Number(station.latitude);
-      const longitude =
-        Number(station.longitude);
-      const hasMapCoordinates =
-        Number.isFinite(latitude) &&
-        Number.isFinite(longitude);
+      const priceBestBadge = station === priceBestStation
+        ? `<span class="station-award price-award">주유가격 최저</span>`
+        : "";
 
-      let decisionHtml = "";
-      if (station === bestEffectiveStation && Number.isFinite(effectivePrice)) {
-        decisionHtml = `
-          <div class="decision-note">
-            현재 설정을 모두 반영했을 때 실질비용이 가장 낮습니다.
-          </div>
-        `;
-      }
-
-      const discountHtml =
-        discountAmount > 0
-          ? `
-            <div class="cost-grid">
-              <div class="cost-item">
-                <span class="cost-label">할인 후 주유비</span>
-                <span class="cost-value">${formatWon(
-                  discountedFuelCost
-                )}원</span>
-              </div>
-              <div class="cost-item">
-                <span class="cost-label">할인 조건</span>
-                <span class="cost-value">${escapeHtml(
-                  describeAppliedDiscount(station)
-                )}</span>
-              </div>
-            </div>
-          `
-          : "";
+      const hasCoordinates = hasMapCoordinatesForStation(station);
+      const discountHtml = discountAmount > 0
+        ? `<div class="detail-row"><span>할인</span><strong>-${formatWon(discountAmount)}원</strong></div>\n           <div class="detail-row detail-subtle"><span>적용 할인</span><span>${escapeHtml(describeAppliedDiscount(station))}</span></div>`
+        : `<div class="detail-row"><span>할인</span><strong>0원</strong></div>`;
 
       return `
         <div class="station-header">
           <div class="station-header-main">
-            <div class="station-rank">${rankText}</div>
-            <div class="station-name">
-              ${escapeHtml(station.name || "주유소")}
+            <div class="station-name-row">
+              <div class="station-name">${escapeHtml(station.name || "주유소")}</div>
+              <div class="station-awards">${bestEffectiveBadge}${priceBestBadge}</div>
             </div>
             <div class="station-meta">
               <span class="meta-chip">${escapeHtml(distanceText)}</span>
-              ${
-                Number.isFinite(pricePerLiter)
-                  ? `<span class="meta-chip">주유 ${formatWon(
-                      pricePerLiter
-                    )}원/L</span>`
-                  : ""
-              }
+              ${Number.isFinite(pricePerLiter) ? `<span class="meta-chip">주유 ${formatWon(pricePerLiter)}원/L</span>` : ""}
               ${createPayBadge(station)}
               ${createPriceUpdateBadge(station)}
             </div>
           </div>
-          <div class="station-tap-action" aria-hidden="true">길찾기 <span>›</span></div>
+          <button
+            class="station-route-button"
+            type="button"
+            data-station-navigation="true"
+            aria-label="${escapeHtml(station.name || "주유소")} 길찾기"
+            ${hasCoordinates ? "" : "disabled"}
+          >
+            ${hasCoordinates ? "길찾기" : "위치 없음"}
+          </button>
         </div>
 
-        <div class="effective-box">
-          <div class="effective-main">
+        <div class="station-main-price-row">
+          <div class="effective-price-block">
             <span class="effective-label">실질가격</span>
             <div class="effective-price-line">
-              <span class="effective-price">${formatWon(
-                Math.round(effectivePrice)
-              )}</span>
+              <span class="effective-price">${formatWon(Math.round(effectivePrice))}</span>
               <span class="effective-unit">원/L</span>
             </div>
-            <p class="effective-caption">
-              주유비 + 왕복 이동비 - 할인
-            </p>
           </div>
-
-          <div class="effective-side-stats">
-            <div class="cost-item total">
-              <span class="cost-label">총 부담액</span>
-              <span class="cost-value">${formatWon(totalCost)}원</span>
-            </div>
-            <div class="cost-item">
-              <span class="cost-label">주유비</span>
-              <span class="cost-value">${formatWon(fuelCost)}원</span>
-            </div>
-            <div class="cost-item">
-              <span class="cost-label">왕복 이동비</span>
-              <span class="cost-value">${formatWon(travelCost)}원</span>
-            </div>
-            <div class="cost-item">
-              <span class="cost-label">할인</span>
-              <span class="cost-value">${
-                discountAmount > 0
-                  ? `-${formatWon(discountAmount)}원`
-                  : "0원"
-              }</span>
-            </div>
+          <div class="station-primary-meta">
+            <div>${Number.isFinite(pricePerLiter) ? `표시 ${formatWon(pricePerLiter)}원/L` : "가격 정보 없음"}</div>
           </div>
         </div>
 
         ${createPriceFreshnessWarning(station)}
 
-        ${decisionHtml}
-
         <details class="station-detail">
-          <summary>상세 계산 보기</summary>
+          <summary>상세 계산</summary>
           <div class="station-detail-body">
+            <div class="detail-row total-row"><span>총 부담액</span><strong>${formatWon(totalCost)}원</strong></div>
+            <div class="detail-row"><span>주유비</span><strong>${formatWon(fuelCost)}원</strong></div>
+            <div class="detail-row"><span>왕복 이동비</span><strong>${formatWon(travelCost)}원</strong></div>
             ${discountHtml}
-            ${
-              station.address
-                ? `<div class="station-address">${escapeHtml(
-                    station.address
-                  )}</div>`
-                : ""
-            }
+            ${station.address ? `<div class="station-address">${escapeHtml(station.address)}</div>` : ""}
             ${createGangneungPayHtml(station)}
           </div>
         </details>
-
-        <div class="station-tap-hint">
-          ${hasMapCoordinates
-            ? "주유소 카드를 탭하면 네이버 길찾기 / 카카오내비를 선택할 수 있습니다."
-            : "이 주유소는 지도 좌표가 없어 길찾기를 사용할 수 없습니다."}
-        </div>
-
-        <details class="location-check">
-          <summary>도착 위치만 확인</summary>
-          <div
-            class="map-buttons map-location-buttons"
-            data-station-latitude="${Number(station.latitude)}"
-            data-station-longitude="${Number(station.longitude)}"
-            data-station-name="${escapeHtml(station.name || "주유소")}"
-          >
-            ${
-              hasMapCoordinates
-                ? `<button
-                    class="map-button subtle"
-                    type="button"
-                    data-map-action="naver-location"
-                  >네이버 지도</button>`
-                : `<button class="map-button subtle" type="button" disabled>네이버 위치 없음</button>`
-            }
-            ${
-              hasMapCoordinates
-                ? `<button
-                    class="map-button subtle"
-                    type="button"
-                    data-map-action="kakao-location"
-                  >카카오맵</button>`
-                : `<button class="map-button subtle" type="button" disabled>카카오 위치 없음</button>`
-            }
-          </div>
-        </details>
-
       `;
+    }
+
+    function hasMapCoordinatesForStation(station) {
+      return Number.isFinite(Number(station?.latitude)) && Number.isFinite(Number(station?.longitude));
     }
 
     /* ======================================================
@@ -7343,14 +7048,20 @@
     }
 
     function handleStationListClick(event) {
-      const mapButton = event.target.closest("[data-map-action]");
-      if (mapButton) {
-        handleStationMapAction(event);
+      const routeButton = event.target.closest("[data-station-navigation]");
+      if (routeButton) {
+        event.preventDefault();
+        const stationElement = routeButton.closest(".station");
+        if (!stationElement) return;
+        const visibleStations = getVisibleStations(lastStations);
+        const index = Number(stationElement.dataset.stationIndex);
+        const station = visibleStations[index];
+        if (station) openNavigationModal(station);
         return;
       }
 
       const interactive = event.target.closest(
-        "button, a, summary, input, select, textarea, details"
+        "a, summary, input, select, textarea, details"
       );
 
       if (interactive) {
@@ -7454,83 +7165,6 @@
       navigationTarget = null;
     }
 
-    function handleStationMapAction(
-      event
-    ) {
-      const button =
-        event.target.closest(
-          "[data-map-action]"
-        );
-
-      if (!button) {
-        return;
-      }
-
-      const container =
-        button.closest(
-          "[data-station-latitude][data-station-longitude]"
-        );
-
-      if (!container) {
-        return;
-      }
-
-      const latitude =
-        Number(
-          container.dataset.stationLatitude
-        );
-      const longitude =
-        Number(
-          container.dataset.stationLongitude
-        );
-      const stationName =
-        container.dataset.stationName ||
-        "주유소";
-
-      if (
-        !Number.isFinite(latitude) ||
-        !Number.isFinite(longitude)
-      ) {
-        return;
-      }
-
-      switch (
-        button.dataset.mapAction
-      ) {
-        case "naver-route":
-          openNaverRoute(
-            latitude,
-            longitude,
-            stationName
-          );
-          break;
-
-        case "kakao-navi":
-          startKakaoNavi(
-            latitude,
-            longitude,
-            stationName
-          );
-          break;
-
-        case "naver-location":
-          openNaverLocation(
-            latitude,
-            longitude,
-            stationName
-          );
-          break;
-
-        case "kakao-location":
-          openKakaoLocation(
-            latitude,
-            longitude,
-            stationName
-          );
-          break;
-      }
-    }
-
     function isMobileEnvironment() {
       const userAgent =
         navigator.userAgent ||
@@ -7608,85 +7242,6 @@
           "카카오내비 실행에 실패했습니다. 휴대폰의 카카오내비 설치 상태와 브라우저 환경을 확인하세요."
         );
       }
-    }
-
-    function openNaverLocation(
-      latitude,
-      longitude,
-      stationName
-    ) {
-      const appName = encodeURIComponent(window.location.origin);
-      const appPath =
-        `map?lat=${latitude}&lng=${longitude}&zoom=18&appname=${appName}`;
-
-      const userAgent = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(userAgent);
-      const isIos =
-        /iPhone|iPad|iPod/i.test(userAgent) ||
-        (navigator.platform === "MacIntel" &&
-          Number(navigator.maxTouchPoints || 0) > 1);
-
-      if (isAndroid) {
-        window.location.href =
-          `intent://${appPath}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
-        return;
-      }
-
-      if (isIos) {
-        window.location.href = `nmap://${appPath}`;
-      }
-    }
-
-    function openKakaoLocation(
-      latitude,
-      longitude,
-      stationName
-    ) {
-      const name =
-        encodeURIComponent(
-          stationName ||
-          "주유소"
-        );
-      const appScheme =
-        `kakaomap://look?p=${latitude},${longitude}`;
-
-      const userAgent =
-        navigator.userAgent ||
-        "";
-      const isAndroid =
-        /Android/i.test(
-          userAgent
-        );
-      const isIos =
-        /iPhone|iPad|iPod/i.test(
-          userAgent
-        );
-
-      if (isAndroid || isIos) {
-        const startedAt =
-          Date.now();
-
-        window.location.href =
-          appScheme;
-
-        window.setTimeout(() => {
-          if (
-            Date.now() -
-              startedAt <
-              2200
-          ) {
-            window.location.href =
-              `https://map.kakao.com/link/map/${name},${latitude},${longitude}`;
-          }
-        }, 1500);
-        return;
-      }
-
-      window.open(
-        `https://map.kakao.com/link/map/${name},${latitude},${longitude}`,
-        "_blank",
-        "noopener,noreferrer"
-      );
     }
 
     /* ======================================================
@@ -7798,16 +7353,16 @@
         error.code
       ) {
         case 1:
-          return "위치 권한이 거부되었습니다. 브라우저의 위치 권한을 허용한 뒤 다시 시도하세요.";
+          return "위치 권한이 거부되었습니다. 설정에서 현재 위치를 다시 시도하거나 검색 위치를 입력하세요.";
 
         case 2:
-          return "현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도하세요.";
+          return "현재 위치를 확인할 수 없습니다. 설정에서 다시 시도하거나 다른 위치를 입력하세요.";
 
         case 3:
           return "위치 확인 시간이 초과되었습니다. 다시 시도하세요.";
 
         default:
-          return "현재 위치를 가져오지 못했습니다.";
+          return "현재 위치를 가져오지 못했습니다. 설정에서 다시 시도해 주세요.";
       }
     }
 
