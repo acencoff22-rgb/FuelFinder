@@ -2305,14 +2305,10 @@
       color: var(--warning);
     }
 
-    .meta-chip.price-date.stale {
+    .meta-chip.price-date.stale,
+    .meta-chip.price-date.unknown {
       background: #fff1f2;
       color: #be123c;
-    }
-
-    .meta-chip.price-date.unknown {
-      background: var(--surface-muted);
-      color: var(--text-soft);
     }
 
     .price-freshness-note {
@@ -2753,22 +2749,6 @@
 
               <option value="SOL">
                 S-OIL
-              </option>
-
-              <option value="RTE">
-                자영알뜰
-              </option>
-
-              <option value="RTX">
-                고속도로알뜰
-              </option>
-
-              <option value="NHO">
-                농협알뜰
-              </option>
-
-              <option value="ETC">
-                자가상표
               </option>
 
               <option value="__custom__">
@@ -3399,12 +3379,6 @@
       GSC: "GS칼텍스",
       HDO: "현대오일뱅크",
       SOL: "S-OIL",
-      RTE: "자영알뜰",
-      RTX: "고속도로알뜰",
-      NHO: "농협알뜰",
-      ETC: "자가상표",
-      E1G: "E1",
-      SKG: "SK가스",
     };
 
     function brandLabel(
@@ -5582,14 +5556,21 @@
         </details>
 
         <div class="map-buttons">
-          <a
-            class="map-button primary"
-            href="${naverUrl}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            네이버 지도
-          </a>
+          ${
+            naverUrl
+              ? `<a
+                  class="map-button primary"
+                  href="${naverUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-map-type="naver"
+                  data-latitude="${Number(station.latitude)}"
+                  data-longitude="${Number(station.longitude)}"
+                  data-station-name="${escapeHtml(station.name || "주유소")}"
+                  onclick="return openNaverMapLink(event, this)"
+                >네이버 지도 위치</a>`
+              : `<button class="map-button" type="button" disabled>네이버 지도 위치 없음</button>`
+          }
           ${
             kakaoUrl
               ? `<a
@@ -5597,7 +5578,7 @@
                   href="${kakaoUrl}"
                   target="_blank"
                   rel="noopener noreferrer"
-                >카카오맵</a>`
+                >카카오맵 위치</a>`
               : `<button class="map-button" type="button" disabled>카카오맵 위치 없음</button>`
           }
         </div>
@@ -5965,23 +5946,158 @@
        Maps
        ====================================================== */
 
+    function wgs84ToWebMercator(
+      latitude,
+      longitude
+    ) {
+      const earthRadius = 6378137;
+      const maxLatitude = 85.05112878;
+      const clampedLatitude = Math.max(
+        -maxLatitude,
+        Math.min(maxLatitude, latitude)
+      );
+      const x =
+        earthRadius *
+        (longitude * Math.PI / 180);
+      const y =
+        earthRadius *
+        Math.log(
+          Math.tan(
+            Math.PI / 4 +
+            (clampedLatitude * Math.PI / 180) / 2
+          )
+        );
+
+      return { x, y };
+    }
+
     function createNaverMapUrl(
       station
     ) {
-      const query =
-        [
-          station.name,
-          station.address,
-        ]
-          .filter(Boolean)
-          .join(" ");
+      const latitude = Number(station.latitude);
+      const longitude = Number(station.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        return null;
+      }
+
+      const name =
+        station.name ||
+        "주유소";
+      const query = encodeURIComponent(name);
+      const mercator = wgs84ToWebMercator(
+        latitude,
+        longitude
+      );
+
+      const center =
+        `${mercator.x},${mercator.y},18,0,0,0,dh`;
 
       return (
-        "https://map.naver.com/p/search/" +
-        encodeURIComponent(
-          query
-        )
+        `https://map.naver.com/p/search/${query}?c=${center}`
       );
+    }
+
+    function createNaverCoordinateAppUrl(
+      station
+    ) {
+      const latitude = Number(station.latitude);
+      const longitude = Number(station.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        return null;
+      }
+
+      const name = encodeURIComponent(
+        station.name || "주유소"
+      );
+      const appName = encodeURIComponent(
+        window.location.href
+      );
+
+      return (
+        `nmap://place?lat=${latitude}&lng=${longitude}&name=${name}&appname=${appName}`
+      );
+    }
+
+    function openNaverMapLink(
+      event,
+      anchor
+    ) {
+      const latitude = Number(
+        anchor?.dataset?.latitude
+      );
+      const longitude = Number(
+        anchor?.dataset?.longitude
+      );
+      const stationName =
+        anchor?.dataset?.stationName ||
+        "주유소";
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        return true;
+      }
+
+      const appName = encodeURIComponent(
+        window.location.href
+      );
+      const encodedName = encodeURIComponent(
+        stationName
+      );
+      const appPath =
+        `place?lat=${latitude}&lng=${longitude}&name=${encodedName}&appname=${appName}`;
+
+      const userAgent =
+        navigator.userAgent ||
+        "";
+      const isAndroid = /Android/i.test(
+        userAgent
+      );
+      const isIos = /iPhone|iPad|iPod/i.test(
+        userAgent
+      );
+
+      if (isAndroid) {
+        event.preventDefault();
+        window.location.href =
+          `intent://${appPath}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+        return false;
+      }
+
+      if (isIos) {
+        event.preventDefault();
+        const fallbackUrl =
+          createNaverMapUrl({
+            latitude,
+            longitude,
+            name: stationName,
+          });
+        const startedAt = Date.now();
+
+        window.location.href =
+          `nmap://${appPath}`;
+
+        window.setTimeout(() => {
+          if (Date.now() - startedAt < 2200) {
+            if (fallbackUrl) {
+              window.location.href = fallbackUrl;
+            }
+          }
+        }, 1500);
+
+        return false;
+      }
+
+      return true;
     }
 
     function createKakaoMapUrl(
