@@ -57,8 +57,8 @@ const host =
 
 const OPINET_MAX_RADIUS_METERS = 5000;
 const APP_MAX_RADIUS_METERS = 10000;
-const EXTENDED_SEARCH_CENTER_OFFSET_METERS = 8500;
-const EXTENDED_SEARCH_CENTER_COUNT = 6;
+const EXTENDED_SEARCH_CENTER_OFFSET_METERS = 8000;
+const EXTENDED_SEARCH_CENTER_COUNT = 7;
 
 const frontendOrigins =
   String(
@@ -576,10 +576,7 @@ async function handleGeocode(
   }
 }
 
-async function handleNearbyStations(
-  request,
-  response
-) {
+async function parseNearbyRequest(request) {
   const body =
     await readJsonBody(
       request
@@ -643,6 +640,57 @@ async function handleNearbyStations(
     liters,
     fuelEfficiency
   );
+
+  return {
+    latitude,
+    longitude,
+    radius,
+    productCode,
+    liters,
+    fuelEfficiency,
+    paymentOption,
+    discounts,
+  };
+}
+
+async function handleNearbyStations(
+  request,
+  response
+) {
+  /*
+   * 요청 값 검증 실패는 서버 오류(500)가 아니라 잘못된 요청(400)입니다.
+   */
+  let latitude;
+  let longitude;
+  let radius;
+  let productCode;
+  let liters;
+  let fuelEfficiency;
+  let paymentOption;
+  let discounts;
+
+  try {
+    ({
+      latitude,
+      longitude,
+      radius,
+      productCode,
+      liters,
+      fuelEfficiency,
+      paymentOption,
+      discounts,
+    } = await parseNearbyRequest(request));
+  } catch (error) {
+    sendJson(response, 400, {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "요청 값이 올바르지 않습니다.",
+    });
+
+    return;
+  }
 
   const nearbyCacheKey = JSON.stringify({
     latitude: Number(latitude.toFixed(5)),
@@ -801,6 +849,12 @@ async function handleNearbyStations(
   // 가격 기준일 표시를 위해 현재 가격이 낮은 후보도 일부 상세조회합니다.
   // 오피넷 일반 API 호출 한도를 고려하여 무제한으로 상세조회하지 않습니다.
   const priceDateTargets = stations
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(a.pricePerLiter) -
+        Number(b.pricePerLiter)
+    )
     .slice(0, PRICE_DATE_DETAIL_LIMIT)
     .map((station) => ({ station }));
 
@@ -999,6 +1053,8 @@ async function handleNearbyStations(
 
       stationCount:
         calculatedStations.length,
+
+      searchCoverage: data.extendedSearch || null,
 
       stations:
         calculatedStations,
@@ -1404,7 +1460,7 @@ function validateRadius(
 
 /**
  * 오피넷 반경 검색 API는 단일 요청당 최대 5km까지만 지원합니다.
- * 10km 선택 시 기준점 + 6개 주변 기준점을 각각 5km로 조회한 뒤
+ * 10km 선택 시 기준점 + 7개 주변 기준점을 각각 5km로 조회한 뒤
  * 주유소 ID를 합치고, 원래 기준점과의 실제 거리가 10km 이내인 결과만 남깁니다.
  */
 async function getNearbyStationsWithinRadius({
@@ -1445,8 +1501,8 @@ async function getNearbyStationsWithinRadius({
     });
   }
 
-  const responses =
-    await Promise.all(
+  const settledResponses =
+    await Promise.allSettled(
       centerQueries.map(
         ({ x: centerX, y: centerY }) =>
           getNearbyStations({
@@ -1458,6 +1514,23 @@ async function getNearbyStationsWithinRadius({
           })
       )
     );
+
+  const responses = settledResponses
+    .filter((item) => item.status === "fulfilled")
+    .map((item) => item.value);
+
+  const failedCount =
+    settledResponses.filter((item) => item.status === "rejected").length;
+
+  if (responses.length === 0) {
+    const firstFailure = settledResponses.find(
+      (item) => item.status === "rejected"
+    )?.reason;
+
+    throw firstFailure instanceof Error
+      ? firstFailure
+      : new Error("오피넷 10km 확장 검색에 실패했습니다.");
+  }
 
   const stationsById = new Map();
 
@@ -1531,6 +1604,12 @@ async function getNearbyStationsWithinRadius({
         ...stationsById.values(),
       ],
     },
+    extendedSearch: {
+      requestedCenterCount: centerQueries.length,
+      successfulCenterCount: responses.length,
+      failedCenterCount: failedCount,
+      partial: failedCount > 0,
+    },
   };
 }
 
@@ -1591,11 +1670,23 @@ async function handleStaticFile(
       "/index.html";
   }
 
-  const decodedPath =
-    decodeURIComponent(
-      requestPath
-        .split("?")[0]
-    );
+  let decodedPath;
+
+  try {
+    decodedPath =
+      decodeURIComponent(
+        requestPath
+          .split("?")[0]
+      );
+  } catch {
+    response.writeHead(400, {
+      "Content-Type": "text/plain; charset=utf-8",
+    });
+
+    response.end("잘못된 주소입니다.");
+
+    return;
+  }
 
   const filePath =
     path.join(

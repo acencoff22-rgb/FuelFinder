@@ -1836,42 +1836,6 @@
         #ffffff;
     }
 
-    .discount-fields {
-      display:
-        none;
-    }
-
-    .discount-fields.visible {
-      display:
-        block;
-    }
-
-    .setting-summary {
-      margin-top:
-        8px;
-
-      padding:
-        9px 10px;
-
-      border-radius:
-        9px;
-
-      background:
-        var(--surface-soft);
-
-      color:
-        var(--text-soft);
-
-      font-size:
-        9px;
-
-      font-weight:
-        800;
-
-      line-height:
-        1.45;
-    }
-
     .drawer-hint {
       margin-top:
         9px;
@@ -1924,10 +1888,6 @@
 
     body.desktop-blocked .mobile-only-guard {
       display: flex;
-    }
-
-    body.desktop-blocked .app-shell {
-      display: none;
     }
 
     .mobile-only-card {
@@ -2183,42 +2143,6 @@
 
     .results-section.active {
       display: block;
-    }
-
-    .search-first-hint {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      margin-top: 10px;
-      padding: 8px 9px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--surface-soft);
-      color: var(--text-muted);
-      font-size: 8px;
-      font-weight: 850;
-      white-space: nowrap;
-    }
-
-    .search-first-step {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--line-strong);
-      color: var(--text-soft);
-      font-size: 8px;
-      font-weight: 950;
-    }
-
-    .search-first-arrow {
-      color: var(--text-muted);
-      font-size: 9px;
-      font-weight: 950;
     }
 
     .location-status {
@@ -2545,6 +2469,34 @@
       display: none;
     }
 
+    .discount-form-error {
+      margin: 8px 0 0;
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .discount-form-error[hidden] {
+      display: none;
+    }
+
+    .selected-location-detail {
+      margin-top: 2px;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.4;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+
+    .selected-location-detail[hidden] {
+      display: none;
+    }
+
     .setting-field-checkbox {
       margin-bottom: 9px;
     }
@@ -2782,6 +2734,151 @@
       .pay-only-toggle {
         justify-content: center;
       }
+    }
+
+    /* ======================================================
+       FuelFinder v15 UI polish
+       ====================================================== */
+
+    .section-description {
+      font-size: 11px;
+    }
+
+    .address-input {
+      font-size: 14px;
+    }
+
+    .address-search-button {
+      font-size: 12px;
+    }
+
+    .current-location-button {
+      font-size: 11px;
+    }
+
+    .main-radius-label {
+      font-size: 10px;
+    }
+
+    .main-radius-setting .radius-option {
+      font-size: 11px;
+    }
+
+    .location-status {
+      font-size: 11px;
+    }
+
+    .location-provider-note {
+      font-size: 9px;
+    }
+
+    .recent-label {
+      font-size: 10px;
+    }
+
+    .recent-chip {
+      font-size: 10px;
+    }
+
+    .selected-location-label {
+      font-size: 9px;
+    }
+
+    .selected-location-text {
+      font-size: 12px;
+    }
+
+    .selected-location-detail {
+      font-size: 10px;
+    }
+
+    .results-subtitle {
+      font-size: 10px;
+    }
+
+    .results-count {
+      font-size: 11px;
+    }
+
+    .summary-label {
+      font-size: 9px;
+    }
+
+    .station-rank {
+      font-size: 10px;
+    }
+
+    .meta-chip {
+      font-size: 10px;
+    }
+
+    .effective-label {
+      font-size: 10px;
+    }
+
+    .effective-caption {
+      font-size: 9px;
+    }
+
+    .cost-label {
+      font-size: 9px;
+    }
+
+    .station-address {
+      font-size: 10px;
+    }
+
+    .gangneung-pay-description {
+      font-size: 9px;
+    }
+
+    .map-route-note {
+      font-size: 9px;
+    }
+
+    .map-button {
+      font-size: 11px;
+    }
+
+    .location-check summary {
+      font-size: 10px;
+    }
+
+    .price-freshness-note,
+    .decision-note {
+      font-size: 10px;
+    }
+
+    .result-insight {
+      font-size: 11px;
+    }
+
+    .recommendation-kicker {
+      font-size: 9px;
+    }
+
+    .recommendation-unit {
+      font-size: 10px;
+    }
+
+    .recommendation-breakdown-label {
+      font-size: 8px;
+    }
+
+    .recommendation-breakdown-value {
+      font-size: 11px;
+    }
+
+    .recommendation-reason {
+      font-size: 9px;
+    }
+
+    .footer {
+      font-size: 9px;
+    }
+
+    .search-status {
+      font-size: 11px;
     }
 
   </style>
@@ -3167,6 +3264,13 @@
 
           </div>
 
+          <p
+            id="discountFormError"
+            class="discount-form-error"
+            role="alert"
+            hidden
+          ></p>
+
           <div class="discount-form-actions">
 
             <button
@@ -3320,14 +3424,6 @@
 
         </div>
 
-        <div class="search-first-hint">
-          <span class="search-first-step">1</span> 위치 선택
-          <span class="search-first-arrow">→</span>
-          <span class="search-first-step">2</span> 반경 선택
-          <span class="search-first-arrow">→</span>
-          <span class="search-first-step">3</span> 실질비용 비교
-        </div>
-
         <p class="location-provider-note">
           주소·장소 검색은 OpenStreetMap 기반으로 제공됩니다.
         </p>
@@ -3352,6 +3448,12 @@
           <div
             id="selectedLocationText"
             class="selected-location-text"
+          ></div>
+
+          <div
+            id="selectedLocationDetail"
+            class="selected-location-detail"
+            hidden
           ></div>
 
         </div>
@@ -3407,7 +3509,7 @@
           <div class="summary-card">
 
             <span class="summary-label">
-              검색 주유소
+              표시 주유소
             </span>
 
             <span
@@ -3497,7 +3599,8 @@
 
     <footer class="footer">
       오피넷 가격을 기준으로 계산하며,
-      이동비는 차량 연비와 주유소까지의 거리를 기준으로 합니다.
+      이동비는 차량 연비와 주유소까지의 직선거리(왕복)를 기준으로 한 추정치이며,
+      실제 도로 거리와는 차이가 있을 수 있습니다.
     </footer>
 
   </div>
@@ -3542,6 +3645,10 @@
         "selectedLocationText"
       );
 
+    const selectedLocationDetail =
+      document.getElementById(
+        "selectedLocationDetail"
+      );
     const searchStatus =
       document.getElementById(
         "searchStatus"
@@ -3682,6 +3789,10 @@
         "discountBrandCustomInput"
       );
 
+    const discountFormError =
+      document.getElementById(
+        "discountFormError"
+      );
     const saveDiscountButton =
       document.getElementById(
         "saveDiscountButton"
@@ -3777,6 +3888,7 @@
 
     let kakaoNaviReady = false;
     let kakaoNaviError = "";
+    let radiusSearchTimer = null;
 
     const API_BASE_URL =
       String(
@@ -4304,11 +4416,25 @@
                 selectedRadius
               );
 
-            /*
-             * 반경은 오피넷 조회 범위 자체가 달라지므로
-             * 위치가 잡혀 있어도 자동 재조회하지 않습니다.
-             * 사용자가 다음 위치 검색을 수행하면 새 반경이 적용됩니다.
-             */
+            if (selectedLocationData) {
+              if (radiusSearchTimer) {
+                clearTimeout(radiusSearchTimer);
+              }
+
+              radiusSearchTimer = setTimeout(async () => {
+                radiusSearchTimer = null;
+
+                try {
+                  await searchStations(selectedLocationData);
+                } catch (error) {
+                  console.error(error);
+                  showSearchStatus(
+                    "error",
+                    error.message || "주유소 재검색에 실패했습니다."
+                  );
+                }
+              }, 250);
+            }
           }
         );
       }
@@ -4480,6 +4606,8 @@
     }
 
     function openDiscountForm() {
+      clearDiscountFormError();
+
       discountLabelInput.value =
         "";
 
@@ -4591,7 +4719,19 @@
       saveDiscountFromForm
     );
 
+    function showDiscountFormError(message) {
+      discountFormError.textContent = message;
+      discountFormError.hidden = false;
+    }
+
+    function clearDiscountFormError() {
+      discountFormError.textContent = "";
+      discountFormError.hidden = true;
+    }
+
     function saveDiscountFromForm() {
+      clearDiscountFormError();
+
       const label =
         discountLabelInput.value.trim().slice(
           0,
@@ -4613,8 +4753,7 @@
         ) ||
         value < 0
       ) {
-        showSearchStatus(
-          "error",
+        showDiscountFormError(
           "할인 값을 올바르게 입력하세요."
         );
 
@@ -4626,8 +4765,7 @@
           "percent" &&
         value > 100
       ) {
-        showSearchStatus(
-          "error",
+        showDiscountFormError(
           "할인율은 0~100% 사이로 입력하세요."
         );
 
@@ -4653,8 +4791,7 @@
           maxDiscount < 0
         )
       ) {
-        showSearchStatus(
-          "error",
+        showDiscountFormError(
           "최대 할인액을 올바르게 입력하세요."
         );
 
@@ -4680,8 +4817,7 @@
         if (
           !brandCode
         ) {
-          showSearchStatus(
-            "error",
+          showDiscountFormError(
             "브랜드 코드를 입력하세요."
           );
 
@@ -4799,131 +4935,90 @@
     );
 
     async function searchAddress() {
-      const query =
-        addressInput.value.trim();
+      const query = addressInput.value.trim();
 
       if (!query) {
-        setLocationStatus(
-          "error",
-          "주소나 장소명을 입력하세요."
-        );
-
+        setLocationStatus("error", "주소나 장소명을 입력하세요.");
         addressInput.focus();
-
         return;
       }
 
-      const requestId =
-        ++searchRequestId;
+      const requestId = ++searchRequestId;
 
-      addressSearchButton.disabled =
-        true;
+      addressSearchButton.disabled = true;
+      addressSearchButton.textContent = "검색 중";
 
-      addressSearchButton.textContent =
-        "검색 중";
-
-      setLocationStatus(
-        "",
-        "입력한 위치를 확인하는 중입니다."
-      );
-
+      setLocationStatus("", "입력한 위치를 확인하는 중입니다.");
       showSearchStatus(
         "loading",
-        `
-          <div class="loading-row">
-            <span class="spinner"></span>
-            <span>
-              위치를 찾은 뒤 주변 주유소를 자동으로 검색합니다.
-            </span>
-          </div>
-        `
+        `<div class="loading-row"><span class="spinner"></span><span>위치를 찾은 뒤 주변 주유소를 자동으로 검색합니다.</span></div>`
       );
 
-      try {
-        const result =
-          await geocodeAddress(
-            query
-          );
+      /*
+       * 1단계: 주소 → 좌표.
+       * 여기서 실패한 경우에만 "위치 미설정" 상태로 돌립니다.
+       * (예전에는 2단계인 주유소 검색이 실패해도 위치를 지워 버렸습니다.)
+       */
+      let result = null;
 
-        if (
-          requestId !==
-          searchRequestId
-        ) {
+      try {
+        result = await geocodeAddress(query);
+
+        if (requestId !== searchRequestId) {
           return;
         }
 
-        if (
-          !result
-        ) {
+        if (!result) {
           throw new Error(
             "위치를 찾지 못했습니다. 주소를 더 구체적으로 입력해 주세요."
           );
         }
+      } catch (error) {
+        console.error(error);
 
+        if (requestId === searchRequestId) {
+          selectedLocationData = null;
+          selectedLocation.classList.remove("visible");
+          setLocationStatus(
+            "error",
+            error.message || "주소 검색에 실패했습니다."
+          );
+          showSearchStatus(
+            "error",
+            error.message || "주소 검색에 실패했습니다."
+          );
+        }
+
+        addressSearchButton.disabled = false;
+        addressSearchButton.textContent = "검색";
+        return;
+      }
+
+      /*
+       * 2단계: 좌표 → 주변 주유소.
+       * 버튼은 어떤 결과든 반드시 원래 상태로 되돌립니다.
+       * (searchStations가 searchRequestId를 다시 올리므로
+       *  예전의 requestId 비교로는 버튼이 "검색 중"에 영영 멈췄습니다.)
+       */
+      try {
         selectedLocationData = {
-          latitude:
-            result.latitude,
-
-          longitude:
-            result.longitude,
-
-          label:
-            result.label ||
-            query,
+          latitude: result.latitude,
+          longitude: result.longitude,
+          label: query,
+          detail: result.label && result.label !== query ? result.label : "",
         };
 
-        saveRecentLocation(
-          selectedLocationData
-        );
+        saveRecentLocation(selectedLocationData);
+        showSelectedLocation(selectedLocationData.label, selectedLocationData.detail);
+        setLocationStatus("success", "출발 위치가 설정되었습니다.");
 
-        showSelectedLocation(
-          selectedLocationData.label
-        );
-
-        setLocationStatus(
-          "success",
-          "출발 위치가 설정되었습니다."
-        );
-
-        await searchStations(
-          selectedLocationData
-        );
-      } catch (
-        error
-      ) {
-        console.error(
-          error
-        );
-
-        selectedLocationData =
-          null;
-
-        selectedLocation.classList.remove(
-          "visible"
-        );
-
-        setLocationStatus(
-          "error",
-          error.message ||
-            "주소 검색에 실패했습니다."
-        );
-
-        showSearchStatus(
-          "error",
-          error.message ||
-            "주소 검색에 실패했습니다."
-        );
+        await searchStations(selectedLocationData);
+      } catch (error) {
+        console.error(error);
+        showSearchStatus("error", error.message || "주유소 검색에 실패했습니다.");
       } finally {
-        if (
-          requestId ===
-          searchRequestId
-        ) {
-          addressSearchButton.disabled =
-            false;
-
-          addressSearchButton.textContent =
-            "검색";
-        }
+        addressSearchButton.disabled = false;
+        addressSearchButton.textContent = "검색";
       }
     }
 
@@ -5275,6 +5370,25 @@
 
       saveSettings();
 
+      /*
+       * Render 무료 서버는 잠들어 있으면 첫 응답에 30~60초가 걸립니다.
+       * 6초가 넘으면 이유를 알려주고, 75초가 넘으면 무한 대기 대신 실패로 처리합니다.
+       */
+      const fetchController = new AbortController();
+      const slowHintTimer = setTimeout(() => {
+        if (requestId === searchRequestId) {
+          showSearchStatus(
+            "loading",
+            `<div class="loading-row"><span class="spinner"></span><span>서버가 깨어나는 중입니다. 처음 한 번은 최대 1분 정도 걸릴 수 있어요.</span></div>`
+          );
+        }
+      }, 6000);
+      const abortTimer = setTimeout(() => fetchController.abort(), 75000);
+      const clearSearchTimers = () => {
+        clearTimeout(slowHintTimer);
+        clearTimeout(abortTimer);
+      };
+
       try {
         const response =
           await fetch(
@@ -5282,6 +5396,9 @@
             {
               method:
                 "POST",
+
+              signal:
+                fetchController.signal,
 
               headers: {
                 "Content-Type":
@@ -5309,6 +5426,8 @@
                 }),
             }
           );
+
+        clearSearchTimers();
 
         let data;
 
@@ -5377,19 +5496,36 @@
           return;
         }
 
-        resultsCount.textContent =
-          `${getVisibleStations(stations).length}곳${payOnly ? " · 강릉페이" : ""}`;
+        const visibleCount =
+          getVisibleStations(stations).length;
 
-        showSearchStatus(
-          "success",
-          `${stations.length}개의 주유소를 실질가격순으로 계산했습니다.`
-        );
+        resultsCount.textContent =
+          `${visibleCount}곳${payOnly ? " · 강릉페이" : ""}`;
+
+        if (visibleCount === 0) {
+          showSearchStatus(
+            "success",
+            `${stations.length}곳을 확인했지만 현재 필터 조건에서는 표시할 주유소가 없습니다.`
+          );
+        } else if (visibleCount < stations.length) {
+          showSearchStatus(
+            "success",
+            `${stations.length}곳을 확인했고 ${visibleCount}곳을 표시합니다.`
+          );
+        } else {
+          showSearchStatus(
+            "success",
+            `${visibleCount}개의 주유소를 계산했습니다.`
+          );
+        }
       } catch (
         error
       ) {
         console.error(
           error
         );
+
+        clearSearchTimers();
 
         if (
           requestId !==
@@ -5409,7 +5545,9 @@
 
         showSearchStatus(
           "error",
-          `검색 실패: ${error.message}`
+          error?.name === "AbortError"
+            ? "서버 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요."
+            : `검색 실패: ${error.message}`
         );
 
         stationList.innerHTML =
@@ -5437,38 +5575,30 @@
        Cached recalculation
        ====================================================== */
 
-    function rerenderFromCache() {
-      if (
-        !Array.isArray(
-          lastStations
-        ) ||
-        lastStations.length ===
-          0
-      ) {
+    /*
+     * 저장된 원본 값(가격·거리·강릉페이 매칭)으로 현재 설정을 다시 계산해 그립니다.
+     * 계산 결과를 lastStations에 되돌려 저장하므로
+     * 이후 정렬·필터를 바꿔도 새 설정이 유지됩니다.
+     */
+    function refreshResults() {
+      if (!Array.isArray(lastStations) || lastStations.length === 0) {
         return;
       }
 
-      const recalculated =
-        recalculateStations(
-          lastStations
-        );
+      lastStations = recalculateStations(lastStations);
 
-      renderStations(
-        recalculated
-      );
+      renderStations(lastStations);
+      updateResultSummary(lastStations, selectedRadius);
+    }
 
-      updateResultSummary(
-        recalculated,
-        selectedRadius
-      );
+    function rerenderFromCache() {
+      if (!Array.isArray(lastStations) || lastStations.length === 0) {
+        return;
+      }
 
-      resultsCount.textContent =
-        `${getVisibleStations(recalculated).length}곳${payOnly ? " · 강릉페이" : ""}`;
+      refreshResults();
 
-      showSearchStatus(
-        "success",
-        "저장된 주유소 정보를 새 설정으로 다시 계산했습니다."
-      );
+      showSearchStatus("success", "설정을 반영해 다시 계산했습니다.");
     }
 
     function recalculateStations(
@@ -5603,8 +5733,11 @@
           ? stations
           : [];
 
+      const visible =
+        getVisibleStations(list);
+
       const payCount =
-        list.filter(
+        visible.filter(
           (station) =>
             station.gangneungPay
               ?.status ===
@@ -5613,7 +5746,7 @@
 
       summaryStationCount.textContent =
         formatNumber(
-          list.length
+          visible.length
         );
 
       summaryPayCount.textContent =
@@ -5812,7 +5945,8 @@
             createStationHtml(
               station,
               index,
-              bestEffective
+              bestEffective,
+              bestEffectiveStation
             );
 
           stationList.appendChild(item);
@@ -5853,6 +5987,16 @@
             )
           : 0;
 
+      const totalComparison =
+        priceBest &&
+        priceBest !== bestStation &&
+        Number.isFinite(Number(priceBest.totalCost))
+          ? Math.max(
+              0,
+              Math.round(Number(priceBest.totalCost) - totalCost)
+            )
+          : 0;
+
       let reason =
         "주유가격과 왕복 이동비";
 
@@ -5865,11 +6009,17 @@
       if (comparison > 0) {
         reason += ` 주유가격만 보면 더 싼 곳보다 실질가격이 ${formatWon(
           comparison
-        )}원/L 낮습니다.`;
+        )}원/L 낮고`;
+
+        if (totalComparison > 0) {
+          reason += ` 총 부담액도 ${formatWon(totalComparison)}원 적습니다.`;
+        } else {
+          reason += " 실제 부담액 기준으로 유리합니다.";
+        }
       }
 
       resultRecommendation.innerHTML = `
-        <div class="recommendation-kicker">이번 검색의 실질비용 추천</div>
+        <div class="recommendation-kicker">실질비용 최저</div>
         <div class="recommendation-name">${escapeHtml(
           bestStation.name || "주유소"
         )}</div>
@@ -5975,7 +6125,8 @@
     function createStationHtml(
       station,
       index,
-      bestEffective
+      bestEffective,
+      bestEffectiveStation
     ) {
       const distanceKm =
         Number(station.distanceKm);
@@ -5999,10 +6150,13 @@
           ? `${distanceKm.toFixed(2)}km`
           : "거리 정보 없음";
 
+      /* 정렬 기준이 실질비용순일 때만 "N위"로 표기합니다. 거리순/가격순에서 "2위"는 오해를 부릅니다. */
       const rankText =
         station === bestEffectiveStation
           ? "실질 추천"
-          : `${index + 1}위`;
+          : currentSort === "effective"
+            ? `${index + 1}위`
+            : `${index + 1}번째`;
 
       const latitude =
         Number(station.latitude);
@@ -6135,7 +6289,7 @@
         </details>
 
         <div class="map-route-note">
-          오피넷 좌표를 그대로 목적지로 사용합니다.
+          오피넷 좌표를 목적지로 바로 전달합니다.
         </div>
 
         <div
@@ -6485,6 +6639,7 @@
 
       const normalized = {
         label: String(location.label).trim(),
+        detail: String(location.detail || "").trim(),
         latitude: Number(location.latitude),
         longitude: Number(location.longitude),
       };
@@ -6550,11 +6705,15 @@
             latitude,
             longitude,
             label: item.label || "최근 위치",
+            detail: item.detail || "",
           };
           addressInput.value = item.label || "";
-          showSelectedLocation(selectedLocationData.label);
+          showSelectedLocation(selectedLocationData.label, selectedLocationData.detail);
           setLocationStatus("success", "최근 검색 위치를 사용합니다.");
-          searchStations(selectedLocationData);
+          searchStations(selectedLocationData).catch((error) => {
+            console.error(error);
+            showSearchStatus("error", error.message || "주유소 검색에 실패했습니다.");
+          });
         });
         recentLocationList.appendChild(button);
       });
@@ -6617,7 +6776,7 @@
         }
 
         if (hasSearched && lastStations.length > 0) {
-          renderResults();
+          refreshResults();
         }
       } catch (error) {
         console.error(
@@ -6886,8 +7045,12 @@
         );
       }
 
-      searchStatus.innerHTML =
-        message;
+      /* 로딩 표시(스피너)만 HTML이고, 나머지는 서버·외부에서 온 문자열일 수 있어 텍스트로 넣습니다. */
+      if (type === "loading") {
+        searchStatus.innerHTML = message;
+      } else {
+        searchStatus.textContent = message;
+      }
     }
 
     function setLocationStatus(
@@ -6915,10 +7078,17 @@
     }
 
     function showSelectedLocation(
-      label
+      label,
+      detail
     ) {
       selectedLocationText.textContent =
         label || "";
+
+      selectedLocationDetail.textContent =
+        detail || "";
+
+      selectedLocationDetail.hidden =
+        !detail;
 
       selectedLocation.classList.add(
         "visible"
