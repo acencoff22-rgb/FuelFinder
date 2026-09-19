@@ -478,6 +478,43 @@ async function reverseGeocodeWithKakao(latitude, longitude) {
   return document ? normalizeKakaoAddressResult(document, "현재 위치") : null;
 }
 
+function normalizeKakaoRegionResult(document, fallbackLabel = "현재 위치") {
+  const latitude = Number(document?.y);
+  const longitude = Number(document?.x);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const city = String(document?.region_1depth_name || "").trim();
+  const district = String(document?.region_2depth_name || "").trim();
+  const dong = String(document?.region_3depth_name || "").trim();
+  const ri = String(document?.region_4depth_name || "").trim();
+
+  const shortLabel = dong || ri || district || city || fallbackLabel;
+  const fullRegion = [city, district, dong || ri].filter(Boolean).join(" ");
+
+  return {
+    latitude,
+    longitude,
+    label: shortLabel,
+    detail: fullRegion || String(document?.address_name || "").trim(),
+    source: "kakao-region",
+  };
+}
+
+async function reverseGeocodeRegionWithKakao(latitude, longitude) {
+  const data = await fetchKakaoRestJson("/v2/local/geo/coord2regioncode.json", {
+    x: longitude,
+    y: latitude,
+    input_coord: "WGS84",
+  });
+
+  const documents = Array.isArray(data?.documents) ? data.documents : [];
+  const administrative = documents.find((document) => document?.region_type === "H");
+  const legal = documents.find((document) => document?.region_type === "B");
+  return normalizeKakaoRegionResult(administrative || legal, "현재 위치");
+}
+
 function handlePublicConfig(
   _request,
   response
@@ -527,6 +564,14 @@ async function handleReverseGeocode(request, response) {
     }
 
     if (!result) {
+      try {
+        result = await reverseGeocodeRegionWithKakao(latitude, longitude);
+      } catch (error) {
+        console.warn(`[카카오 행정구역 역지오코딩 실패] ${error.message}`);
+      }
+    }
+
+    if (!result) {
       const url = new URL("https://nominatim.openstreetmap.org/reverse");
       url.searchParams.set("lat", String(latitude));
       url.searchParams.set("lon", String(longitude));
@@ -534,6 +579,7 @@ async function handleReverseGeocode(request, response) {
       url.searchParams.set("zoom", "18");
       url.searchParams.set("addressdetails", "1");
       url.searchParams.set("accept-language", "ko");
+      url.searchParams.set("layer", "address");
 
       const elapsed = Date.now() - lastGeocodeRequestAt;
       if (elapsed < GEOCODE_MIN_INTERVAL_MS) {
@@ -544,7 +590,7 @@ async function handleReverseGeocode(request, response) {
       const externalResponse = await fetch(url, {
         headers: {
           Accept: "application/json",
-          "User-Agent": "FuelFinder/1.0",
+          "User-Agent": "FuelFinder/1.0 (address lookup)",
         },
         signal: AbortSignal.timeout(8000),
       });
@@ -554,14 +600,35 @@ async function handleReverseGeocode(request, response) {
         const address = data?.address || {};
         const road = String(address.road || "").trim();
         const house = String(address.house_number || "").trim();
-        const dong = String(address.suburb || address.city_district || address.neighbourhood || "").trim();
-        result = {
-          latitude,
-          longitude,
-          label: road ? `${road}${house ? ` ${house}` : ""}` : (dong || data?.display_name || "현재 위치"),
-          detail: dong && road ? dong : String(data?.display_name || "").trim(),
-          source: "nominatim",
-        };
+        const localArea = String(
+          address.suburb ||
+          address.city_district ||
+          address.neighbourhood ||
+          address.village ||
+          address.town ||
+          address.municipality ||
+          address.county ||
+          address.city ||
+          ""
+        ).trim();
+        const state = String(address.state || "").trim();
+        const displayName = String(data?.display_name || "").trim();
+
+        if (road || house || localArea || displayName) {
+          result = {
+            latitude,
+            longitude,
+            label: road
+              ? `${road}${house ? ` ${house}` : ""}`
+              : (localArea || displayName || "현재 위치"),
+            detail: localArea && road
+              ? localArea
+              : (displayName || [state, localArea].filter(Boolean).join(" ")),
+            source: "nominatim",
+          };
+        }
+      } else {
+        console.warn(`[Nominatim 역지오코딩 실패] HTTP ${externalResponse.status}`);
       }
     }
 
