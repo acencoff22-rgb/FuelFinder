@@ -12,6 +12,8 @@ services:
         sync: false
       - key: KAKAO_JAVASCRIPT_KEY
         sync: false
+      - key: KAKAO_REST_API_KEY
+        sync: false
       - key: FRONTEND_ORIGINS
         value: https://fuelfinder-web.onrender.com
 

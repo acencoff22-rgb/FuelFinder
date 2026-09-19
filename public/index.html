@@ -3427,6 +3427,27 @@
     .results-title { margin: 0; font-size: 22px !important; line-height: 1.2; letter-spacing: -0.03em; }
     .results-count-inline { color: #687180; font-size: 13px; font-weight: 700; white-space: nowrap; }
     .results-heading-control { flex: 0 0 auto; }
+
+    .address-search-button {
+      width: 46px;
+      min-width: 46px;
+      height: 46px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .address-search-icon { width: 21px; height: 21px; }
+    .address-search-button:disabled { opacity: .55; cursor: default; }
+    .address-search-button[aria-busy="true"] .address-search-icon { animation: ff-search-spin .7s linear infinite; }
+    @keyframes ff-search-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .result-location-summary {
+      margin-top: 4px;
+      color: #5f6975;
+      font-size: 13px;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
     .result-sort { min-width: 118px; min-height: 42px; padding: 0 11px; border-radius: 11px; font-size: 14px; font-weight: 700; }
     .results-subtitle, .result-summary, .result-tools, .result-insight { display: none !important; }
 
@@ -3571,23 +3592,16 @@
             id="addressSearchButton"
             class="address-search-button"
             type="button"
+            aria-label="주소·장소 검색"
+            title="검색"
           >
-            검색
+            <svg class="address-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10.8 4.8a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm-7.8 6a7.8 7.8 0 1 1 14.36 4.33l3.65 3.65-1.27 1.27-3.65-3.65A7.8 7.8 0 0 1 3 10.8Z" fill="currentColor"/>
+            </svg>
           </button>
 
         </div>
 
-        <div class="location-secondary-actions">
-
-          <button
-            id="currentLocationButton"
-            class="current-location-button"
-            type="button"
-          >
-            ◎ 현재 위치 사용
-          </button>
-
-        </div>
 
 
         <div
@@ -3598,13 +3612,13 @@
           <span class="location-status-dot"></span>
 
           <span>
-            주소를 검색하거나 현재 위치를 사용할 수 있습니다.
+            다른 위치가 필요할 때만 주소나 장소를 검색하세요.
           </span>
 
         </div>
 
         <p class="location-provider-note">
-          주소·장소 검색은 OpenStreetMap 기반으로 제공됩니다.
+          주소·장소 검색은 카카오 주소 검색을 우선 사용하며, 결과가 없을 때 OpenStreetMap을 보조로 사용합니다.
         </p>
 
         <div
@@ -4118,6 +4132,7 @@
               <h2 class="results-title">주변 주유소</h2>
               <span id="resultsCount" class="results-count-inline">검색 전</span>
             </div>
+            <div id="resultLocationSummary" class="result-location-summary">현재 위치를 확인하는 중…</div>
           </div>
 
           <div class="results-heading-control">
@@ -4208,11 +4223,6 @@
         "addressSearchButton"
       );
 
-    const currentLocationButton =
-      document.getElementById(
-        "currentLocationButton"
-      );
-
     const locationStatus =
       document.getElementById(
         "locationStatus"
@@ -4245,6 +4255,11 @@
     const resultsCount =
       document.getElementById(
         "resultsCount"
+      );
+
+    const resultLocationSummary =
+      document.getElementById(
+        "resultLocationSummary"
       );
 
     const settingsButton =
@@ -5580,7 +5595,7 @@
       const requestId = ++searchRequestId;
 
       addressSearchButton.disabled = true;
-      addressSearchButton.textContent = "검색 중";
+      addressSearchButton.setAttribute("aria-busy", "true");
 
       setLocationStatus("", "입력한 위치를 확인하는 중입니다.");
       showSearchStatus(
@@ -5624,7 +5639,7 @@
         }
 
         addressSearchButton.disabled = false;
-        addressSearchButton.textContent = "검색";
+        addressSearchButton.removeAttribute("aria-busy");
         return;
       }
 
@@ -5652,7 +5667,7 @@
         showSearchStatus("error", error.message || "주유소 검색에 실패했습니다.");
       } finally {
         addressSearchButton.disabled = false;
-        addressSearchButton.textContent = "검색";
+        addressSearchButton.removeAttribute("aria-busy");
       }
     }
 
@@ -5742,38 +5757,55 @@
     }
 
     /* ======================================================
+       Reverse geocoding
+       ====================================================== */
+
+    async function reverseGeocodeLocation(latitude, longitude) {
+      const response = await fetch(
+        apiUrl(
+          `/api/reverse-geocode?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`
+        ),
+        {
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      if (!data?.success || !data.result) {
+        return null;
+      }
+
+      return data.result;
+    }
+
+    /* ======================================================
        Current location
        ====================================================== */
 
-    currentLocationButton.addEventListener(
-      "click",
-      useCurrentLocation
-    );
-
-    function useCurrentLocation() {
-      if (
-        !navigator.geolocation
-      ) {
+    async function useCurrentLocation() {
+      if (!navigator.geolocation) {
         setLocationStatus(
           "error",
-          "이 브라우저에서는 현재 위치를 사용할 수 없습니다."
+          "이 브라우저에서는 현재 위치를 사용할 수 없습니다. 설정에서 주소를 검색하세요."
         );
-
         return;
       }
 
       ++searchRequestId;
 
-      currentLocationButton.disabled =
-        true;
-
-      currentLocationButton.textContent =
-        "위치 확인 중";
-
       setLocationStatus(
         "",
         "현재 위치를 확인하는 중입니다."
       );
+
+      if (resultLocationSummary) {
+        resultLocationSummary.textContent =
+          "현재 위치를 확인하는 중…";
+      }
 
       showSearchStatus(
         "loading",
@@ -5788,102 +5820,101 @@
       );
 
       navigator.geolocation.getCurrentPosition(
-        async (
-          position
-        ) => {
+        async (position) => {
           try {
-            const latitude =
-              position.coords
-                .latitude;
-
-            const longitude =
-              position.coords
-                .longitude;
-
-            const accuracy =
-              position.coords
-                .accuracy;
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
             selectedLocationData = {
               latitude,
-
               longitude,
-
-              label:
-                "현재 위치",
+              label: "현재 위치",
+              detail: "",
             };
 
-            addressInput.value =
-              "현재 위치";
+            // 현재 위치를 검색창에 넣지 않습니다. 입력칸은 항상 비워 둡니다.
+            addressInput.value = "";
 
             showSelectedLocation(
-              "현재 위치"
+              "현재 위치",
+              "자동 검색된 현재 위치"
             );
 
-            setLocationStatus(
-              "success",
-              `현재 위치 확인 완료 · 정확도 약 ${Math.round(
-                accuracy
-              )}m`
-            );
+            if (resultLocationSummary) {
+              resultLocationSummary.textContent = "현재 위치: 주소 확인 중…";
+            }
 
-            await searchStations(
-              selectedLocationData
-            );
-          } catch (
-            error
-          ) {
-            console.error(
-              error
-            );
+            // 주소 표시와 주유소 검색은 서로 독립적으로 진행합니다.
+            const reversePromise = reverseGeocodeLocation(latitude, longitude);
+            const searchPromise = searchStations(selectedLocationData);
 
+            const [reverseResult, searchResult] = await Promise.allSettled([
+              reversePromise,
+              searchPromise,
+            ]);
+
+            if (reverseResult.status === "fulfilled" && reverseResult.value) {
+              const readable = reverseResult.value;
+              selectedLocationData.label = readable.label || "현재 위치";
+              selectedLocationData.detail = readable.detail || "";
+
+              showSelectedLocation(
+                `현재 위치 · ${readable.label || "주소 확인"}`,
+                readable.detail || ""
+              );
+
+              setLocationStatus(
+                "success",
+                `현재 위치: ${readable.label || "주소 확인"}`
+              );
+
+              if (resultLocationSummary) {
+                resultLocationSummary.textContent =
+                  `현재 위치: ${readable.label || "주소 확인"}`;
+              }
+            } else {
+              setLocationStatus(
+                "success",
+                "현재 위치: 주소를 확인하지 못했습니다."
+              );
+
+              if (resultLocationSummary) {
+                resultLocationSummary.textContent = "현재 위치: 주소를 확인하지 못했습니다.";
+              }
+            }
+
+            if (searchResult.status === "rejected") {
+              throw searchResult.reason;
+            }
+          } catch (error) {
+            console.error(error);
             showSearchStatus(
               "error",
-              error.message ||
-                "주유소 검색에 실패했습니다."
+              error.message || "주유소 검색에 실패했습니다."
             );
-          } finally {
-            currentLocationButton.disabled =
-              false;
-
-            currentLocationButton.textContent =
-              "현재 위치 다시 사용";
           }
         },
-
         (error) => {
-          console.error(
-            error
-          );
+          console.error(error);
 
           setLocationStatus(
             "error",
-            getGeolocationErrorMessage(
-              error
-            )
+            getGeolocationErrorMessage(error)
           );
+
+          if (resultLocationSummary) {
+            resultLocationSummary.textContent = "현재 위치를 확인하지 못했습니다.";
+          }
 
           showSearchStatus(
             "error",
-            "현재 위치를 확인하지 못했습니다."
+            "현재 위치를 확인하지 못했습니다. 설정에서 다른 위치를 검색할 수 있습니다."
           );
-
-          currentLocationButton.disabled =
-            false;
-
-          currentLocationButton.textContent =
-            "현재 위치 사용";
         },
-
         {
-          enableHighAccuracy:
-            true,
-
-          timeout:
-            15000,
-
-          maximumAge:
-            60000,
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000,
         }
       );
     }
@@ -6966,7 +6997,7 @@
             label: item.label || "최근 위치",
             detail: item.detail || "",
           };
-          addressInput.value = item.label || "";
+          addressInput.value = "";
           showSelectedLocation(selectedLocationData.label, selectedLocationData.detail);
           setLocationStatus("success", "최근 검색 위치를 사용합니다.");
           searchStations(selectedLocationData).catch((error) => {
@@ -7305,6 +7336,16 @@
       selectedLocationText.textContent =
         label || "";
 
+      if (resultLocationSummary && label) {
+        const mainLabel = String(label).startsWith("현재 위치 · ")
+          ? String(label).slice("현재 위치 · ".length)
+          : String(label);
+        resultLocationSummary.textContent =
+          String(label).startsWith("현재 위치")
+            ? `현재 위치: ${mainLabel || "주소 확인"}`
+            : `검색 위치: ${mainLabel}`;
+      }
+
       selectedLocationDetail.textContent =
         detail || "";
 
@@ -7356,16 +7397,16 @@
         error.code
       ) {
         case 1:
-          return "위치 권한이 거부되었습니다. 설정에서 현재 위치를 다시 시도하거나 검색 위치를 입력하세요.";
+          return "위치 권한이 거부되었습니다. 새로고침하거나 설정에서 검색 위치를 입력하세요.";
 
         case 2:
-          return "현재 위치를 확인할 수 없습니다. 설정에서 다시 시도하거나 다른 위치를 입력하세요.";
+          return "현재 위치를 확인할 수 없습니다. 새로고침하거나 설정에서 검색 위치를 입력하세요.";
 
         case 3:
           return "위치 확인 시간이 초과되었습니다. 다시 시도하세요.";
 
         default:
-          return "현재 위치를 가져오지 못했습니다. 설정에서 다시 시도해 주세요.";
+          return "현재 위치를 가져오지 못했습니다. 새로고침하거나 설정에서 검색 위치를 입력해 주세요.";
       }
     }
 

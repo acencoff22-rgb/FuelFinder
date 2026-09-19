@@ -84,3 +84,8 @@ Render가 다른 URL을 부여하면 실제 URL을 사용합니다.
 `https://fuelfinder-ejo2.onrender.com`
 
 으로 설정되어 있습니다. API 주소를 변경하면 이 파일도 수정해야 합니다.
+
+
+### 추가 환경변수
+
+Render API Web Service에 `KAKAO_REST_API_KEY`를 등록하세요. 카카오디벨로퍼스 FuelFinder 앱의 REST API 키를 사용합니다. 이 키는 브라우저가 아니라 서버 환경변수에만 넣습니다.

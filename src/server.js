@@ -173,6 +173,18 @@ const server =
 
         if (
           request.method === "GET" &&
+          request.url.startsWith("/api/reverse-geocode")
+        ) {
+          await handleReverseGeocode(
+            request,
+            response
+          );
+
+          return;
+        }
+
+        if (
+          request.method === "GET" &&
           request.url === "/api/config"
         ) {
           handlePublicConfig(
@@ -311,6 +323,114 @@ function applyCorsHeaders(
   );
 }
 
+async function fetchKakaoRestJson(pathname, params) {
+  const key = String(process.env.KAKAO_REST_API_KEY || "").trim();
+  if (!key) {
+    return null;
+  }
+
+  const url = new URL(`https://dapi.kakao.com${pathname}`);
+  for (const [name, value] of Object.entries(params || {})) {
+    if (value !== undefined && value !== null && String(value) !== "") {
+      url.searchParams.set(name, String(value));
+    }
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `KakaoAK ${key}`,
+    },
+    signal: AbortSignal.timeout(8000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Kakao REST API HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+function normalizeKakaoAddressResult(document, fallbackLabel = "주소") {
+  const latitude = Number(document?.y);
+  const longitude = Number(document?.x);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  const road = String(document?.road_address?.address_name || "").trim();
+  const jibun = String(document?.address?.address_name || "").trim();
+  const label = road || jibun || String(document?.address_name || fallbackLabel).trim();
+  const detail = [road && jibun && road !== jibun ? jibun : "", String(document?.address?.zone_no || document?.road_address?.zone_no || "").trim()]
+    .filter(Boolean)
+    .join(" · ");
+
+  return { latitude, longitude, label, detail, source: "kakao" };
+}
+
+async function geocodeWithKakao(query) {
+  const addressData = await fetchKakaoRestJson("/v2/local/search/address.json", {
+    query,
+    size: 5,
+  });
+
+  const addressDocuments = Array.isArray(addressData?.documents)
+    ? addressData.documents
+    : [];
+
+  const addressResults = addressDocuments
+    .map((document) => normalizeKakaoAddressResult(document, query))
+    .filter(Boolean);
+
+  if (addressResults.length > 0) {
+    return addressResults;
+  }
+
+  // 주소가 아니라 역/시설/장소명을 입력한 경우에도 검색되도록
+  // Kakao Local 키워드 검색을 이어서 시도합니다.
+  const keywordData = await fetchKakaoRestJson("/v2/local/search/keyword.json", {
+    query,
+    size: 5,
+  });
+
+  const keywordDocuments = Array.isArray(keywordData?.documents)
+    ? keywordData.documents
+    : [];
+
+  return keywordDocuments
+    .map((document) => {
+      const latitude = Number(document?.y);
+      const longitude = Number(document?.x);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+      }
+
+      const placeName = String(document?.place_name || query).trim();
+      const road = String(document?.road_address_name || "").trim();
+      const jibun = String(document?.address_name || "").trim();
+
+      return {
+        latitude,
+        longitude,
+        label: placeName,
+        detail: road || jibun,
+        source: "kakao",
+      };
+    })
+    .filter(Boolean);
+}
+
+async function reverseGeocodeWithKakao(latitude, longitude) {
+  const data = await fetchKakaoRestJson("/v2/local/geo/coord2address.json", {
+    x: longitude,
+    y: latitude,
+    input_coord: "WGS84",
+  });
+
+  const document = Array.isArray(data?.documents) ? data.documents[0] : null;
+  return document ? normalizeKakaoAddressResult(document, "현재 위치") : null;
+}
+
 function handlePublicConfig(
   _request,
   response
@@ -329,260 +449,227 @@ function handlePublicConfig(
   );
 }
 
-async function handleGeocode(
-  request,
-  response
-) {
-  const requestUrl =
-    new URL(
-      request.url,
-      `http://${request.headers.host || "localhost"}`
-    );
+async function handleReverseGeocode(request, response) {
+  const requestUrl = new URL(
+    request.url,
+    `http://${request.headers.host || "localhost"}`
+  );
 
-  const query =
-    String(
-      requestUrl.searchParams.get("q") ||
-      ""
-    ).trim();
+  const latitude = Number(requestUrl.searchParams.get("lat"));
+  const longitude = Number(requestUrl.searchParams.get("lon"));
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    sendJson(response, 400, { success: false, error: "좌표가 올바르지 않습니다." });
+    return;
+  }
+
+  const cacheKey = `reverse:${latitude.toFixed(5)},${longitude.toFixed(5)}`;
+  const cached = geocodeCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < GEOCODE_CACHE_TTL_MS) {
+    sendJson(response, 200, { success: true, result: cached.result, cached: true });
+    return;
+  }
+
+  const runRequest = geocodeRequestChain.then(async () => {
+    let result = null;
+
+    try {
+      result = await reverseGeocodeWithKakao(latitude, longitude);
+    } catch (error) {
+      console.warn(`[카카오 역지오코딩 실패] ${error.message}`);
+    }
+
+    if (!result) {
+      const url = new URL("https://nominatim.openstreetmap.org/reverse");
+      url.searchParams.set("lat", String(latitude));
+      url.searchParams.set("lon", String(longitude));
+      url.searchParams.set("format", "jsonv2");
+      url.searchParams.set("zoom", "18");
+      url.searchParams.set("addressdetails", "1");
+      url.searchParams.set("accept-language", "ko");
+
+      const elapsed = Date.now() - lastGeocodeRequestAt;
+      if (elapsed < GEOCODE_MIN_INTERVAL_MS) {
+        await new Promise((resolve) => setTimeout(resolve, GEOCODE_MIN_INTERVAL_MS - elapsed));
+      }
+
+      lastGeocodeRequestAt = Date.now();
+      const externalResponse = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "FuelFinder/1.0",
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+
+      if (externalResponse.ok) {
+        const data = await externalResponse.json();
+        const address = data?.address || {};
+        const road = String(address.road || "").trim();
+        const house = String(address.house_number || "").trim();
+        const dong = String(address.suburb || address.city_district || address.neighbourhood || "").trim();
+        result = {
+          latitude,
+          longitude,
+          label: road ? `${road}${house ? ` ${house}` : ""}` : (dong || data?.display_name || "현재 위치"),
+          detail: dong && road ? dong : String(data?.display_name || "").trim(),
+          source: "nominatim",
+        };
+      }
+    }
+
+    if (result) {
+      geocodeCache.set(cacheKey, { timestamp: Date.now(), result });
+      if (geocodeCache.size > 300) {
+        const oldestKey = geocodeCache.keys().next().value;
+        if (oldestKey) geocodeCache.delete(oldestKey);
+      }
+    }
+
+    return result;
+  });
+
+  geocodeRequestChain = runRequest.catch(() => undefined);
+
+  try {
+    const result = await runRequest;
+    if (!result) {
+      sendJson(response, 200, { success: true, result: null, cached: false });
+      return;
+    }
+    sendJson(response, 200, { success: true, result, cached: false });
+  } catch (error) {
+    console.error(`[역지오코딩 실패] ${error.message}`);
+    sendJson(response, 502, { success: false, error: "현재 위치의 주소를 확인하지 못했습니다." });
+  }
+}
+
+async function handleGeocode(request, response) {
+  const requestUrl = new URL(
+    request.url,
+    `http://${request.headers.host || "localhost"}`
+  );
+
+  const query = String(requestUrl.searchParams.get("q") || "").trim();
 
   if (!query) {
-    sendJson(
-      response,
-      400,
-      {
-        success: false,
-        error:
-          "검색할 주소나 장소명을 입력하세요.",
-      }
-    );
-
+    sendJson(response, 400, {
+      success: false,
+      error: "검색할 주소나 장소명을 입력하세요.",
+    });
     return;
   }
 
   if (query.length > 200) {
-    sendJson(
-      response,
-      400,
-      {
-        success: false,
-        error:
-          "주소 검색어가 너무 깁니다.",
-      }
-    );
-
+    sendJson(response, 400, {
+      success: false,
+      error: "주소 검색어가 너무 깁니다.",
+    });
     return;
   }
 
-  const cacheKey =
-    query.toLowerCase();
-
-  const cached =
-    geocodeCache.get(
-      cacheKey
-    );
-
-  if (
-    cached &&
-    Date.now() - cached.timestamp <
-      GEOCODE_CACHE_TTL_MS
-  ) {
-    sendJson(
-      response,
-      200,
-      {
-        success: true,
-        results: cached.results,
-        cached: true,
-      }
-    );
-
+  const cacheKey = `forward:${query.toLowerCase()}`;
+  const cached = geocodeCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < GEOCODE_CACHE_TTL_MS) {
+    sendJson(response, 200, {
+      success: true,
+      results: cached.results,
+      cached: true,
+      provider: cached.provider || "cache",
+    });
     return;
   }
 
-  /*
-   * 요청을 직렬화하여 공개 지오코더에
-   * 과도한 요청이 나가지 않도록 합니다.
-   */
-  const runRequest =
-    geocodeRequestChain.then(
-      async () => {
-        const elapsed =
-          Date.now() -
-          lastGeocodeRequestAt;
+  const runRequest = geocodeRequestChain.then(async () => {
+    let results = [];
+    let provider = "";
 
-        if (
-          elapsed <
-          GEOCODE_MIN_INTERVAL_MS
-        ) {
-          await new Promise(
-            (resolve) =>
-              setTimeout(
-                resolve,
-                GEOCODE_MIN_INTERVAL_MS -
-                  elapsed
-              )
-          );
-        }
-
-        const url =
-          new URL(
-            "https://nominatim.openstreetmap.org/search"
-          );
-
-        url.searchParams.set(
-          "q",
-          query
-        );
-
-        url.searchParams.set(
-          "format",
-          "jsonv2"
-        );
-
-        url.searchParams.set(
-          "limit",
-          "5"
-        );
-
-        url.searchParams.set(
-          "countrycodes",
-          "kr"
-        );
-
-        url.searchParams.set(
-          "accept-language",
-          "ko"
-        );
-
-        lastGeocodeRequestAt =
-          Date.now();
-
-        const externalResponse =
-          await fetch(
-            url,
-            {
-              headers: {
-                Accept:
-                  "application/json",
-                "User-Agent":
-                  "FuelFinder/1.0",
-              },
-              signal:
-                AbortSignal.timeout(
-                  8000
-                ),
-            }
-          );
-
-        if (
-          !externalResponse.ok
-        ) {
-          throw new Error(
-            `주소 검색 서버 오류: HTTP ${externalResponse.status}`
-          );
-        }
-
-        const data =
-          await externalResponse.json();
-
-        const results =
-          Array.isArray(data)
-            ? data
-                .map(
-                  (item) => ({
-                    latitude:
-                      Number(
-                        item.lat
-                      ),
-                    longitude:
-                      Number(
-                        item.lon
-                      ),
-                    label:
-                      item.display_name ||
-                      query,
-                  })
-                )
-                .filter(
-                  (item) =>
-                    Number.isFinite(
-                      item.latitude
-                    ) &&
-                    Number.isFinite(
-                      item.longitude
-                    )
-                )
-            : [];
-
-        geocodeCache.set(
-          cacheKey,
-          {
-            timestamp:
-              Date.now(),
-            results,
-          }
-        );
-
-        /*
-         * 메모리 캐시가 무한히 커지지 않도록
-         * 오래된 항목을 정리합니다.
-         */
-        if (
-          geocodeCache.size >
-          200
-        ) {
-          const oldestKey =
-            geocodeCache.keys().next()
-              .value;
-
-          if (oldestKey) {
-            geocodeCache.delete(
-              oldestKey
-            );
-          }
-        }
-
-        return results;
+    try {
+      results = await geocodeWithKakao(query);
+      if (results.length > 0) {
+        provider = "kakao";
       }
-    );
+    } catch (error) {
+      console.warn(`[카카오 주소 검색 실패] ${error.message}`);
+    }
 
-  /*
-   * 한 요청이 실패해도 다음 요청의 체인은 유지합니다.
-   */
-  geocodeRequestChain =
-    runRequest.catch(
-      () => undefined
-    );
+    if (results.length === 0) {
+      const elapsed = Date.now() - lastGeocodeRequestAt;
+      if (elapsed < GEOCODE_MIN_INTERVAL_MS) {
+        await new Promise((resolve) => setTimeout(resolve, GEOCODE_MIN_INTERVAL_MS - elapsed));
+      }
+
+      const url = new URL("https://nominatim.openstreetmap.org/search");
+      url.searchParams.set("q", query);
+      url.searchParams.set("format", "jsonv2");
+      url.searchParams.set("limit", "5");
+      url.searchParams.set("countrycodes", "kr");
+      url.searchParams.set("accept-language", "ko");
+      url.searchParams.set("addressdetails", "1");
+      lastGeocodeRequestAt = Date.now();
+
+      const externalResponse = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "FuelFinder/1.0",
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+
+      if (!externalResponse.ok) {
+        throw new Error(`주소 검색 서버 오류: HTTP ${externalResponse.status}`);
+      }
+
+      const data = await externalResponse.json();
+      results = Array.isArray(data)
+        ? data
+            .map((item) => {
+              const address = item?.address || {};
+              const road = String(address.road || "").trim();
+              const house = String(address.house_number || "").trim();
+              const dong = String(address.suburb || address.city_district || address.neighbourhood || "").trim();
+              return {
+                latitude: Number(item.lat),
+                longitude: Number(item.lon),
+                label: road ? `${road}${house ? ` ${house}` : ""}` : (item.display_name || query),
+                detail: dong ? dong : String(item.display_name || query),
+              };
+            })
+            .filter((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude))
+        : [];
+      provider = results.length > 0 ? "nominatim" : "";
+    }
+
+    geocodeCache.set(cacheKey, {
+      timestamp: Date.now(),
+      results,
+      provider,
+    });
+
+    if (geocodeCache.size > 300) {
+      const oldestKey = geocodeCache.keys().next().value;
+      if (oldestKey) geocodeCache.delete(oldestKey);
+    }
+
+    return { results, provider };
+  });
+
+  geocodeRequestChain = runRequest.catch(() => undefined);
 
   try {
-    const results =
-      await runRequest;
-
-    sendJson(
-      response,
-      200,
-      {
-        success: true,
-        results,
-        cached: false,
-      }
-    );
-  } catch (
-    error
-  ) {
-    console.error(
-      `[주소 검색 실패] ${error.message}`
-    );
-
-    sendJson(
-      response,
-      502,
-      {
-        success: false,
-        error:
-          "주소 검색 서비스를 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
-      }
-    );
+    const { results, provider } = await runRequest;
+    sendJson(response, 200, {
+      success: true,
+      results,
+      cached: false,
+      provider: provider || null,
+    });
+  } catch (error) {
+    console.error(`[주소 검색 실패] ${error.message}`);
+    sendJson(response, 502, {
+      success: false,
+      error: "주소 검색 서비스를 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+    });
   }
 }
 
