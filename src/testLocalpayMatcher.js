@@ -253,19 +253,35 @@ async function main() {
     "===== 홍길동 테스트 판정 ====="
   );
 
+  /**
+   * 이 케이스는 주소/전화가 전혀 없는 상태에서 "이름만" 근거로
+   * 확정 매칭(matched)을 기대하면 안 됩니다.
+   *
+   * matchStationToLocalPay()는 의도적으로 이름만 일치하는 경우
+   * 자동 할인 적용을 하지 않도록 설계되어 있습니다
+   * (src/localpayMatcher.js의 "주소가 없고 이름만 유일하게 일치 /
+   * 자동 할인 적용은 하지 않는다" 분기 참고).
+   *
+   * 그래서 이 테스트가 확인해야 하는 것은
+   * "matched로 확정됐는가"가 아니라
+   * "확정은 보류하되(needs_confirmation), 사람이 검토할 수 있도록
+   *  올바른 후보(홍길동주유소)를 정확히 짚어냈는가"입니다.
+   */
   if (
     honggildongResult.matchStatus ===
-      "matched" &&
+      "needs_confirmation" &&
+    honggildongResult.reviewType ===
+      "name-only" &&
     honggildongResult.merchant
       ?.name ===
       "홍길동주유소"
   ) {
     console.log(
-      "PASS: 실제 오피넷 명칭과 공식 강릉페이 명칭을 동일 업체로 매칭했습니다."
+      "PASS: 주소 정보가 없어 자동 확정은 보류했지만, 사람이 검토할 정확한 후보(홍길동주유소)를 짚어냈습니다."
     );
   } else {
     console.log(
-      "FAIL: 실제 오피넷 명칭을 공식 강릉페이 가맹점과 정확히 매칭하지 못했습니다."
+      "FAIL: 이름만으로 유일하게 일치하는 홍길동주유소를 검토 대상 후보로 짚어내지 못했습니다."
     );
   }
 

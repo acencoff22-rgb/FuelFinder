@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 import "dotenv/config";
 
 import { wgs84ToKatec } from "./coordinate.js";
+import {
+  buildExtendedSearchCenters,
+  katecDistanceMeters,
+} from "./searchGeometry.js";
 
 import {
   getNearbyStations,
@@ -57,7 +61,7 @@ const host =
 
 const OPINET_MAX_RADIUS_METERS = 5000;
 const APP_MAX_RADIUS_METERS = 10000;
-const EXTENDED_SEARCH_CENTER_OFFSET_METERS = 8000;
+const EXTENDED_SEARCH_CENTER_OFFSET_METERS = 7000;
 const EXTENDED_SEARCH_CENTER_COUNT = 7;
 
 const frontendOrigins =
@@ -111,6 +115,11 @@ let lastGeocodeRequestAt =
 
 let geocodeRequestChain =
   Promise.resolve();
+
+// Kakao Local 권한 오류(401/403)는 반복 호출해도 같은 결과이므로
+// 잠시 회로 차단하고 OpenStreetMap fallback으로 바로 넘어갑니다.
+const KAKAO_LOCAL_FAILURE_COOLDOWN_MS = 5 * 60 * 1000;
+let kakaoLocalDisabledUntil = 0;
 
 const GEOCODE_CACHE_TTL_MS =
   24 * 60 * 60 * 1000;
@@ -301,24 +310,18 @@ function applyCorsHeaders(
     const configuredWildcard =
       frontendOrigins.includes("*");
 
-    // FuelFinder 프론트엔드는 Render Static Site에서 별도로 제공될 수 있습니다.
-    // 기존에는 사이트 이름이 "fuelfinder..."인 경우만 허용해서,
-    // 실제 Static Site 주소가 조금만 달라도 브라우저가 CORS 응답을 차단할 수 있었습니다.
-    // 인증 쿠키를 사용하는 API가 아니므로 Render의 HTTPS 도메인은 허용하되,
-    // 명시적인 FRONTEND_ORIGINS가 있으면 그 목록도 함께 존중합니다.
-    const renderOrigin =
-      /^https:\/\/[^/]+\.onrender\.com$/i.test(origin);
-
+    // 공개 브라우저 API라도 모든 *.onrender.com 사이트를 허용하면
+    // 제3자가 브라우저에서 FuelFinder API를 호출해 Opinet 쿼터를 소모시킬 수 있습니다.
+    // 따라서 기본적으로는 명시된 FRONTEND_ORIGINS만 허용합니다.
     const allowed =
       sameOrigin ||
       configuredWildcard ||
-      frontendOrigins.includes(origin) ||
-      renderOrigin;
+      frontendOrigins.includes(origin);
 
-    if (configuredWildcard || renderOrigin) {
+    if (configuredWildcard) {
       response.setHeader(
         "Access-Control-Allow-Origin",
-        configuredWildcard ? "*" : origin
+        "*"
       );
       response.setHeader(
         "Vary",
@@ -357,6 +360,14 @@ async function fetchKakaoRestJson(pathname, params) {
   if (!key) {
     console.warn("[카카오 REST API] KAKAO_REST_API_KEY가 없어 OpenStreetMap을 사용합니다.");
     return null;
+  }
+
+  if (Date.now() < kakaoLocalDisabledUntil) {
+    const error = new Error(
+      "Kakao Local API가 최근 권한 오류를 반환해 잠시 OpenStreetMap fallback을 사용합니다."
+    );
+    error.kakaoLocalUnavailable = true;
+    throw error;
   }
 
   const url = new URL(`https://dapi.kakao.com${pathname}`);
@@ -400,6 +411,10 @@ async function fetchKakaoRestJson(pathname, params) {
       hint = " 카카오디벨로퍼스 앱의 사용 가능 API에서 Local API 허용 여부를 확인하세요.";
     } else if (response.status === 403) {
       hint = " 카카오디벨로퍼스에서 해당 API 사용 권한을 확인하세요.";
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      kakaoLocalDisabledUntil = Date.now() + KAKAO_LOCAL_FAILURE_COOLDOWN_MS;
     }
 
     const detail = [
@@ -572,14 +587,16 @@ async function handleReverseGeocode(request, response) {
 
   const runRequest = geocodeRequestChain.then(async () => {
     let result = null;
+    let kakaoFailure = null;
 
     try {
       result = await reverseGeocodeWithKakao(latitude, longitude);
     } catch (error) {
+      kakaoFailure = error;
       console.warn(`[카카오 역지오코딩 실패] ${error.message}`);
     }
 
-    if (!result) {
+    if (!result && !kakaoFailure?.kakaoLocalUnavailable) {
       try {
         result = await reverseGeocodeRegionWithKakao(latitude, longitude);
       } catch (error) {
@@ -1078,10 +1095,29 @@ async function handleNearbyStations(
     }
   }
 
-  const stations =
-    mapOpinetStations(
-      data
-    );
+  const stations = mapOpinetStations(data).map((station) => {
+    // Opinet raw/cached 결과의 DISTANCE는 이전 조회 중심점 기준일 수 있으므로
+    // 현재 요청 위치에서 다시 계산합니다. 캐시를 사용해도 거리 표시가 실제 위치와 어긋나지 않습니다.
+    if (
+      Number.isFinite(Number(station.katecX)) &&
+      Number.isFinite(Number(station.katecY))
+    ) {
+      const distanceMeters = katecDistanceMeters(
+        katec.x,
+        katec.y,
+        Number(station.katecX),
+        Number(station.katecY)
+      );
+
+      return {
+        ...station,
+        distanceMeters,
+        distanceKm: distanceMeters / 1000,
+      };
+    }
+
+    return station;
+  });
 
   console.log(
     `오피넷 검색 결과: ${stations.length}개`
@@ -1771,26 +1807,12 @@ async function getNearbyStationsWithinRadius({
     });
   }
 
-  const centerQueries = [
-    { x, y },
-  ];
-
-  for (let index = 0; index < EXTENDED_SEARCH_CENTER_COUNT; index += 1) {
-    const angle =
-      (index * 2 * Math.PI) /
-      EXTENDED_SEARCH_CENTER_COUNT;
-
-    centerQueries.push({
-      x:
-        x +
-        Math.cos(angle) *
-          EXTENDED_SEARCH_CENTER_OFFSET_METERS,
-      y:
-        y +
-        Math.sin(angle) *
-          EXTENDED_SEARCH_CENTER_OFFSET_METERS,
-    });
-  }
+  const centerQueries = buildExtendedSearchCenters({
+    x,
+    y,
+    offsetMeters: EXTENDED_SEARCH_CENTER_OFFSET_METERS,
+    count: EXTENDED_SEARCH_CENTER_COUNT,
+  });
 
   const settledResponses =
     await Promise.allSettled(
@@ -1858,9 +1880,11 @@ async function getNearbyStationsWithinRadius({
         continue;
       }
 
-      const distanceMeters = Math.sqrt(
-        Math.pow(stationX - x, 2) +
-        Math.pow(stationY - y, 2)
+      const distanceMeters = katecDistanceMeters(
+        x,
+        y,
+        stationX,
+        stationY
       );
 
       if (distanceMeters > radius) {

@@ -14,7 +14,8 @@
     "test:opinet-localpay": "node src/testOpinetLocalPayIntegration.js",
     "test:legacy-localpay": "node src/legacy/testLocalpay.js",
     "test:legacy-localpay-gas": "node src/legacy/testLocalpayGasStations.js",
-    "test:legacy-compare-localpay": "node src/legacy/testCompareLocalPay.js"
+    "test:legacy-compare-localpay": "node src/legacy/testCompareLocalPay.js",
+    "test:search-geometry": "node src/testSearchGeometry.js"
   },
   "keywords": [
     "fuel",

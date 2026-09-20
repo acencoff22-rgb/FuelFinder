@@ -1,11 +1,21 @@
 # FuelFinder 변경 이력
 
+## v27
+- v26 기준 전체 코드 재검수
+- 10km 확장검색의 7개 외곽 중심점 간격을 8km → 7km로 변경해 검색영역 경계 공백 제거
+- 10km 확장검색 기하 계산을 `src/searchGeometry.js`로 분리
+- 10km 검색 기하 검증 테스트 추가
+- Opinet 캐시 사용 시 현재 요청 위치 기준으로 주유소 거리를 다시 계산
+- Kakao Local 401/403 반복 호출을 5분간 회로 차단하고 OSM fallback으로 바로 전환
+- Kakao 역지오코딩 권한 오류 시 행정구역 API까지 불필요하게 재호출하지 않도록 개선
+- 테스트 명령 `npm run test:search-geometry` 추가
+
 이 문서는 AI/Claude/개발자가 이전 작업의 의도를 잃지 않도록 남기는 요약 변경 기록입니다.
 세부적인 현재 상태는 `PROJECT_RULES.md`를 기준으로 합니다.
 
 ## v26
 - Static Site → API Web Service CORS 보강
-- Render `*.onrender.com` origin 대응
+- 명시된 `FRONTEND_ORIGINS`만 CORS 허용하도록 범위 축소
 - 주변 주유소 API fetch 1회 자동 재시도
 - CORS preflight 캐시 추가
 - 연결 실패 메시지 개선

@@ -5,7 +5,7 @@
 
 ## 1. 현재 기준 버전
 
-- 기준 버전: **v26**
+- 기준 버전: **v27**
 - 저장소: 기존 `FuelFinder` GitHub 저장소 하나만 사용
 - Render Project: 기존 FuelFinder Project 하나만 사용
 - 서비스:
@@ -69,7 +69,7 @@ fuelfinder (Render Web Service)
 
 ### `FRONTEND_ORIGINS`
 - 용도: API 서버 CORS 명시 허용 origin
-- 현재 API는 Render `*.onrender.com` HTTPS origin도 허용합니다.
+- 현재 API는 `FRONTEND_ORIGINS`에 명시된 프론트 origin만 CORS 허용합니다.
 - 커스텀 도메인을 붙이면 실제 프론트 origin을 `FRONTEND_ORIGINS`에 추가합니다.
 
 ---
@@ -215,6 +215,7 @@ Kakao Local의 보조 검색/주소 변환용입니다.
 | `src/gangneungPayStations.js` | 공식 강릉페이 일반 주유소 고정 목록 |
 | `src/localpayMatcher.js` | 오피넷 주유소 ↔ 강릉페이 공식 목록 매칭 |
 | `src/gangneungPayStatus.js` | 강릉페이 표시 상태 생성 |
+| `src/searchGeometry.js` | 10km 확장 검색 중심점/거리 계산 |
 | `src/testLocalpayMatcher.js` | 강릉페이 매칭 로컬 테스트 |
 | `README.md` | 사람용 프로젝트 설명 |
 | `PROJECT_RULES.md` | AI/Claude/개발자 작업 기준 |
@@ -282,6 +283,12 @@ node --check src/server.js
 
 ```powershell
 npm run test:localpay-match
+```
+
+### 10km 확장 검색 기하
+
+```powershell
+npm run test:search-geometry
 ```
 
 ### ZIP 배포본 검사
